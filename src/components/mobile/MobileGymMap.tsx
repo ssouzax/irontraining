@@ -143,6 +143,7 @@ export function MobileGymMap() {
   useEffect(() => {
     getUserLocation();
     loadMyGym();
+    loadFriendGyms();
   }, [user]);
 
   useEffect(() => {
