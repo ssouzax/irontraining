@@ -184,7 +184,7 @@ export function MobileGymMap() {
     if (mapInstanceRef.current && appGyms.length >= 0) {
       renderMarkers();
     }
-  }, [appGyms, filter, myGymId, friendGymIds]);
+  }, [appGyms, filter, myGymId, friendGymIds, selectedChain]);
 
   const getUserLocation = () => {
     if (!navigator.geolocation) {
