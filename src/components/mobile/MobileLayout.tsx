@@ -39,7 +39,7 @@ const menuItems = [
   { key: 'rankings' as Tab, icon: Crown, label: 'Leaderboard DOTS' },
   { key: 'exerciserankings' as Tab, icon: Dumbbell, label: 'Ranking Exercícios' },
   { key: 'gym' as Tab, icon: MapPin, label: 'Minha Academia' },
-  { key: 'gymmap' as Tab, icon: Navigation, label: 'Mapa de Academias' },
+  { key: 'gymmap' as Tab, icon: Map, label: 'Mapa de Academias' },
   { key: 'gympoints' as Tab, icon: Star, label: 'Gym Points' },
   { key: 'rivals' as Tab, icon: Swords, label: 'Rivais de Força' },
   { key: 'powerscore' as Tab, icon: Zap, label: 'Power Score' },
