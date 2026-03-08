@@ -36,7 +36,7 @@ export function MobileBodyComposition() {
     const since = new Date();
     since.setDate(since.getDate() - days);
     
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from('body_weight_logs')
       .select('*')
       .eq('user_id', user.id)
