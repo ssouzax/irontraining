@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          created_at: string
+          description: string
+          exercise: string | null
+          icon: string | null
+          id: string
+          title: string
+          type: string
+          unlocked_at: string
+          user_id: string
+          value: number | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          exercise?: string | null
+          icon?: string | null
+          id?: string
+          title: string
+          type: string
+          unlocked_at?: string
+          user_id: string
+          value?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          exercise?: string | null
+          icon?: string | null
+          id?: string
+          title?: string
+          type?: string
+          unlocked_at?: string
+          user_id?: string
+          value?: number | null
+        }
+        Relationships: []
+      }
       ai_recommendations: {
         Row: {
           created_at: string
@@ -237,7 +276,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_leaderboard: {
+        Args: {
+          lift_name: string
+          weight_class_max?: number
+          weight_class_min?: number
+        }
+        Returns: {
+          body_weight: number
+          display_name: string
+          estimated_1rm: number
+          exercise: string
+          recorded_at: string
+          reps: number
+          weight: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
