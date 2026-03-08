@@ -13,6 +13,7 @@ export function MobileStreakCard() {
   const { streak, loading } = useTrainingStreak();
   const { playerLevel } = usePlayerLevel();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const shareStreak = async () => {
     if (!user || !streak) return;
