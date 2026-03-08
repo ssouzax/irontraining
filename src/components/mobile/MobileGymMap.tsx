@@ -141,7 +141,7 @@ export function MobileGymMap() {
 
     const map = L.map(mapRef.current, {
       center: [userLocation.lat, userLocation.lng],
-      zoom: 13,
+      zoom: 12,
       zoomControl: false,
       attributionControl: false,
     });
