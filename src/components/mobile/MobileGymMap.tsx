@@ -605,9 +605,23 @@ export function MobileGymMap() {
               <p className="text-xs text-muted-foreground">Não encontrou? Adicione manualmente.</p>
               <input value={newGymName} onChange={e => setNewGymName(e.target.value)} placeholder="Nome da academia *" maxLength={100}
                 className="w-full bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+              <div className="relative">
+                <input value={newGymAddress} onChange={e => { setNewGymAddress(e.target.value); }} placeholder="Endereço completo (ex: Rua X, 123, Itu SP)" maxLength={200}
+                  onBlur={() => geocodeAddress(newGymAddress)}
+                  className="w-full bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                {geocoding && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-primary" />}
+                {newGymCoords && !geocoding && <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />}
+              </div>
+              {newGymCoords && (
+                <p className="text-[10px] text-green-500 flex items-center gap-1">
+                  <MapPin className="w-3 h-3" /> Coordenadas: {newGymCoords.lat.toFixed(4)}, {newGymCoords.lng.toFixed(4)}
+                </p>
+              )}
               <input value={newGymCity} onChange={e => setNewGymCity(e.target.value)} placeholder="Cidade (opcional)" maxLength={100}
                 className="w-full bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
-              <p className="text-[10px] text-muted-foreground">📍 Localização atual será usada</p>
+              {!newGymCoords && !geocoding && (
+                <p className="text-[10px] text-muted-foreground">📍 Sem endereço, sua localização atual será usada</p>
+              )}
               <button onClick={addManualGym} disabled={joining || !newGymName.trim()}
                 className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-primary/25">
                 {joining ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Criar e Selecionar
