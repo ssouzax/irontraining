@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export interface AppNotification {
   id: string;
-  type: 'workout_pending' | 'achievement_unlocked' | 'pr_achieved' | 'level_up';
+  type: 'workout_pending' | 'achievement_unlocked' | 'pr_achieved' | 'level_up' | 'gym_pr';
   title: string;
   message: string;
   timestamp: Date;
