@@ -4,7 +4,7 @@ import { OrbitControls } from '@react-three/drei';
 import { RotateCw, Info, ChevronLeft, ChevronRight, CheckCircle, AlertTriangle, XCircle, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import * as THREE from 'three';
+import { AnatomicalBody } from './AnatomicalBody3D';
 import { AnatomicalBody } from './AnatomicalBody3D';
 
 const EXERCISE_MUSCLES: Record<string, { primary: string[]; secondary: string[]; tips: string[]; posture: { label: string; angle: number; ideal: number; tolerance: number }[] }> = {
