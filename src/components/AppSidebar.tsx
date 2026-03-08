@@ -39,7 +39,7 @@ export function AppSidebar() {
         </button>
       </div>
 
-      <nav className="flex-1 py-4 px-2 space-y-1">
+      <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
         {navItems.map(item => {
           const isActive = location.pathname === item.to;
           return (
