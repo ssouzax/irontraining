@@ -301,7 +301,7 @@ export default function AppModeWorkout() {
       }
 
 
-      }
+
 
       toast.success('Treino salvo com sucesso!');
     } catch (err: any) {
