@@ -194,6 +194,9 @@ export function MobileHomeFeed() {
       </div>
 
       <MobileStreakCard />
+      <MobileSeasonalEvents />
+      <MobileDailyGoals />
+      <MobileDailyChallenges />
 
       {/* Feed */}
       <div className="divide-y divide-border mt-3">

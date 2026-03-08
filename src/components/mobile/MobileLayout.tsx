@@ -237,6 +237,7 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
             {activeTab === 'exerciserankings' && <MobileExerciseLeaderboard />}
             {activeTab === 'livegym' && <MobileLiveGym />}
             {activeTab === 'wrapped' && <MobileWrappedCards />}
+            {activeTab === 'exercise3d' && <MobileExercise3D />}
           </motion.div>
         </AnimatePresence>
       </main>
