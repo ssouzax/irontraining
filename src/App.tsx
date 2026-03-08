@@ -81,6 +81,15 @@ function ProtectedRoutes() {
           <Route path="/plates" element={<PlateCalculator />} />
           <Route path="/streaks" element={<StreakLeaderboardPage />} />
           <Route path="/coach" element={<CoachPage />} />
+          <Route path="/exercise3d" element={<Exercise3DPage />} />
+          <Route path="/body" element={<BodyCompositionPage />} />
+          <Route path="/prsimulator" element={<PRSimulatorPage />} />
+          <Route path="/recovery" element={<RecoveryPage />} />
+          <Route path="/cotraining" element={<CoTrainingPage />} />
+          <Route path="/barvelocity" element={<BarVelocityPage />} />
+          <Route path="/wearable" element={<WearablePage />} />
+          <Route path="/replay3d" element={<Replay3DPage />} />
+          <Route path="/grading" element={<ExecutionGradingPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
