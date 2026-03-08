@@ -1,5 +1,5 @@
 import { ReactNode, useState } from 'react';
-import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin, Swords, Brain, Flame } from 'lucide-react';
+import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin, Swords, Brain, Flame, Radio, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MobileHomeFeed } from './MobileHomeFeed';
 import { MobileCreatePost } from './MobileCreatePost';
@@ -11,11 +11,15 @@ import { MobilePowerScore } from './MobilePowerScore';
 import { MobilePredictor } from './MobilePredictor';
 import { MobileExplore } from './MobileExplore';
 import { MobileGymHeatmap } from './MobileGymHeatmap';
+import { MobileGymPoints } from './MobileGymPoints';
+import { MobileExerciseLeaderboard } from './MobileExerciseLeaderboard';
+import { MobileLiveGym } from './MobileLiveGym';
+import { MobileWrappedCards } from './MobileWrappedCards';
 import { NotificationBell } from '../NotificationBell';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 
-type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym' | 'rivals' | 'powerscore' | 'predictor' | 'explore' | 'heatmap';
+type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym' | 'rivals' | 'powerscore' | 'predictor' | 'explore' | 'heatmap' | 'gympoints' | 'exerciserankings' | 'livegym' | 'wrapped';
 
 const bottomTabs: { key: Tab; icon: typeof Home; label: string }[] = [
   { key: 'home', icon: Home, label: 'Home' },
@@ -29,12 +33,16 @@ const menuItems = [
   { key: 'home' as Tab, icon: LayoutDashboard, label: 'Painel / Feed' },
   { key: 'workout' as Tab, icon: Dumbbell, label: 'Treino Atual' },
   { key: 'explore' as Tab, icon: Compass, label: 'Explorar' },
+  { key: 'livegym' as Tab, icon: Radio, label: 'Live Gym' },
   { key: 'heatmap' as Tab, icon: Flame, label: 'Mapa de Força' },
   { key: 'rankings' as Tab, icon: Crown, label: 'Leaderboard DOTS' },
+  { key: 'exerciserankings' as Tab, icon: Dumbbell, label: 'Ranking Exercícios' },
   { key: 'gym' as Tab, icon: MapPin, label: 'Minha Academia' },
+  { key: 'gympoints' as Tab, icon: Star, label: 'Gym Points' },
   { key: 'rivals' as Tab, icon: Swords, label: 'Rivais de Força' },
   { key: 'powerscore' as Tab, icon: Zap, label: 'Power Score' },
   { key: 'predictor' as Tab, icon: Brain, label: 'Preditor IA' },
+  { key: 'wrapped' as Tab, icon: Sparkles, label: 'Wrapped Cards' },
   { key: 'profile' as Tab, icon: User, label: 'Perfil' },
 ];
 
@@ -188,6 +196,10 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
         {activeTab === 'predictor' && <MobilePredictor />}
         {activeTab === 'explore' && <MobileExplore />}
         {activeTab === 'heatmap' && <MobileGymHeatmap />}
+        {activeTab === 'gympoints' && <MobileGymPoints />}
+        {activeTab === 'exerciserankings' && <MobileExerciseLeaderboard />}
+        {activeTab === 'livegym' && <MobileLiveGym />}
+        {activeTab === 'wrapped' && <MobileWrappedCards />}
       </main>
 
       {/* Bottom Navigation */}
