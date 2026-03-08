@@ -432,6 +432,7 @@ export function MobileGymMap() {
   const filterOptions: { key: FilterMode; label: string; icon: typeof MapPin }[] = [
     { key: 'all', label: 'Todas', icon: MapPin },
     { key: 'nearby', label: 'Próximas', icon: Navigation },
+    { key: 'friends', label: 'Amigos', icon: Heart },
     { key: 'strongest', label: 'Mais Fortes', icon: Flame },
     { key: 'heatmap', label: 'Heatmap', icon: Layers },
   ];
