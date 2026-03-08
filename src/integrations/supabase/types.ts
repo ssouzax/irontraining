@@ -22,11 +22,20 @@ export type Database = {
           description: string
           icon: string | null
           id: string
+          is_seasonal: boolean
+          is_secret: boolean
           level_name: string
           level_number: number
+          parent_achievement_key: string | null
+          rarity: string
           requirement_type: string
           requirement_value: number
+          season_id: number | null
           title: string
+          total_users: number
+          tree_id: string | null
+          tree_order: number | null
+          unlock_count: number
         }
         Insert: {
           achievement_key: string
@@ -35,11 +44,20 @@ export type Database = {
           description: string
           icon?: string | null
           id?: string
+          is_seasonal?: boolean
+          is_secret?: boolean
           level_name: string
           level_number?: number
+          parent_achievement_key?: string | null
+          rarity?: string
           requirement_type: string
           requirement_value: number
+          season_id?: number | null
           title: string
+          total_users?: number
+          tree_id?: string | null
+          tree_order?: number | null
+          unlock_count?: number
         }
         Update: {
           achievement_key?: string
@@ -48,13 +66,30 @@ export type Database = {
           description?: string
           icon?: string | null
           id?: string
+          is_seasonal?: boolean
+          is_secret?: boolean
           level_name?: string
           level_number?: number
+          parent_achievement_key?: string | null
+          rarity?: string
           requirement_type?: string
           requirement_value?: number
+          season_id?: number | null
           title?: string
+          total_users?: number
+          tree_id?: string | null
+          tree_order?: number | null
+          unlock_count?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "achievement_levels_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       achievements: {
         Row: {
@@ -475,6 +510,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      player_levels: {
+        Row: {
+          daily_xp: number
+          id: string
+          last_xp_date: string | null
+          lifetime_xp: number
+          player_level: number
+          title: string | null
+          total_xp: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          daily_xp?: number
+          id?: string
+          last_xp_date?: string | null
+          lifetime_xp?: number
+          player_level?: number
+          title?: string | null
+          total_xp?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          daily_xp?: number
+          id?: string
+          last_xp_date?: string | null
+          lifetime_xp?: number
+          player_level?: number
+          title?: string | null
+          total_xp?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       posts: {
         Row: {
