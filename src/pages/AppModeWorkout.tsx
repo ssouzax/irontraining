@@ -8,16 +8,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
+function estimate1RM(weight: number, reps: number): number {
+  if (reps === 1) return weight;
+  return Math.round(weight * (1 + reps / 30) * 10) / 10;
+}
+
 function RestTimer({ seconds, onComplete, onDismiss, elapsed }: { seconds: number; onComplete: () => void; onDismiss: () => void; elapsed?: number }) {
   const [remaining, setRemaining] = useState(seconds);
   const [totalElapsed, setTotalElapsed] = useState(elapsed || 0);
 
   useEffect(() => {
     const t = setInterval(() => {
-      setRemaining(r => {
-        if (r <= 0) return 0;
-        return r - 1;
-      });
+      setRemaining(r => (r <= 0 ? r - 1 : r - 1));
       setTotalElapsed(e => e + 1);
     }, 1000);
     return () => clearInterval(t);
@@ -85,7 +87,6 @@ function SetRow({ setIndex, targetReps, targetRIR, setType, log, lastWeight, res
         log.completed ? "bg-success/10 border border-success/20" : "bg-secondary/30"
       )}
     >
-      {/* Set number */}
       <div className={cn(
         "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
         setType === 'top' ? 'bg-primary/20 text-primary' :
@@ -95,14 +96,12 @@ function SetRow({ setIndex, targetReps, targetRIR, setType, log, lastWeight, res
         {setIndex + 1}
       </div>
 
-      {/* Target info */}
       <div className="w-16 sm:w-20 shrink-0">
         <p className="text-xs text-muted-foreground font-mono">
           {targetReps}r {targetRIR !== undefined ? `RIR${targetRIR}` : ''}
         </p>
       </div>
 
-      {/* Weight input */}
       <div className="flex items-center gap-1">
         <button onClick={() => onUpdate('weight', Math.max(0, log.weight - 2.5))} className="p-1 sm:p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
           <Minus className="w-3 h-3 text-muted-foreground" />
@@ -121,7 +120,6 @@ function SetRow({ setIndex, targetReps, targetRIR, setType, log, lastWeight, res
 
       <span className="text-muted-foreground text-xs">×</span>
 
-      {/* Reps input */}
       <div className="flex items-center gap-1">
         <button onClick={() => onUpdate('reps', Math.max(0, log.reps - 1))} className="p-1 sm:p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
           <Minus className="w-3 h-3 text-muted-foreground" />
@@ -137,7 +135,6 @@ function SetRow({ setIndex, targetReps, targetRIR, setType, log, lastWeight, res
         </button>
       </div>
 
-      {/* RIR */}
       <input
         type="number"
         value={log.rir ?? ''}
@@ -146,7 +143,6 @@ function SetRow({ setIndex, targetReps, targetRIR, setType, log, lastWeight, res
         className="w-10 sm:w-12 bg-background border border-border rounded-lg px-1 py-1.5 text-xs text-center text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
       />
 
-      {/* Quick buttons - hide on small screens */}
       <div className="hidden sm:flex gap-1">
         <button onClick={() => onUpdate('weight', log.weight + 2.5)} className="text-[10px] px-1.5 py-1 rounded bg-secondary text-muted-foreground hover:text-foreground transition-colors">+2.5</button>
         <button onClick={() => onUpdate('weight', log.weight + 5)} className="text-[10px] px-1.5 py-1 rounded bg-secondary text-muted-foreground hover:text-foreground transition-colors">+5</button>
@@ -157,7 +153,6 @@ function SetRow({ setIndex, targetReps, targetRIR, setType, log, lastWeight, res
         )}
       </div>
 
-      {/* Rest time display */}
       {restTime !== undefined && restTime > 0 && log.completed && (
         <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
           <Clock className="w-3 h-3" />
@@ -165,7 +160,6 @@ function SetRow({ setIndex, targetReps, targetRIR, setType, log, lastWeight, res
         </div>
       )}
 
-      {/* Complete */}
       <button
         onClick={onComplete}
         className={cn(
@@ -217,7 +211,6 @@ export default function AppModeWorkout() {
   };
 
   const completeSet = (key: string, setIdx: number, restSeconds?: number, exerciseId?: string, setId?: string) => {
-    // Record actual rest time from last completion
     if (lastCompletionTime.current && exerciseId && setId) {
       const actualRest = Math.round((Date.now() - lastCompletionTime.current) / 1000);
       const restKey = getSetRestKey(exerciseId, setId, setIdx);
@@ -253,7 +246,10 @@ export default function AppModeWorkout() {
 
       if (wError) throw wError;
 
+      // Save to both old set_logs and new performed_sets for compatibility
       const setInserts: any[] = [];
+      const performedInserts: any[] = [];
+      
       dayData.exercises.forEach(exercise => {
         exercise.sets.forEach(setGroup => {
           const key = getSetKey(exercise.id, setGroup.id);
@@ -261,6 +257,8 @@ export default function AppModeWorkout() {
             const log = getSetLog(key, i, setGroup.targetReps);
             if (log.completed) {
               const restKey = getSetRestKey(exercise.id, setGroup.id, i);
+              const e1rm = log.weight > 0 && log.reps > 0 ? estimate1RM(log.weight, log.reps) : null;
+              
               setInserts.push({
                 user_id: user.id,
                 workout_log_id: workoutLog.id,
@@ -276,14 +274,30 @@ export default function AppModeWorkout() {
                 completed: true,
                 notes: restTimes[restKey] ? `descanso:${restTimes[restKey]}s` : undefined,
               });
+
+              performedInserts.push({
+                user_id: user.id,
+                workout_log_id: workoutLog.id,
+                exercise_name: exercise.name,
+                set_number: i + 1,
+                weight_used: log.weight,
+                reps_completed: log.reps,
+                rir_reported: log.rir,
+                completed: true,
+                estimated_1rm: e1rm,
+              });
             }
           }
         });
       });
 
-      if (setInserts.length > 0) {
-        const { error: sError } = await supabase.from('set_logs').insert(setInserts);
-        if (sError) throw sError;
+      const promises: Promise<any>[] = [];
+      if (setInserts.length > 0) promises.push(supabase.from('set_logs').insert(setInserts));
+      if (performedInserts.length > 0) promises.push(supabase.from('performed_sets').insert(performedInserts));
+      
+      const results = await Promise.all(promises);
+      for (const r of results) {
+        if (r.error) throw r.error;
       }
 
       toast.success('Treino salvo com sucesso!');
@@ -304,7 +318,6 @@ export default function AppModeWorkout() {
 
   return (
     <div className="space-y-4 pb-24">
-      {/* Header */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">{dayData.name}</h1>
@@ -321,7 +334,6 @@ export default function AppModeWorkout() {
         </div>
       </motion.div>
 
-      {/* Progress bar */}
       <div className="bg-card rounded-xl border border-border p-3 card-elevated">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs text-muted-foreground">Progresso</span>
@@ -336,7 +348,6 @@ export default function AppModeWorkout() {
         </div>
       </div>
 
-      {/* Exercises */}
       {dayData.exercises.map((exercise, exIdx) => (
         <motion.div
           key={exercise.id}
@@ -403,35 +414,38 @@ export default function AppModeWorkout() {
         </motion.div>
       ))}
 
-      {/* Mobile quick actions */}
-      <div className="flex sm:hidden gap-2 px-1">
-        <button onClick={() => {/* placeholder for future */}} className="flex-1 py-2.5 rounded-lg bg-secondary text-xs text-muted-foreground">+2.5kg</button>
-        <button onClick={() => {/* placeholder for future */ }} className="flex-1 py-2.5 rounded-lg bg-secondary text-xs text-muted-foreground">+5kg</button>
-        <button onClick={() => {/* placeholder for future */ }} className="flex-1 py-2.5 rounded-lg bg-secondary text-xs text-muted-foreground flex items-center justify-center gap-1"><RotateCcw className="w-3 h-3" /> Repetir</button>
-      </div>
-
-      {/* Save button */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-40">
-        <button
-          onClick={saveWorkout}
-          disabled={saving || completedSets === 0}
-          className="bg-primary text-primary-foreground px-5 sm:px-6 py-3 rounded-xl font-medium text-sm hover:bg-primary/90 disabled:opacity-50 transition-all card-elevated flex items-center gap-2"
-        >
-          {saving ? <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" /> : <Check className="w-4 h-4" />}
-          Salvar Treino
-        </button>
-      </motion.div>
-
       {/* Rest Timer */}
       <AnimatePresence>
         {restTimer.active && (
           <RestTimer
             seconds={restTimer.seconds}
-            onComplete={() => {/* timer keeps running overtime */}}
+            onComplete={() => {
+              if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+            }}
             onDismiss={() => setRestTimer({ active: false, seconds: 0, key: '' })}
           />
         )}
       </AnimatePresence>
+
+      {/* Save Button */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-md"
+      >
+        <button
+          onClick={saveWorkout}
+          disabled={saving || completedSets === 0}
+          className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-medium text-sm hover:bg-primary/90 disabled:opacity-50 transition-colors card-elevated flex items-center justify-center gap-2"
+        >
+          {saving ? (
+            <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+          ) : (
+            <Check className="w-4 h-4" />
+          )}
+          {saving ? 'Salvando...' : `Salvar Treino (${completedSets}/${totalSets} séries)`}
+        </button>
+      </motion.div>
     </div>
   );
 }
