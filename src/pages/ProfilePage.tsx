@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
-import { User, Camera, MapPin, Dumbbell, Target, Save, Instagram, Globe, Youtube, Edit3, Trophy, Shield, Loader2, X } from 'lucide-react';
+import { User, Camera, MapPin, Dumbbell, Target, Save, Instagram, Globe, Youtube, Edit3, Trophy, Shield, Loader2, X, Crown } from 'lucide-react';
+import SubscriptionManager from '@/components/SubscriptionManager';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTraining } from '@/contexts/TrainingContext';
@@ -78,7 +79,7 @@ export default function ProfilePage() {
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [achievementsCount, setAchievementsCount] = useState(0);
-  const [tab, setTab] = useState<'posts' | 'prs' | 'stats'>('posts');
+  const [tab, setTab] = useState<'posts' | 'prs' | 'stats' | 'plan'>('posts');
   const avatarRef = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
 
@@ -379,6 +380,7 @@ export default function ProfilePage() {
           { key: 'posts' as const, label: `Posts (${posts.length})` },
           { key: 'prs' as const, label: `PRs (${prPosts.length})` },
           { key: 'stats' as const, label: 'Dados' },
+          { key: 'plan' as const, label: '👑 Plano' },
         ]).map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
             className={cn("flex-1 py-2 rounded-lg text-xs font-medium transition-colors",
@@ -390,7 +392,9 @@ export default function ProfilePage() {
       </div>
 
       {/* Content */}
-      {tab === 'stats' ? (
+      {tab === 'plan' ? (
+        <SubscriptionManager />
+      ) : tab === 'stats' ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-card rounded-xl border border-border p-5 card-elevated space-y-4">
           <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
             <Target className="w-4 h-4 text-primary" /> Objetivos
