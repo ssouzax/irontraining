@@ -253,7 +253,7 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
             {activeTab === 'exerciserankings' && <MobileExerciseLeaderboard />}
             {activeTab === 'livegym' && <MobileLiveGym />}
             {activeTab === 'wrapped' && <MobileWrappedCards />}
-            {activeTab === 'exercise3d' && <MobileExercise3D />}
+            
             {activeTab === 'body' && <MobileBodyComposition />}
             {activeTab === 'prsim' && <MobilePRSimulator />}
             {activeTab === 'recovery' && <MobileRecoveryTimeline />}
