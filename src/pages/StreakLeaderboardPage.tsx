@@ -152,9 +152,9 @@ export default function StreakLeaderboardPage() {
                 >
                   {/* Rank */}
                   <div className="w-8 text-center shrink-0">
-                    {idx === 0 ? <Crown className="w-6 h-6 text-yellow-500 mx-auto" /> :
-                     idx === 1 ? <Medal className="w-5 h-5 text-gray-400 mx-auto" /> :
-                     idx === 2 ? <Medal className="w-5 h-5 text-amber-600 mx-auto" /> :
+                    {idx === 0 ? <Crown className="w-6 h-6 text-primary mx-auto" /> :
+                     idx === 1 ? <Medal className="w-5 h-5 text-muted-foreground mx-auto" /> :
+                     idx === 2 ? <Medal className="w-5 h-5 text-accent-foreground mx-auto" /> :
                      <span className="text-sm font-bold text-muted-foreground">{idx + 1}</span>}
                   </div>
 
