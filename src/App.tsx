@@ -57,6 +57,8 @@ function ProtectedRoutes() {
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/exercises" element={<ExerciseLibrary />} />
           <Route path="/feed" element={<SocialFeedPage />} />
+          <Route path="/discover" element={<DiscoverPage />} />
+          <Route path="/athlete/:userId" element={<AthleteProfilePage />} />
           <Route path="/plates" element={<PlateCalculator />} />
           <Route path="/coach" element={<CoachPage />} />
           <Route path="/profile" element={<ProfilePage />} />
