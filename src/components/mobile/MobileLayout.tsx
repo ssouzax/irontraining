@@ -28,6 +28,8 @@ const bottomTabs: { key: Tab; icon: typeof Home; label: string }[] = [
 const menuItems = [
   { key: 'home' as Tab, icon: LayoutDashboard, label: 'Painel / Feed' },
   { key: 'workout' as Tab, icon: Dumbbell, label: 'Treino Atual' },
+  { key: 'explore' as Tab, icon: Compass, label: 'Explorar' },
+  { key: 'heatmap' as Tab, icon: Flame, label: 'Mapa de Força' },
   { key: 'rankings' as Tab, icon: Crown, label: 'Leaderboard DOTS' },
   { key: 'gym' as Tab, icon: MapPin, label: 'Minha Academia' },
   { key: 'rivals' as Tab, icon: Swords, label: 'Rivais de Força' },
