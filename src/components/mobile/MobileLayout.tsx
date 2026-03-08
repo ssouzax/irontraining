@@ -55,7 +55,7 @@ const menuItems = [
   { key: 'powerscore' as Tab, icon: Zap, label: 'Power Score' },
   { key: 'predictor' as Tab, icon: Brain, label: 'Preditor IA' },
   { key: 'wrapped' as Tab, icon: Sparkles, label: 'Wrapped Cards' },
-  { key: 'exercise3d' as Tab, icon: Dumbbell, label: 'Modelo 3D' },
+  
   { key: 'body' as Tab, icon: Scale, label: 'Evolução Corporal' },
   { key: 'prsim' as Tab, icon: Brain, label: 'Simulador de PR' },
   { key: 'recovery' as Tab, icon: Activity, label: 'Recuperação' },
