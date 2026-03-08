@@ -1,5 +1,5 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
-import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin, Swords, Brain, Flame, Radio, Star, Map } from 'lucide-react';
+import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin, Swords, Brain, Flame, Radio, Star, Map, Scale, Activity, HeartHandshake } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MobileHomeFeed } from './MobileHomeFeed';
 import { MobileCreatePost } from './MobileCreatePost';
@@ -17,12 +17,16 @@ import { MobileLiveGym } from './MobileLiveGym';
 import { MobileWrappedCards } from './MobileWrappedCards';
 import { MobileGymMap } from './MobileGymMap';
 import { MobileExercise3D } from './MobileExercise3D';
+import { MobileBodyComposition } from './MobileBodyComposition';
+import { MobilePRSimulator } from './MobilePRSimulator';
+import { MobileRecoveryTimeline } from './MobileRecoveryTimeline';
+import { MobileCoTraining } from './MobileCoTraining';
 import { NotificationBell } from '../NotificationBell';
 import { StreakFireIcon } from '../StreakFireIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 
-type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym' | 'gymmap' | 'rivals' | 'powerscore' | 'predictor' | 'explore' | 'heatmap' | 'gympoints' | 'exerciserankings' | 'livegym' | 'wrapped' | 'exercise3d';
+type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym' | 'gymmap' | 'rivals' | 'powerscore' | 'predictor' | 'explore' | 'heatmap' | 'gympoints' | 'exerciserankings' | 'livegym' | 'wrapped' | 'exercise3d' | 'body' | 'prsim' | 'recovery' | 'cotraining';
 
 const bottomTabs: { key: Tab; icon: typeof Home; label: string }[] = [
   { key: 'home', icon: Home, label: 'Home' },
@@ -48,6 +52,10 @@ const menuItems = [
   { key: 'predictor' as Tab, icon: Brain, label: 'Preditor IA' },
   { key: 'wrapped' as Tab, icon: Sparkles, label: 'Wrapped Cards' },
   { key: 'exercise3d' as Tab, icon: Dumbbell, label: 'Modelo 3D' },
+  { key: 'body' as Tab, icon: Scale, label: 'Evolução Corporal' },
+  { key: 'prsim' as Tab, icon: Brain, label: 'Simulador de PR' },
+  { key: 'recovery' as Tab, icon: Activity, label: 'Recuperação' },
+  { key: 'cotraining' as Tab, icon: HeartHandshake, label: 'Co-Training' },
   { key: 'profile' as Tab, icon: User, label: 'Perfil' },
 ];
 
@@ -71,7 +79,7 @@ interface MobileLayoutProps {
   workoutContent: ReactNode;
 }
 
-const tabOrder: Tab[] = ['home', 'workout', 'post', 'rankings', 'profile', 'gym', 'gymmap', 'rivals', 'powerscore', 'predictor', 'explore', 'heatmap', 'gympoints', 'exerciserankings', 'livegym', 'wrapped', 'exercise3d'];
+const tabOrder: Tab[] = ['home', 'workout', 'post', 'rankings', 'profile', 'gym', 'gymmap', 'rivals', 'powerscore', 'predictor', 'explore', 'heatmap', 'gympoints', 'exerciserankings', 'livegym', 'wrapped', 'exercise3d', 'body', 'prsim', 'recovery', 'cotraining'];
 
 export function MobileLayout({ workoutContent }: MobileLayoutProps) {
   // Detect if we're on a routed page (not home)
@@ -238,6 +246,10 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
             {activeTab === 'livegym' && <MobileLiveGym />}
             {activeTab === 'wrapped' && <MobileWrappedCards />}
             {activeTab === 'exercise3d' && <MobileExercise3D />}
+            {activeTab === 'body' && <MobileBodyComposition />}
+            {activeTab === 'prsim' && <MobilePRSimulator />}
+            {activeTab === 'recovery' && <MobileRecoveryTimeline />}
+            {activeTab === 'cotraining' && <MobileCoTraining />}
           </motion.div>
         </AnimatePresence>
       </main>

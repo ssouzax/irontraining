@@ -1587,6 +1587,115 @@ export type Database = {
           },
         ]
       }
+      shared_workout_activity: {
+        Row: {
+          activity_type: string
+          created_at: string
+          estimated_1rm: number | null
+          exercise_name: string | null
+          id: string
+          message: string | null
+          reps: number | null
+          user_id: string
+          weight: number | null
+          workout_id: string
+        }
+        Insert: {
+          activity_type?: string
+          created_at?: string
+          estimated_1rm?: number | null
+          exercise_name?: string | null
+          id?: string
+          message?: string | null
+          reps?: number | null
+          user_id: string
+          weight?: number | null
+          workout_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          estimated_1rm?: number | null
+          exercise_name?: string | null
+          id?: string
+          message?: string | null
+          reps?: number | null
+          user_id?: string
+          weight?: number | null
+          workout_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_workout_activity_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "shared_workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shared_workout_members: {
+        Row: {
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+          workout_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+          workout_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+          workout_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_workout_members_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "shared_workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shared_workouts: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       temporary_badges: {
         Row: {
           badge_title: string
