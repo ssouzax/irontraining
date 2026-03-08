@@ -265,32 +265,6 @@ export function MobileExercise3D({ exerciseName }: MobileExercise3DProps) {
           </div>
         </div>
 
-          {/* Grade badge */}
-          <div className={cn("absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full backdrop-blur-sm border border-border", gradeBg)}>
-            <div className={cn("w-2 h-2 rounded-full", overallScore >= 90 ? 'bg-green-400' : overallScore >= 65 ? 'bg-yellow-400' : 'bg-red-400')} />
-            <span className={cn("text-[10px] font-bold", gradeColor)}>{overallGrade}</span>
-            <span className="text-[10px] text-muted-foreground">{Math.round(overallScore)}pts</span>
-          </div>
-
-          <div className="absolute top-3 right-3 flex gap-1.5">
-            <button
-              onClick={() => { setShowPosture(!showPosture); setShowTips(false); }}
-              className={cn("p-2 rounded-full backdrop-blur-sm border border-border", showPosture ? 'bg-primary/20' : 'bg-background/80')}
-            >
-              <Eye className="w-4 h-4 text-foreground" />
-            </button>
-            <button
-              onClick={() => { setShowTips(!showTips); setShowPosture(false); }}
-              className={cn("p-2 rounded-full backdrop-blur-sm border border-border", showTips ? 'bg-primary/20' : 'bg-background/80')}
-            >
-              <Info className="w-4 h-4 text-foreground" />
-            </button>
-          </div>
-
-          <div className="absolute bottom-14 left-3 p-1.5 rounded-full bg-background/80 backdrop-blur-sm border border-border">
-            <RotateCw className="w-3.5 h-3.5 text-muted-foreground animate-spin" style={{ animationDuration: '4s' }} />
-          </div>
-        </div>
 
         {/* Muscle tags */}
         <div className="p-3 space-y-2">
