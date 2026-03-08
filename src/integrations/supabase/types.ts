@@ -285,6 +285,33 @@ export type Database = {
         }
         Relationships: []
       }
+      gym_classes: {
+        Row: {
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          key_metrics: string[]
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          icon?: string
+          id: string
+          key_metrics?: string[]
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          key_metrics?: string[]
+          name?: string
+        }
+        Relationships: []
+      }
       leaderboard_scores: {
         Row: {
           bench_pr: number | null
@@ -611,11 +638,13 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           body_weight: number | null
+          coach_personality: string | null
           cover_url: string | null
           created_at: string
           display_name: string | null
           email: string | null
           goals: string | null
+          gym_class: string | null
           id: string
           instagram_url: string | null
           location: string | null
@@ -636,11 +665,13 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           body_weight?: number | null
+          coach_personality?: string | null
           cover_url?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
           goals?: string | null
+          gym_class?: string | null
           id?: string
           instagram_url?: string | null
           location?: string | null
@@ -661,11 +692,13 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           body_weight?: number | null
+          coach_personality?: string | null
           cover_url?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
           goals?: string | null
+          gym_class?: string | null
           id?: string
           instagram_url?: string | null
           location?: string | null
