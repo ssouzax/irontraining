@@ -135,6 +135,23 @@ export default function SubscribePage() {
           Desbloqueie o potencial máximo do Iron Training. Todos os planos incluem 7 dias de teste grátis.
         </p>
 
+        {/* Email warning */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mt-6 p-4 rounded-xl border border-amber-500/50 bg-amber-500/10 max-w-2xl mx-auto"
+        >
+          <p className="text-sm font-semibold text-amber-600 dark:text-amber-400 flex items-center justify-center gap-2">
+            <Shield className="w-4 h-4" />
+            IMPORTANTE: Use o mesmo email cadastrado no app ao fazer a compra
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Seu plano será ativado automaticamente quando os emails coincidirem
+          </p>
+        </motion.div>
+      </div>
+
         {/* Interval toggle */}
         <div className="flex items-center justify-center gap-2 mt-8 p-1 bg-secondary rounded-xl inline-flex">
           <button
