@@ -353,6 +353,11 @@ export function MobileGymMap() {
       }).slice(0, 25);
     } else if (filter === 'friends') {
       filtered = filtered.filter(g => friendGymIds.has(g.id));
+    } else if (filter === 'chain' && selectedChain) {
+      filtered = filtered.filter(g => {
+        const chain = (g as any).chain || detectChainLocal(g.name);
+        return chain === selectedChain;
+      });
     }
 
     // Heatmap mode
