@@ -10,6 +10,8 @@ import ShareableCard from '@/components/ShareableCard';
 import { usePlayerLevel } from '@/hooks/usePlayerLevel';
 import LevelUpModal from '@/components/LevelUpModal';
 
+const MAX_DAILY_XP = 1000;
+
 interface AchievementLevel {
   id: string;
   achievement_key: string;
