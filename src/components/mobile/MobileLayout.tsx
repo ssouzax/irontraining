@@ -80,6 +80,9 @@ const extraMenuItems = [
   { icon: BookOpen, label: 'Exercícios', route: '/exercises' },
   { icon: Calculator, label: 'Calculadora de Anilhas', route: '/plates' },
   { icon: Bot, label: 'Coach IA', route: '/coach' },
+  { icon: Crown, label: 'Planos Premium', route: '/subscribe' },
+  { icon: ShoppingBag, label: 'Loja', route: '/shop' },
+  { icon: Star, label: 'Conteúdo Premium', route: '/premium-content' },
   { icon: Download, label: 'Instalar App', route: '/install' },
 ];
 
