@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
-import { User, Camera, MapPin, Dumbbell, Target, Save, Instagram, Globe, Youtube, Edit3, Trophy, Shield, Loader2, X } from 'lucide-react';
+import { User, Camera, MapPin, Dumbbell, Target, Save, Instagram, Globe, Youtube, Edit3, Trophy, Shield, Loader2, X, Crown } from 'lucide-react';
+import SubscriptionManager from '@/components/SubscriptionManager';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTraining } from '@/contexts/TrainingContext';
