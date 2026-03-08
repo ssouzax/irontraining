@@ -17,6 +17,7 @@ const navItems = [
   { to: '/leaderboard', icon: Crown, label: 'Ranking DOTS' },
   { to: '/achievements', icon: Award, label: 'Conquistas' },
   { to: '/feed', icon: Users, label: 'Feed Social' },
+  { to: '/discover', icon: Compass, label: 'Explorar' },
   { to: '/exercises', icon: BookOpen, label: 'Exercícios' },
   { to: '/plates', icon: Calculator, label: 'Anilhas' },
   { to: '/coach', icon: Bot, label: 'Coach IA' },
