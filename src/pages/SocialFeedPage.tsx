@@ -353,6 +353,13 @@ export default function SocialFeedPage() {
                 {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 Publicar
               </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Feed */}
+      {loading ? (
         <div className="text-center py-12 text-muted-foreground">Carregando feed...</div>
       ) : posts.length === 0 ? (
         <div className="text-center py-12">
