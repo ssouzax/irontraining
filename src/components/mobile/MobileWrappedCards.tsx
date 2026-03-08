@@ -70,6 +70,7 @@ export function MobileWrappedCards() {
     if (!cardRef.current) return;
     setExporting(true);
     try {
+      const { default: html2canvas } = await import('html2canvas');
       const canvas = await html2canvas(cardRef.current, { backgroundColor: null, scale: 2 });
       canvas.toBlob(async (blob) => {
         if (blob && navigator.share) {
