@@ -21,6 +21,8 @@ import RankingsPage from "./pages/RankingsPage";
 import AchievementsPage from "./pages/AchievementsPage";
 import ExerciseLibrary from "./pages/ExerciseLibrary";
 import SocialFeedPage from "./pages/SocialFeedPage";
+import DiscoverPage from "./pages/DiscoverPage";
+import AthleteProfilePage from "./pages/AthleteProfilePage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
