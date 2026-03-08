@@ -129,6 +129,8 @@ export function MobileGymMap() {
   const [appGyms, setAppGyms] = useState<AppGym[]>([]);
   const [selectedGym, setSelectedGym] = useState<AppGym | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
   const [showAddManual, setShowAddManual] = useState(false);
   const [newGymName, setNewGymName] = useState('');
   const [newGymAddress, setNewGymAddress] = useState('');
@@ -139,6 +141,8 @@ export function MobileGymMap() {
   const [myGymId, setMyGymId] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterMode>('all');
   const [friendGymIds, setFriendGymIds] = useState<Set<string>>(new Set());
+  const [osmLoading, setOsmLoading] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     getUserLocation();
