@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Sparkles, Loader2, ChevronDown, ChevronRight, Dumbbell, Target, Zap } from 'lucide-react';
+import { Sparkles, Loader2, ChevronDown, ChevronRight, Dumbbell, Target, Zap, Brain } from 'lucide-react';
 import { useTraining } from '@/contexts/TrainingContext';
 import { calculate1RM } from '@/data/defaultProfile';
 import { supabase } from '@/integrations/supabase/client';
