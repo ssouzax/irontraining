@@ -1,20 +1,47 @@
 import { ReactNode, useState } from 'react';
-import { Home, Dumbbell, PlusCircle, Trophy, User } from 'lucide-react';
+import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MobileHomeFeed } from './MobileHomeFeed';
 import { MobileCreatePost } from './MobileCreatePost';
 import { MobileRankings } from './MobileRankings';
 import { MobileProfile } from './MobileProfile';
+import { MobileGymPage } from './MobileGymPage';
 import { NotificationBell } from '../NotificationBell';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/contexts/AuthContext';
 
-type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile';
+type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym';
 
-const tabs: { key: Tab; icon: typeof Home; label: string }[] = [
+const bottomTabs: { key: Tab; icon: typeof Home; label: string }[] = [
   { key: 'home', icon: Home, label: 'Home' },
   { key: 'workout', icon: Dumbbell, label: 'Treino' },
   { key: 'post', icon: PlusCircle, label: 'Post' },
   { key: 'rankings', icon: Trophy, label: 'Ranking' },
   { key: 'profile', icon: User, label: 'Perfil' },
+];
+
+const menuItems = [
+  { key: 'home' as Tab, icon: LayoutDashboard, label: 'Painel / Feed' },
+  { key: 'workout' as Tab, icon: Dumbbell, label: 'Treino Atual' },
+  { key: 'rankings' as Tab, icon: Crown, label: 'Leaderboard DOTS' },
+  { key: 'gym' as Tab, icon: MapPin, label: 'Minha Academia' },
+  { key: 'profile' as Tab, icon: User, label: 'Perfil' },
+];
+
+const extraMenuItems = [
+  { icon: Calendar, label: 'Programa' , route: '/program' },
+  { icon: FolderOpen, label: 'Meus Programas', route: '/programs' },
+  { icon: Sparkles, label: 'Gerar Programa', route: '/generate' },
+  { icon: Zap, label: 'Modo App Treino', route: '/train' },
+  { icon: BarChart3, label: 'Análises', route: '/analytics' },
+  { icon: Trophy, label: 'Ranking por Lift', route: '/rankings' },
+  { icon: Award, label: 'Conquistas', route: '/achievements' },
+  { icon: Users, label: 'Feed Social', route: '/feed' },
+  { icon: Compass, label: 'Explorar', route: '/discover' },
+  { icon: BookOpen, label: 'Exercícios', route: '/exercises' },
+  { icon: Calculator, label: 'Calculadora de Anilhas', route: '/plates' },
+  { icon: Bot, label: 'Coach IA', route: '/coach' },
+  { icon: Download, label: 'Instalar App', route: '/install' },
 ];
 
 interface MobileLayoutProps {
@@ -23,19 +50,118 @@ interface MobileLayoutProps {
 
 export function MobileLayout({ workoutContent }: MobileLayoutProps) {
   const [activeTab, setActiveTab] = useState<Tab>('home');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { signOut } = useAuth();
+
+  const navigateToTab = (tab: Tab) => {
+    setActiveTab(tab);
+    setMenuOpen(false);
+  };
+
+  const navigateToRoute = (route: string) => {
+    setMenuOpen(false);
+    // Use window.location for routes handled by React Router in desktop
+    window.location.href = route;
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Top bar */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border px-4 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-            <Dumbbell className="w-3.5 h-3.5 text-primary-foreground" />
+        <div className="flex items-center gap-3">
+          <button onClick={() => setMenuOpen(true)} className="p-1.5 -ml-1 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+              <Dumbbell className="w-3.5 h-3.5 text-primary-foreground" />
+            </div>
+            <span className="font-bold text-foreground text-base tracking-tight">PowerBuild</span>
           </div>
-          <span className="font-bold text-foreground text-base tracking-tight">PowerBuild</span>
         </div>
         <NotificationBell />
       </header>
+
+      {/* Menu Drawer */}
+      <AnimatePresence>
+        {menuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMenuOpen(false)}
+              className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ x: -300 }}
+              animate={{ x: 0 }}
+              exit={{ x: -300 }}
+              transition={{ duration: 0.2, ease: 'easeInOut' }}
+              className="fixed left-0 top-0 bottom-0 w-[280px] z-50 bg-card border-r border-border flex flex-col overflow-y-auto"
+            >
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                    <Dumbbell className="w-4 h-4 text-primary-foreground" />
+                  </div>
+                  <span className="font-bold text-foreground">PowerBuild</span>
+                </div>
+                <button onClick={() => setMenuOpen(false)} className="p-1.5 text-muted-foreground hover:text-foreground">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Main tabs */}
+              <div className="p-2 space-y-0.5">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground px-3 py-2 font-medium">Principal</p>
+                {menuItems.map(item => (
+                  <button
+                    key={item.key}
+                    onClick={() => navigateToTab(item.key)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                      activeTab === item.key
+                        ? "bg-primary/10 text-primary"
+                        : "text-foreground hover:bg-secondary"
+                    )}
+                  >
+                    <item.icon className="w-5 h-5 shrink-0" />
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="h-px bg-border mx-4" />
+
+              {/* All features */}
+              <div className="p-2 space-y-0.5">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground px-3 py-2 font-medium">Todas as Funcionalidades</p>
+                {extraMenuItems.map(item => (
+                  <button
+                    key={item.route}
+                    onClick={() => navigateToRoute(item.route)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+                  >
+                    <item.icon className="w-5 h-5 shrink-0 text-muted-foreground" />
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-auto p-4 border-t border-border">
+                <button
+                  onClick={() => { setMenuOpen(false); signOut(); }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+                >
+                  <X className="w-5 h-5 shrink-0" />
+                  Sair
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Content */}
       <main className="flex-1 pt-14 pb-20 overflow-y-auto">
@@ -46,12 +172,13 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
         {activeTab === 'post' && <MobileCreatePost onPostCreated={() => setActiveTab('home')} />}
         {activeTab === 'rankings' && <MobileRankings />}
         {activeTab === 'profile' && <MobileProfile />}
+        {activeTab === 'gym' && <MobileGymPage />}
       </main>
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-border safe-area-bottom">
         <div className="flex items-center justify-around h-16">
-          {tabs.map(tab => {
+          {bottomTabs.map(tab => {
             const isActive = activeTab === tab.key;
             const isPost = tab.key === 'post';
             return (
