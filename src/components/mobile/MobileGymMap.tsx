@@ -138,6 +138,7 @@ export function MobileGymMap() {
   const [joining, setJoining] = useState(false);
   const [myGymId, setMyGymId] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterMode>('all');
+  const [friendGymIds, setFriendGymIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     getUserLocation();
