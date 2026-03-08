@@ -299,6 +299,11 @@ export function MobileHomeFeed() {
           </AnimatePresence>
         </div>
       ))}
-    </div>
-  );
-}
+      {posts.length === 0 ? (
+        <div className="text-center py-20 px-4">
+          <Dumbbell className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
+          <p className="text-muted-foreground text-sm">Nenhum post ainda. Seja o primeiro!</p>
+        </div>
+      ) : posts.map(post => (
+        <div key={post.id} className="bg-card">
+          {/* rest handled by original code below */}
