@@ -1,5 +1,5 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
-import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin, Swords, Brain, Flame, Radio, Star, Map } from 'lucide-react';
+import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin, Swords, Brain, Flame, Radio, Star, Map, Scale, Activity, HeartHandshake } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MobileHomeFeed } from './MobileHomeFeed';
 import { MobileCreatePost } from './MobileCreatePost';
