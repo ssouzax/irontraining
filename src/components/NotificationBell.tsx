@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Check, CheckCheck, Dumbbell, Trophy, Flame, ArrowUpCircle } from 'lucide-react';
+import { Bell, Check, CheckCheck, Dumbbell, Trophy, Flame, ArrowUpCircle, MapPin } from 'lucide-react';
 import { useNotifications, AppNotification } from '@/hooks/useNotifications';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
