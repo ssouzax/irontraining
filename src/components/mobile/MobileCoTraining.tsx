@@ -140,7 +140,7 @@ export function MobileCoTraining() {
   };
 
   const loadMembers = async (workoutId: string) => {
-    const { data: membersData } = await supabase
+    const { data: membersData } = await (supabase as any)
       .from('shared_workout_members')
       .select('user_id, role')
       .eq('workout_id', workoutId);
