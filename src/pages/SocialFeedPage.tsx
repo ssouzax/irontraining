@@ -319,21 +319,40 @@ export default function SocialFeedPage() {
                 </div>
               )}
 
+              {/* Media Previews */}
+              {mediaPreviews.length > 0 && (
+                <div className="flex gap-2 overflow-x-auto">
+                  {mediaPreviews.map((src, i) => (
+                    <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0">
+                      {mediaFiles[i]?.type.startsWith('video') ? (
+                        <video src={src} className="w-full h-full object-cover" />
+                      ) : (
+                        <img src={src} alt="" className="w-full h-full object-cover" />
+                      )}
+                      <button onClick={() => removeMedia(i)}
+                        className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-background/80 flex items-center justify-center">
+                        <X className="w-3 h-3 text-foreground" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Media upload button */}
+              <label className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
+                <Image className="w-4 h-4" />
+                <span>Adicionar foto/vídeo</span>
+                <input type="file" accept="image/*,video/*" multiple onChange={handleMediaSelect} className="hidden" />
+              </label>
+
               <button
                 onClick={createPost}
-                disabled={posting || (!caption.trim() && !exerciseName)}
+                disabled={posting || (!caption.trim() && !exerciseName && mediaFiles.length === 0)}
                 className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-medium text-sm hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
                 {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 Publicar
               </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Feed */}
-      {loading ? (
         <div className="text-center py-12 text-muted-foreground">Carregando feed...</div>
       ) : posts.length === 0 ? (
         <div className="text-center py-12">
