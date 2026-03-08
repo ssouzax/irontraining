@@ -42,6 +42,8 @@ export default function SocialFeedPage() {
   const [exerciseName, setExerciseName] = useState('');
   const [weight, setWeight] = useState('');
   const [reps, setReps] = useState('');
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [mediaPreviews, setMediaPreviews] = useState<string[]>([]);
   const [posting, setPosting] = useState(false);
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [expandedComments, setExpandedComments] = useState<string | null>(null);
@@ -155,10 +157,41 @@ export default function SocialFeedPage() {
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p));
   };
 
+  const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length + mediaFiles.length > 4) {
+      toast.error('Máximo 4 arquivos');
+      return;
+    }
+    setMediaFiles(prev => [...prev, ...files]);
+    files.forEach(f => {
+      const reader = new FileReader();
+      reader.onload = () => setMediaPreviews(prev => [...prev, reader.result as string]);
+      reader.readAsDataURL(f);
+    });
+  };
+
+  const removeMedia = (idx: number) => {
+    setMediaFiles(prev => prev.filter((_, i) => i !== idx));
+    setMediaPreviews(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const createPost = async () => {
     if (!user) return;
     setPosting(true);
     try {
+      // Upload media files
+      const mediaUrls: string[] = [];
+      for (const file of mediaFiles) {
+        const ext = file.name.split('.').pop();
+        const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error } = await supabase.storage.from('social-media').upload(path, file);
+        if (!error) {
+          const { data: urlData } = supabase.storage.from('social-media').getPublicUrl(path);
+          mediaUrls.push(urlData.publicUrl);
+        }
+      }
+
       const e1rm = weight && reps ? Math.round(parseFloat(weight) * (1 + parseInt(reps) / 30) * 10) / 10 : null;
       await supabase.from('posts').insert({
         user_id: user.id,
@@ -169,6 +202,7 @@ export default function SocialFeedPage() {
         reps: reps ? parseInt(reps) : null,
         estimated_1rm: e1rm,
         is_pr: postType === 'pr',
+        media_urls: mediaUrls.length > 0 ? mediaUrls : null,
       });
       toast.success('Post publicado!');
       setShowCreate(false);
@@ -176,6 +210,8 @@ export default function SocialFeedPage() {
       setExerciseName('');
       setWeight('');
       setReps('');
+      setMediaFiles([]);
+      setMediaPreviews([]);
       loadFeed();
     } catch {
       toast.error('Erro ao publicar');
@@ -283,9 +319,35 @@ export default function SocialFeedPage() {
                 </div>
               )}
 
+              {/* Media Previews */}
+              {mediaPreviews.length > 0 && (
+                <div className="flex gap-2 overflow-x-auto">
+                  {mediaPreviews.map((src, i) => (
+                    <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0">
+                      {mediaFiles[i]?.type.startsWith('video') ? (
+                        <video src={src} className="w-full h-full object-cover" />
+                      ) : (
+                        <img src={src} alt="" className="w-full h-full object-cover" />
+                      )}
+                      <button onClick={() => removeMedia(i)}
+                        className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-background/80 flex items-center justify-center">
+                        <X className="w-3 h-3 text-foreground" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Media upload button */}
+              <label className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
+                <Image className="w-4 h-4" />
+                <span>Adicionar foto/vídeo</span>
+                <input type="file" accept="image/*,video/*" multiple onChange={handleMediaSelect} className="hidden" />
+              </label>
+
               <button
                 onClick={createPost}
-                disabled={posting || (!caption.trim() && !exerciseName)}
+                disabled={posting || (!caption.trim() && !exerciseName && mediaFiles.length === 0)}
                 className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-medium text-sm hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
                 {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
@@ -370,12 +432,25 @@ export default function SocialFeedPage() {
                 </div>
               )}
 
+              {/* Media */}
+              {(post as any).media_urls && (post as any).media_urls.length > 0 && (
+                <div className={cn("mx-4 mb-3 grid gap-1 rounded-xl overflow-hidden",
+                  (post as any).media_urls.length === 1 ? "grid-cols-1" : "grid-cols-2"
+                )}>
+                  {((post as any).media_urls as string[]).map((url: string, idx: number) => (
+                    url.match(/\.(mp4|mov|webm)$/i) ? (
+                      <video key={idx} src={url} controls className="w-full max-h-80 object-cover bg-secondary" />
+                    ) : (
+                      <img key={idx} src={url} alt="" className="w-full max-h-80 object-cover bg-secondary" />
+                    )
+                  ))}
+                </div>
+              )}
+
               {/* Caption */}
               {post.caption && (
                 <p className="px-4 pb-3 text-sm text-foreground leading-relaxed">{post.caption}</p>
               )}
-
-              {/* Actions */}
               <div className="flex items-center gap-4 px-4 py-3 border-t border-border">
                 <button
                   onClick={() => toggleLike(post.id)}
