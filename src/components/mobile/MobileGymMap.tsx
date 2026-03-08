@@ -32,7 +32,7 @@ interface AppGym {
   intensity_score?: number;
 }
 
-type FilterMode = 'all' | 'nearby' | 'strongest' | 'heatmap';
+type FilterMode = 'all' | 'nearby' | 'strongest' | 'friends' | 'heatmap';
 
 const tierConfig: Record<string, { color: string; emoji: string; glow: string }> = {
   bronze: { color: '#cd7f32', emoji: '🥉', glow: 'rgba(205,127,50,0.4)' },
