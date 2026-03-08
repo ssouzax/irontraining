@@ -137,7 +137,7 @@ export function MobileGymMap() {
     // User location marker
     const userMarkerEl = document.createElement('div');
     userMarkerEl.innerHTML = `<div style="width:16px;height:16px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 0 10px rgba(59,130,246,0.5)"></div>`;
-    new google.maps.marker.AdvancedMarkerElement({ map, position: userLocation, content: userMarkerEl });
+    new gMaps.marker.AdvancedMarkerElement({ map, position: userLocation, content: userMarkerEl });
 
     // Load nearby gyms
     await loadNearbyGyms(userLocation);
