@@ -638,6 +638,44 @@ export type Database = {
           },
         ]
       }
+      gym_weekly_challenges: {
+        Row: {
+          bonus_awarded: boolean
+          created_at: string
+          gym_id: string
+          id: string
+          total_checkins: number
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          bonus_awarded?: boolean
+          created_at?: string
+          gym_id: string
+          id?: string
+          total_checkins?: number
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          bonus_awarded?: boolean
+          created_at?: string
+          gym_id?: string
+          id?: string
+          total_checkins?: number
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_weekly_challenges_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gyms: {
         Row: {
           address: string | null
