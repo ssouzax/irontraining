@@ -16,6 +16,7 @@ import { MobileExerciseLeaderboard } from './MobileExerciseLeaderboard';
 import { MobileLiveGym } from './MobileLiveGym';
 import { MobileWrappedCards } from './MobileWrappedCards';
 import { MobileGymMap } from './MobileGymMap';
+import { MobileExercise3D } from './MobileExercise3D';
 import { NotificationBell } from '../NotificationBell';
 import { StreakFireIcon } from '../StreakFireIcon';
 import { motion, AnimatePresence } from 'framer-motion';
