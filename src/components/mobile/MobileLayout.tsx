@@ -194,25 +194,34 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
       </AnimatePresence>
 
       {/* Content */}
-      <main className="flex-1 pt-14 pb-20 overflow-y-auto">
-        {activeTab === 'home' && <MobileHomeFeed />}
-        {activeTab === 'workout' && (
-          <div className="p-4">{workoutContent}</div>
-        )}
-        {activeTab === 'post' && <MobileCreatePost onPostCreated={() => setActiveTab('home')} />}
-        {activeTab === 'rankings' && <MobileRankings />}
-        {activeTab === 'profile' && <MobileProfile />}
-        {activeTab === 'gym' && <MobileGymPage />}
-        {activeTab === 'gymmap' && <MobileGymMap />}
-        {activeTab === 'rivals' && <MobileRivals />}
-        {activeTab === 'powerscore' && <MobilePowerScore />}
-        {activeTab === 'predictor' && <MobilePredictor />}
-        {activeTab === 'explore' && <MobileExplore />}
-        {activeTab === 'heatmap' && <MobileGymHeatmap />}
-        {activeTab === 'gympoints' && <MobileGymPoints />}
-        {activeTab === 'exerciserankings' && <MobileExerciseLeaderboard />}
-        {activeTab === 'livegym' && <MobileLiveGym />}
-        {activeTab === 'wrapped' && <MobileWrappedCards />}
+      <main className="flex-1 pt-14 pb-20 overflow-y-auto overflow-x-hidden">
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={activeTab}
+            custom={direction}
+            initial={{ opacity: 0, x: direction > 0 ? 60 : -60 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -60 : 60 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+          >
+            {activeTab === 'home' && <MobileHomeFeed />}
+            {activeTab === 'workout' && <div className="p-4">{workoutContent}</div>}
+            {activeTab === 'post' && <MobileCreatePost onPostCreated={() => changeTab('home')} />}
+            {activeTab === 'rankings' && <MobileRankings />}
+            {activeTab === 'profile' && <MobileProfile />}
+            {activeTab === 'gym' && <MobileGymPage />}
+            {activeTab === 'gymmap' && <MobileGymMap />}
+            {activeTab === 'rivals' && <MobileRivals />}
+            {activeTab === 'powerscore' && <MobilePowerScore />}
+            {activeTab === 'predictor' && <MobilePredictor />}
+            {activeTab === 'explore' && <MobileExplore />}
+            {activeTab === 'heatmap' && <MobileGymHeatmap />}
+            {activeTab === 'gympoints' && <MobileGymPoints />}
+            {activeTab === 'exerciserankings' && <MobileExerciseLeaderboard />}
+            {activeTab === 'livegym' && <MobileLiveGym />}
+            {activeTab === 'wrapped' && <MobileWrappedCards />}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Bottom Navigation */}
