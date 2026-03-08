@@ -18,6 +18,7 @@ import CoachPage from "./pages/CoachPage";
 import ProfilePage from "./pages/ProfilePage";
 import PlateCalculator from "./pages/PlateCalculator";
 import RankingsPage from "./pages/RankingsPage";
+import GymPage from "./pages/GymPage";
 import AchievementsPage from "./pages/AchievementsPage";
 import ExerciseLibrary from "./pages/ExerciseLibrary";
 import SocialFeedPage from "./pages/SocialFeedPage";
