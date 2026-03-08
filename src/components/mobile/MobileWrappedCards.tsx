@@ -7,7 +7,7 @@ import { useTraining } from '@/contexts/TrainingContext';
 import { calculate1RM } from '@/data/defaultProfile';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import html2canvas from 'html2canvas';
+// html2canvas is dynamically imported to avoid mixed static/dynamic import issues
 
 type CardType = 'stats' | 'prs' | 'streak' | 'level';
 
@@ -53,6 +53,7 @@ export function MobileWrappedCards() {
     if (!cardRef.current) return;
     setExporting(true);
     try {
+      const { default: html2canvas } = await import('html2canvas');
       const canvas = await html2canvas(cardRef.current, { backgroundColor: null, scale: 2 });
       const link = document.createElement('a');
       link.download = `powerbuild-${activeCard}.png`;
@@ -69,6 +70,7 @@ export function MobileWrappedCards() {
     if (!cardRef.current) return;
     setExporting(true);
     try {
+      const { default: html2canvas } = await import('html2canvas');
       const canvas = await html2canvas(cardRef.current, { backgroundColor: null, scale: 2 });
       canvas.toBlob(async (blob) => {
         if (blob && navigator.share) {
