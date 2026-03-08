@@ -161,7 +161,7 @@ export function MobileCoTraining() {
   };
 
   const loadActivities = async (workoutId: string) => {
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from('shared_workout_activity')
       .select('*')
       .eq('workout_id', workoutId)
