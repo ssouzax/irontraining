@@ -390,6 +390,84 @@ export function MobileGymMap() {
     });
   };
 
+  const handleCheckin = async (gym: AppGym) => {
+    if (!user) { toast.error('Faça login para check-in'); return; }
+    setCheckinLoading(true);
+    try {
+      // Check if already checked in today
+      const today = new Date().toISOString().split('T')[0];
+      const { data: existing } = await supabase
+        .from('gym_checkins')
+        .select('id')
+        .eq('user_id', user.id)
+        .gte('checked_in_at', `${today}T00:00:00`)
+        .lte('checked_in_at', `${today}T23:59:59`);
+      
+      if (existing && existing.length > 0) {
+        toast.info('Você já fez check-in hoje! 💪');
+        setCheckinLoading(false);
+        return;
+      }
+
+      // Calculate streak
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      const { data: yesterdayCheckin } = await supabase
+        .from('gym_checkins')
+        .select('streak_day')
+        .eq('user_id', user.id)
+        .gte('checked_in_at', `${yesterday}T00:00:00`)
+        .lte('checked_in_at', `${yesterday}T23:59:59`)
+        .order('checked_in_at', { ascending: false })
+        .limit(1);
+
+      const streakDay = (yesterdayCheckin && yesterdayCheckin.length > 0) 
+        ? (yesterdayCheckin[0].streak_day + 1) 
+        : 1;
+
+      // Bonus XP for streaks
+      const baseXp = 15;
+      const streakBonus = Math.min(streakDay * 2, 30);
+      const totalXp = baseXp + streakBonus;
+
+      await supabase.from('gym_checkins').insert({
+        user_id: user.id,
+        gym_id: gym.id,
+        xp_awarded: totalXp,
+        streak_day: streakDay,
+      });
+
+      // Award XP to player level
+      const { data: playerLevel } = await supabase
+        .from('player_levels')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (playerLevel) {
+        await supabase.from('player_levels').update({
+          total_xp: playerLevel.total_xp + totalXp,
+          lifetime_xp: playerLevel.lifetime_xp + totalXp,
+          daily_xp: playerLevel.daily_xp + totalXp,
+        }).eq('user_id', user.id);
+      }
+
+      // Award gym points
+      await supabase.from('gym_points_log').insert({
+        user_id: user.id,
+        gym_id: gym.id,
+        points: 5,
+        reason: 'checkin',
+      });
+
+      setLastCheckin(today);
+      toast.success(`Check-in! +${totalXp} XP 🔥 (Streak: ${streakDay} dias)`);
+    } catch (e) {
+      console.error(e);
+      toast.error('Erro ao fazer check-in');
+    }
+    setCheckinLoading(false);
+  };
+
   const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
