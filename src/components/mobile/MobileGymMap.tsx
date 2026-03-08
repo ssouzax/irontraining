@@ -681,6 +681,20 @@ export function MobileGymMap() {
             </button>
           ))}
         </div>
+        {/* Chain sub-filter */}
+        {filter === 'chain' && (
+          <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
+            {GYM_CHAINS.map(c => (
+              <button key={c.key} onClick={() => { setSelectedChain(selectedChain === c.key ? null : c.key); }}
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium whitespace-nowrap transition-all",
+                  selectedChain === c.key ? "bg-accent text-accent-foreground" : "bg-secondary/50 text-muted-foreground border border-border"
+                )}>
+                {c.emoji} {c.label}
+              </button>
+            ))}
+          </div>
+        )}
         {osmLoading && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Loader2 className="w-3 h-3 animate-spin" />
