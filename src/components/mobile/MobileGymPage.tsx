@@ -53,7 +53,7 @@ interface CheckinInfo {
 }
 
 type ExerciseTab = 'squat' | 'bench' | 'deadlift' | 'total';
-type ViewTab = 'ranking' | 'prs' | 'checkins';
+type ViewTab = 'ranking' | 'prs' | 'checkins' | 'challenge';
 
 const EXERCISE_OPTIONS = [
   { key: 'squat', label: 'Agachamento', emoji: '🦵' },
