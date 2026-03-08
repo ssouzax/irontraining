@@ -371,6 +371,41 @@ export type Database = {
         }
         Relationships: []
       }
+      gym_checkins: {
+        Row: {
+          checked_in_at: string
+          gym_id: string
+          id: string
+          streak_day: number
+          user_id: string
+          xp_awarded: number
+        }
+        Insert: {
+          checked_in_at?: string
+          gym_id: string
+          id?: string
+          streak_day?: number
+          user_id: string
+          xp_awarded?: number
+        }
+        Update: {
+          checked_in_at?: string
+          gym_id?: string
+          id?: string
+          streak_day?: number
+          user_id?: string
+          xp_awarded?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_checkins_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gym_classes: {
         Row: {
           created_at: string
@@ -605,6 +640,8 @@ export type Database = {
       }
       gyms: {
         Row: {
+          address: string | null
+          chain: string | null
           city: string | null
           country: string | null
           created_at: string
@@ -618,6 +655,8 @@ export type Database = {
           verified: boolean
         }
         Insert: {
+          address?: string | null
+          chain?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
@@ -631,6 +670,8 @@ export type Database = {
           verified?: boolean
         }
         Update: {
+          address?: string | null
+          chain?: string | null
           city?: string | null
           country?: string | null
           created_at?: string

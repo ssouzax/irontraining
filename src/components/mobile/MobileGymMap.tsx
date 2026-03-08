@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MapPin, Search, Plus, Loader2, Navigation, X, Trophy, Users, Star, CheckCircle, Zap, Filter, Flame, Layers, Heart } from 'lucide-react';
+import { MapPin, Search, Plus, Loader2, Navigation, X, Trophy, Users, Star, CheckCircle, Zap, Filter, Flame, Layers, Heart, Clock, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,7 +32,28 @@ interface AppGym {
   intensity_score?: number;
 }
 
-type FilterMode = 'all' | 'nearby' | 'strongest' | 'friends' | 'heatmap';
+type FilterMode = 'all' | 'nearby' | 'strongest' | 'friends' | 'heatmap' | 'chain';
+
+const GYM_CHAINS = [
+  { key: 'smart_fit', label: 'Smart Fit', emoji: '💙' },
+  { key: 'blue_fit', label: 'Blue Fit', emoji: '🔵' },
+  { key: 'skyfit', label: 'Skyfit', emoji: '🌤️' },
+  { key: 'crossfit', label: 'CrossFit', emoji: '🏋️' },
+  { key: 'panobianco', label: 'Panobianco', emoji: '🟡' },
+  { key: 'bodytech', label: 'Bodytech', emoji: '💪' },
+  { key: 'selfit', label: 'Selfit', emoji: '🟢' },
+  { key: 'bio_ritmo', label: 'Bio Ritmo', emoji: '🫀' },
+  { key: 'competition', label: 'Competition', emoji: '🏆' },
+];
+
+function detectChainLocal(name: string): string | null {
+  const n = name.toLowerCase();
+  for (const c of GYM_CHAINS) {
+    const keywords = c.label.toLowerCase().split(' ');
+    if (keywords.some(k => n.includes(k))) return c.key;
+  }
+  return null;
+}
 
 const tierConfig: Record<string, { color: string; emoji: string; glow: string }> = {
   bronze: { color: '#cd7f32', emoji: '🥉', glow: 'rgba(205,127,50,0.4)' },
@@ -142,6 +163,9 @@ export function MobileGymMap() {
   const [filter, setFilter] = useState<FilterMode>('all');
   const [friendGymIds, setFriendGymIds] = useState<Set<string>>(new Set());
   const [osmLoading, setOsmLoading] = useState(false);
+  const [selectedChain, setSelectedChain] = useState<string | null>(null);
+  const [checkinLoading, setCheckinLoading] = useState(false);
+  const [lastCheckin, setLastCheckin] = useState<string | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -160,7 +184,7 @@ export function MobileGymMap() {
     if (mapInstanceRef.current && appGyms.length >= 0) {
       renderMarkers();
     }
-  }, [appGyms, filter, myGymId, friendGymIds]);
+  }, [appGyms, filter, myGymId, friendGymIds, selectedChain]);
 
   const getUserLocation = () => {
     if (!navigator.geolocation) {
@@ -329,6 +353,11 @@ export function MobileGymMap() {
       }).slice(0, 25);
     } else if (filter === 'friends') {
       filtered = filtered.filter(g => friendGymIds.has(g.id));
+    } else if (filter === 'chain' && selectedChain) {
+      filtered = filtered.filter(g => {
+        const chain = (g as any).chain || detectChainLocal(g.name);
+        return chain === selectedChain;
+      });
     }
 
     // Heatmap mode
@@ -364,6 +393,84 @@ export function MobileGymMap() {
       marker.on('click', () => setSelectedGym(gym));
       clusterGroupRef.current!.addLayer(marker);
     });
+  };
+
+  const handleCheckin = async (gym: AppGym) => {
+    if (!user) { toast.error('Faça login para check-in'); return; }
+    setCheckinLoading(true);
+    try {
+      // Check if already checked in today
+      const today = new Date().toISOString().split('T')[0];
+      const { data: existing } = await supabase
+        .from('gym_checkins')
+        .select('id')
+        .eq('user_id', user.id)
+        .gte('checked_in_at', `${today}T00:00:00`)
+        .lte('checked_in_at', `${today}T23:59:59`);
+      
+      if (existing && existing.length > 0) {
+        toast.info('Você já fez check-in hoje! 💪');
+        setCheckinLoading(false);
+        return;
+      }
+
+      // Calculate streak
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      const { data: yesterdayCheckin } = await supabase
+        .from('gym_checkins')
+        .select('streak_day')
+        .eq('user_id', user.id)
+        .gte('checked_in_at', `${yesterday}T00:00:00`)
+        .lte('checked_in_at', `${yesterday}T23:59:59`)
+        .order('checked_in_at', { ascending: false })
+        .limit(1);
+
+      const streakDay = (yesterdayCheckin && yesterdayCheckin.length > 0) 
+        ? (yesterdayCheckin[0].streak_day + 1) 
+        : 1;
+
+      // Bonus XP for streaks
+      const baseXp = 15;
+      const streakBonus = Math.min(streakDay * 2, 30);
+      const totalXp = baseXp + streakBonus;
+
+      await supabase.from('gym_checkins').insert({
+        user_id: user.id,
+        gym_id: gym.id,
+        xp_awarded: totalXp,
+        streak_day: streakDay,
+      });
+
+      // Award XP to player level
+      const { data: playerLevel } = await supabase
+        .from('player_levels')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (playerLevel) {
+        await supabase.from('player_levels').update({
+          total_xp: playerLevel.total_xp + totalXp,
+          lifetime_xp: playerLevel.lifetime_xp + totalXp,
+          daily_xp: playerLevel.daily_xp + totalXp,
+        }).eq('user_id', user.id);
+      }
+
+      // Award gym points
+      await supabase.from('gym_points_log').insert({
+        user_id: user.id,
+        gym_id: gym.id,
+        points: 5,
+        reason: 'checkin',
+      });
+
+      setLastCheckin(today);
+      toast.success(`Check-in! +${totalXp} XP 🔥 (Streak: ${streakDay} dias)`);
+    } catch (e) {
+      console.error(e);
+      toast.error('Erro ao fazer check-in');
+    }
+    setCheckinLoading(false);
   };
 
   const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -514,6 +621,7 @@ export function MobileGymMap() {
     { key: 'nearby', label: 'Próximas', icon: Navigation },
     { key: 'friends', label: 'Amigos', icon: Heart },
     { key: 'strongest', label: 'Mais Fortes', icon: Flame },
+    { key: 'chain', label: 'Redes', icon: Building2 },
     { key: 'heatmap', label: 'Heatmap', icon: Layers },
   ];
 
@@ -573,6 +681,20 @@ export function MobileGymMap() {
             </button>
           ))}
         </div>
+        {/* Chain sub-filter */}
+        {filter === 'chain' && (
+          <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
+            {GYM_CHAINS.map(c => (
+              <button key={c.key} onClick={() => { setSelectedChain(selectedChain === c.key ? null : c.key); }}
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium whitespace-nowrap transition-all",
+                  selectedChain === c.key ? "bg-accent text-accent-foreground" : "bg-secondary/50 text-muted-foreground border border-border"
+                )}>
+                {c.emoji} {c.label}
+              </button>
+            ))}
+          </div>
+        )}
         {osmLoading && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Loader2 className="w-3 h-3 animate-spin" />
@@ -737,6 +859,14 @@ export function MobileGymMap() {
                     ))}
                   </div>
                 </div>
+              )}
+
+              {/* Check-in button */}
+              {selectedGym.id === myGymId && (
+                <button onClick={() => handleCheckin(selectedGym)} disabled={checkinLoading}
+                  className="w-full py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25 active:scale-[0.98] transition-all disabled:opacity-50">
+                  {checkinLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Clock className="w-4 h-4" /> Check-in +15 XP 🔥</>}
+                </button>
               )}
 
               <button onClick={() => selectGym(selectedGym)} disabled={joining || selectedGym.id === myGymId}
