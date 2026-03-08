@@ -76,18 +76,30 @@ export default function Dashboard() {
   const runAnalysis = async () => {
     setAnalyzing(true);
     try {
-      const { data, error } = await supabase.functions.invoke('analyze-training');
-      if (error) throw error;
-      if (data?.recommendations?.length > 0) {
+      // Run both analysis and auto-progression in parallel
+      const [analysisRes, progressionRes] = await Promise.allSettled([
+        supabase.functions.invoke('analyze-training'),
+        supabase.functions.invoke('auto-progression'),
+      ]);
+
+      let totalRecs = 0;
+      if (analysisRes.status === 'fulfilled' && analysisRes.value.data?.recommendations?.length > 0) {
+        totalRecs += analysisRes.value.data.recommendations.length;
+      }
+      if (progressionRes.status === 'fulfilled' && progressionRes.value.data?.adjustments?.length > 0) {
+        totalRecs += progressionRes.value.data.adjustments.length;
+      }
+
+      if (totalRecs > 0) {
         const { data: fresh } = await supabase
           .from('ai_recommendations')
           .select('*')
           .eq('user_id', user!.id)
           .eq('status', 'pending')
           .order('created_at', { ascending: false })
-          .limit(5);
+          .limit(10);
         if (fresh) setRecommendations(fresh as Recommendation[]);
-        toast.success(`${data.recommendations.length} novas recomendações geradas!`);
+        toast.success(`${totalRecs} novas recomendações geradas!`);
       } else {
         toast.info('Nenhum ajuste necessário no momento.');
       }
