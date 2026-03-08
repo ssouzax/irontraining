@@ -188,7 +188,7 @@ export default function SubscribePage() {
             { icon: Brain, title: 'IA Coach', desc: 'Análise avançada de treino', tier: 'Básico+' },
             { icon: Zap, title: 'Previsor de PRs', desc: 'Algoritmo preditivo de recordes', tier: 'Básico+' },
             { icon: Shield, title: 'Mentoria VIP', desc: 'Feedback detalhado e periodização', tier: 'Padrão+' },
-            { icon: Sparkles, title: 'Dieta IA', desc: 'Plano alimentar personalizado', tier: 'Padrão+' },
+            { icon: Sparkles, title: 'Dieta IA', desc: 'Plano alimentar personalizado', tier: 'Premium' },
             { icon: MapPin, title: 'Gym Heatmap', desc: 'Mapa avançado e analytics', tier: 'Premium' },
           ].map((feat, i) => (
             <motion.div
