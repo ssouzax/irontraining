@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievement_levels: {
+        Row: {
+          achievement_key: string
+          category: string
+          created_at: string
+          description: string
+          icon: string | null
+          id: string
+          level_name: string
+          level_number: number
+          requirement_type: string
+          requirement_value: number
+          title: string
+        }
+        Insert: {
+          achievement_key: string
+          category?: string
+          created_at?: string
+          description: string
+          icon?: string | null
+          id?: string
+          level_name: string
+          level_number?: number
+          requirement_type: string
+          requirement_value: number
+          title: string
+        }
+        Update: {
+          achievement_key?: string
+          category?: string
+          created_at?: string
+          description?: string
+          icon?: string | null
+          id?: string
+          level_name?: string
+          level_number?: number
+          requirement_type?: string
+          requirement_value?: number
+          title?: string
+        }
+        Relationships: []
+      }
       achievements: {
         Row: {
           created_at: string
@@ -89,6 +131,38 @@ export type Database = {
         }
         Relationships: []
       }
+      comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       current_lifts: {
         Row: {
           created_at: string
@@ -154,6 +228,56 @@ export type Database = {
           video_url?: string | null
         }
         Relationships: []
+      }
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       performed_sets: {
         Row: {
@@ -307,45 +431,140 @@ export type Database = {
           },
         ]
       }
+      posts: {
+        Row: {
+          caption: string | null
+          comments_count: number | null
+          created_at: string
+          estimated_1rm: number | null
+          exercise_name: string | null
+          id: string
+          is_pr: boolean | null
+          likes_count: number | null
+          media_urls: string[] | null
+          post_type: string
+          reps: number | null
+          user_id: string
+          weight: number | null
+          workout_log_id: string | null
+        }
+        Insert: {
+          caption?: string | null
+          comments_count?: number | null
+          created_at?: string
+          estimated_1rm?: number | null
+          exercise_name?: string | null
+          id?: string
+          is_pr?: boolean | null
+          likes_count?: number | null
+          media_urls?: string[] | null
+          post_type?: string
+          reps?: number | null
+          user_id: string
+          weight?: number | null
+          workout_log_id?: string | null
+        }
+        Update: {
+          caption?: string | null
+          comments_count?: number | null
+          created_at?: string
+          estimated_1rm?: number | null
+          exercise_name?: string | null
+          id?: string
+          is_pr?: boolean | null
+          likes_count?: number | null
+          media_urls?: string[] | null
+          post_type?: string
+          reps?: number | null
+          user_id?: string
+          weight?: number | null
+          workout_log_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_workout_log_id_fkey"
+            columns: ["workout_log_id"]
+            isOneToOne: false
+            referencedRelation: "workout_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
+          avatar_url: string | null
+          bio: string | null
           body_weight: number | null
+          cover_url: string | null
           created_at: string
           display_name: string | null
           email: string | null
           goals: string | null
           id: string
+          instagram_url: string | null
+          location: string | null
+          profile_public: boolean | null
+          show_bodyweight: boolean | null
+          show_prs: boolean | null
           target_bench: string | null
           target_deadlift: string | null
           target_squat: string | null
+          tiktok_url: string | null
           updated_at: string
           user_id: string
+          username: string | null
+          website_url: string | null
+          youtube_url: string | null
         }
         Insert: {
+          avatar_url?: string | null
+          bio?: string | null
           body_weight?: number | null
+          cover_url?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
           goals?: string | null
           id?: string
+          instagram_url?: string | null
+          location?: string | null
+          profile_public?: boolean | null
+          show_bodyweight?: boolean | null
+          show_prs?: boolean | null
           target_bench?: string | null
           target_deadlift?: string | null
           target_squat?: string | null
+          tiktok_url?: string | null
           updated_at?: string
           user_id: string
+          username?: string | null
+          website_url?: string | null
+          youtube_url?: string | null
         }
         Update: {
+          avatar_url?: string | null
+          bio?: string | null
           body_weight?: number | null
+          cover_url?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
           goals?: string | null
           id?: string
+          instagram_url?: string | null
+          location?: string | null
+          profile_public?: boolean | null
+          show_bodyweight?: boolean | null
+          show_prs?: boolean | null
           target_bench?: string | null
           target_deadlift?: string | null
           target_squat?: string | null
+          tiktok_url?: string | null
           updated_at?: string
           user_id?: string
+          username?: string | null
+          website_url?: string | null
+          youtube_url?: string | null
         }
         Relationships: []
       }

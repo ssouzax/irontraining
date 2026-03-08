@@ -1,5 +1,5 @@
 import { NavLink as RouterNavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Dumbbell, Calendar, BarChart3, Bot, User, Zap, LogOut, Menu, X, Calculator, Sparkles, Trophy, BookOpen, Award } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, Calendar, BarChart3, Bot, User, Zap, LogOut, Menu, X, Calculator, Sparkles, Trophy, BookOpen, Award, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,7 @@ const navItems = [
   { to: '/analytics', icon: BarChart3, label: 'Análises' },
   { to: '/rankings', icon: Trophy, label: 'Ranking' },
   { to: '/achievements', icon: Award, label: 'Conquistas' },
+  { to: '/feed', icon: Users, label: 'Feed Social' },
   { to: '/exercises', icon: BookOpen, label: 'Exercícios' },
   { to: '/plates', icon: Calculator, label: 'Anilhas' },
   { to: '/coach', icon: Bot, label: 'Coach IA' },
