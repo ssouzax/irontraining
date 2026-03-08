@@ -199,6 +199,57 @@ export type Database = {
         }
         Relationships: []
       }
+      bar_velocity_logs: {
+        Row: {
+          created_at: string
+          estimated_rir: number | null
+          exercise_name: string
+          id: string
+          mean_velocity: number
+          peak_velocity: number
+          power_output: number
+          reps: number
+          rom_percentage: number
+          session_date: string
+          set_number: number
+          time_under_tension: number
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          estimated_rir?: number | null
+          exercise_name: string
+          id?: string
+          mean_velocity?: number
+          peak_velocity?: number
+          power_output?: number
+          reps?: number
+          rom_percentage?: number
+          session_date?: string
+          set_number?: number
+          time_under_tension?: number
+          user_id: string
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          estimated_rir?: number | null
+          exercise_name?: string
+          id?: string
+          mean_velocity?: number
+          peak_velocity?: number
+          power_output?: number
+          reps?: number
+          rom_percentage?: number
+          session_date?: string
+          set_number?: number
+          time_under_tension?: number
+          user_id?: string
+          weight?: number
+        }
+        Relationships: []
+      }
       challenge_entries: {
         Row: {
           challenge_id: string
@@ -443,6 +494,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      execution_grades: {
+        Row: {
+          created_at: string
+          exercise_name: string
+          grade: string
+          grade_score: number
+          id: string
+          notes: string | null
+          posture_score: number | null
+          rom_score: number | null
+          session_date: string
+          set_number: number
+          stability_score: number | null
+          tempo_score: number | null
+          user_id: string
+          xp_bonus: number
+        }
+        Insert: {
+          created_at?: string
+          exercise_name: string
+          grade?: string
+          grade_score?: number
+          id?: string
+          notes?: string | null
+          posture_score?: number | null
+          rom_score?: number | null
+          session_date?: string
+          set_number?: number
+          stability_score?: number | null
+          tempo_score?: number | null
+          user_id: string
+          xp_bonus?: number
+        }
+        Update: {
+          created_at?: string
+          exercise_name?: string
+          grade?: string
+          grade_score?: number
+          id?: string
+          notes?: string | null
+          posture_score?: number | null
+          rom_score?: number | null
+          session_date?: string
+          set_number?: number
+          stability_score?: number | null
+          tempo_score?: number | null
+          user_id?: string
+          xp_bonus?: number
+        }
+        Relationships: []
       }
       exercise_rankings: {
         Row: {
@@ -1922,6 +2024,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      wearable_logs: {
+        Row: {
+          calories_burned: number | null
+          created_at: string
+          fatigue_score: number | null
+          heart_rate: number | null
+          hrv: number | null
+          id: string
+          logged_at: string
+          readiness_score: number | null
+          resting_hr: number | null
+          session_type: string
+          sleep_hours: number | null
+          spo2: number | null
+          user_id: string
+        }
+        Insert: {
+          calories_burned?: number | null
+          created_at?: string
+          fatigue_score?: number | null
+          heart_rate?: number | null
+          hrv?: number | null
+          id?: string
+          logged_at?: string
+          readiness_score?: number | null
+          resting_hr?: number | null
+          session_type?: string
+          sleep_hours?: number | null
+          spo2?: number | null
+          user_id: string
+        }
+        Update: {
+          calories_burned?: number | null
+          created_at?: string
+          fatigue_score?: number | null
+          heart_rate?: number | null
+          hrv?: number | null
+          id?: string
+          logged_at?: string
+          readiness_score?: number | null
+          resting_hr?: number | null
+          session_type?: string
+          sleep_hours?: number | null
+          spo2?: number | null
+          user_id?: string
+        }
+        Relationships: []
       }
       workout_exercises: {
         Row: {
