@@ -15,6 +15,7 @@ import { MobileGymPoints } from './MobileGymPoints';
 import { MobileExerciseLeaderboard } from './MobileExerciseLeaderboard';
 import { MobileLiveGym } from './MobileLiveGym';
 import { MobileWrappedCards } from './MobileWrappedCards';
+import { MobileGymMap } from './MobileGymMap';
 import { NotificationBell } from '../NotificationBell';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
