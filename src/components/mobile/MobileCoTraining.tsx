@@ -184,7 +184,7 @@ export function MobileCoTraining() {
 
   const sendMessage = async () => {
     if (!user || !selectedWorkout || !message.trim()) return;
-    await supabase.from('shared_workout_activity').insert({
+    await (supabase as any).from('shared_workout_activity').insert({
       workout_id: selectedWorkout,
       user_id: user.id,
       activity_type: 'message',
