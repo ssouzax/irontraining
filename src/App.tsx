@@ -94,6 +94,9 @@ function ProtectedRoutes() {
           <Route path="/wearable" element={<WearablePage />} />
           <Route path="/replay3d" element={<Replay3DPage />} />
           <Route path="/grading" element={<ExecutionGradingPage />} />
+          <Route path="/subscribe" element={<SubscribePage />} />
+          <Route path="/shop" element={<ShopPage />} />
+          <Route path="/premium-content" element={<PremiumContentPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

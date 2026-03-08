@@ -34,6 +34,9 @@ const navItems = [
   { to: '/wearable', icon: Heart, label: 'Wearable' },
   { to: '/replay3d', icon: RotateCw, label: 'Replay 3D' },
   { to: '/grading', icon: CheckCircle, label: 'Notas Execução' },
+  { to: '/subscribe', icon: Crown, label: 'Planos Premium' },
+  { to: '/shop', icon: ShoppingBag, label: 'Loja' },
+  { to: '/premium-content', icon: Star, label: 'Conteúdo Premium' },
   { to: '/profile', icon: User, label: 'Perfil' },
   { to: '/install', icon: Download, label: 'Instalar App' },
 ];
