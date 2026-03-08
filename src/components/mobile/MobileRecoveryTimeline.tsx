@@ -35,7 +35,7 @@ export function MobileRecoveryTimeline() {
     const since = new Date();
     since.setDate(since.getDate() - 30);
     
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from('recovery_metrics')
       .select('*')
       .eq('user_id', user.id)
