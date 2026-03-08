@@ -101,7 +101,7 @@ export function MobileCoTraining() {
   const createWorkout = async () => {
     if (!user || !newName) return;
     setCreating(true);
-    const { data, error } = await supabase.from('shared_workouts').insert({
+    const { data, error } = await (supabase as any).from('shared_workouts').insert({
       name: newName,
       description: newDesc || null,
       created_by: user.id,
