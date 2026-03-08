@@ -282,7 +282,13 @@ export function MobileGymMap() {
     if (filter === 'nearby' && userLocation) {
       filtered = filtered.filter(g => getDistance(userLocation.lat, userLocation.lng, g.latitude!, g.longitude!) < 80);
     } else if (filter === 'strongest') {
-      filtered = [...filtered].sort((a, b) => (b.intensity_score || 0) - (a.intensity_score || 0)).slice(0, 20);
+      filtered = [...filtered].sort((a, b) => {
+        const scoreA = (a.total_points || 0) + (a.intensity_score || 0) * 10 + (a.pr_count || 0) * 5;
+        const scoreB = (b.total_points || 0) + (b.intensity_score || 0) * 10 + (b.pr_count || 0) * 5;
+        return scoreB - scoreA;
+      }).slice(0, 25);
+    } else if (filter === 'friends') {
+      filtered = filtered.filter(g => friendGymIds.has(g.id));
     }
 
     // Heatmap mode
@@ -311,8 +317,9 @@ export function MobileGymMap() {
     // Always add markers to cluster
     filtered.forEach(gym => {
       const isMyGym = gym.id === myGymId;
+      const hasFriend = friendGymIds.has(gym.id);
       const marker = L.marker([gym.latitude!, gym.longitude!], {
-        icon: createGymIcon(gym, isMyGym),
+        icon: createGymIcon(gym, isMyGym, hasFriend),
       });
       marker.on('click', () => setSelectedGym(gym));
       clusterGroupRef.current!.addLayer(marker);
