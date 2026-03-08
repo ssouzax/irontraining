@@ -250,6 +250,51 @@ export type Database = {
         }
         Relationships: []
       }
+      leaderboard_scores: {
+        Row: {
+          bench_pr: number | null
+          bodyweight: number | null
+          deadlift_pr: number | null
+          dots_score: number | null
+          id: string
+          league: string | null
+          league_points: number | null
+          season: number | null
+          squat_pr: number | null
+          total: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bench_pr?: number | null
+          bodyweight?: number | null
+          deadlift_pr?: number | null
+          dots_score?: number | null
+          id?: string
+          league?: string | null
+          league_points?: number | null
+          season?: number | null
+          squat_pr?: number | null
+          total?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bench_pr?: number | null
+          bodyweight?: number | null
+          deadlift_pr?: number | null
+          dots_score?: number | null
+          id?: string
+          league?: string | null
+          league_points?: number | null
+          season?: number | null
+          squat_pr?: number | null
+          total?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       likes: {
         Row: {
           created_at: string
@@ -919,6 +964,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_dots: {
+        Args: { bw_kg: number; is_male?: boolean; total_kg: number }
+        Returns: number
+      }
+      get_dots_leaderboard: {
+        Args: { max_bw?: number; min_bw?: number }
+        Returns: {
+          bench_pr: number
+          bodyweight: number
+          deadlift_pr: number
+          display_name: string
+          dots_score: number
+          league: string
+          league_points: number
+          squat_pr: number
+          total: number
+          username: string
+        }[]
+      }
       get_leaderboard: {
         Args: {
           lift_name: string
