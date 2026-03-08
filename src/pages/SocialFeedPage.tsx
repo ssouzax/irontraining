@@ -35,6 +35,7 @@ interface Comment {
 
 export default function SocialFeedPage() {
   const { user } = useAuth();
+  const { addXP } = usePlayerLevel();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
