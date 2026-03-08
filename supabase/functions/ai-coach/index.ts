@@ -36,6 +36,9 @@ serve(async (req) => {
     // Build context-aware system message
     let systemContent = SYSTEM_PROMPT;
     if (context) {
+      if (context.personality) {
+        systemContent += `\n\nCOACH PERSONALITY TONE: ${context.personality}. Adjust your communication style accordingly. Always respond in Portuguese (Brazilian).`;
+      }
       systemContent += `\n\nATHLETE CONTEXT:\n${JSON.stringify(context, null, 2)}`;
     }
 
