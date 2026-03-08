@@ -12,6 +12,7 @@ const typeIcons: Record<AppNotification['type'], typeof Dumbbell> = {
   achievement_unlocked: Trophy,
   pr_achieved: Flame,
   level_up: ArrowUpCircle,
+  gym_pr: MapPin,
 };
 
 const typeColors: Record<AppNotification['type'], string> = {
