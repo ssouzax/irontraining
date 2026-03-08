@@ -19,7 +19,7 @@ export default function CoachPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: `Hey! I'm your **AI Powerbuilding Coach**. I have deep knowledge of periodized training, RIR-based programming, and powerbuilding methodology.\n\nI can help you with:\n- **Load adjustments** based on your top set performance\n- **Plateau detection** and breaking strategies\n- **RIR accuracy** analysis\n- **Accessory recommendations** for weak points\n- **Fatigue management** and deload timing\n\nWhat would you like help with?`,
+      content: `Olá! Sou seu **Coach IA de Powerbuilding**. Tenho conhecimento profundo em treino periodizado, programação baseada em RIR e metodologia de powerbuilding.\n\nPosso te ajudar com:\n- **Ajustes de carga** com base no desempenho dos top sets\n- **Detecção de platô** e estratégias de superação\n- **Análise de precisão do RIR**\n- **Recomendações de acessórios** para pontos fracos\n- **Gestão de fadiga** e timing de deload\n\nComo posso te ajudar hoje?`,
     },
   ]);
   const [input, setInput] = useState('');
@@ -77,10 +77,9 @@ export default function CoachPage() {
 
       if (!resp.ok) {
         const errData = await resp.json().catch(() => ({}));
-        throw new Error(errData.error || `Error ${resp.status}`);
+        throw new Error(errData.error || `Erro ${resp.status}`);
       }
-
-      if (!resp.body) throw new Error('No response body');
+      if (!resp.body) throw new Error('Sem corpo de resposta');
 
       const reader = resp.body.getReader();
       const decoder = new TextDecoder();
@@ -91,7 +90,6 @@ export default function CoachPage() {
         const { done, value } = await reader.read();
         if (done) break;
         textBuffer += decoder.decode(value, { stream: true });
-
         let newlineIndex: number;
         while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
           let line = textBuffer.slice(0, newlineIndex);
@@ -111,8 +109,6 @@ export default function CoachPage() {
           }
         }
       }
-
-      // Flush
       if (textBuffer.trim()) {
         for (let raw of textBuffer.split('\n')) {
           if (!raw || raw.startsWith(':') || raw.trim() === '') continue;
@@ -127,17 +123,17 @@ export default function CoachPage() {
         }
       }
     } catch (e: any) {
-      setMessages(prev => [...prev, { role: 'assistant', content: `⚠️ ${e.message || 'Failed to connect to AI coach. Please try again.'}` }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: `⚠️ ${e.message || 'Falha ao conectar com o coach IA. Tente novamente.'}` }]);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
+    <div className="flex flex-col h-[calc(100vh-5rem)] sm:h-[calc(100vh-4rem)]">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
-        <h1 className="text-3xl font-bold text-foreground tracking-tight">AI Coach</h1>
-        <p className="text-muted-foreground mt-1">Powerbuilding-aware training assistant</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">Coach IA</h1>
+        <p className="text-muted-foreground mt-1">Assistente inteligente de powerbuilding</p>
       </motion.div>
 
       <div className="flex-1 overflow-y-auto space-y-4 pb-4">
@@ -148,7 +144,7 @@ export default function CoachPage() {
             animate={{ opacity: 1, y: 0 }}
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <div className={`max-w-[80%] rounded-xl px-4 py-3 ${
+            <div className={`max-w-[90%] sm:max-w-[80%] rounded-xl px-4 py-3 ${
               msg.role === 'user'
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-card border border-border'
@@ -156,7 +152,7 @@ export default function CoachPage() {
               {msg.role === 'assistant' && (
                 <div className="flex items-center gap-2 mb-2">
                   <Bot className="w-4 h-4 text-primary" />
-                  <span className="text-xs font-medium text-primary">AI Coach</span>
+                  <span className="text-xs font-medium text-primary">Coach IA</span>
                 </div>
               )}
               <div className="text-sm leading-relaxed prose prose-sm prose-invert max-w-none">
@@ -182,7 +178,7 @@ export default function CoachPage() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-            placeholder="Ask about your training..."
+            placeholder="Pergunte sobre seu treino..."
             className="flex-1 bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <button

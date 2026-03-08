@@ -14,14 +14,14 @@ export default function ProgramPage() {
   const goToWorkout = (weekNum: number, dayIdx: number) => {
     setCurrentWeek(weekNum);
     setCurrentDay(dayIdx);
-    navigate('/workout');
+    navigate('/train');
   };
 
   return (
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl font-bold text-foreground tracking-tight">Program</h1>
-        <p className="text-muted-foreground mt-1">{program.name} · {program.durationWeeks} weeks</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">Programa</h1>
+        <p className="text-muted-foreground mt-1">{program.name} · {program.durationWeeks} semanas</p>
       </motion.div>
 
       <div className="space-y-3">
@@ -34,7 +34,7 @@ export default function ProgramPage() {
           >
             <button
               onClick={() => setExpandedBlock(expandedBlock === block.id ? null : block.id)}
-              className="w-full flex items-center justify-between p-5 hover:bg-secondary/30 transition-colors"
+              className="w-full flex items-center justify-between p-4 sm:p-5 hover:bg-secondary/30 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -46,9 +46,9 @@ export default function ProgramPage() {
                 </div>
               </div>
               {expandedBlock === block.id ? (
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
               ) : (
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
               )}
             </button>
 
@@ -59,15 +59,15 @@ export default function ProgramPage() {
                     <button
                       onClick={() => setExpandedWeek(expandedWeek === week.id ? null : week.id)}
                       className={cn(
-                        "w-full flex items-center justify-between px-5 py-3 hover:bg-secondary/20 transition-colors text-sm",
+                        "w-full flex items-center justify-between px-4 sm:px-5 py-3 hover:bg-secondary/20 transition-colors text-sm",
                         week.weekNumber === currentWeek && "bg-primary/5"
                       )}
                     >
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-foreground font-medium">Week {week.weekNumber}</span>
+                        <span className="text-foreground font-medium">Semana {week.weekNumber}</span>
                         {week.weekNumber === currentWeek && (
-                          <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">Current</span>
+                          <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">Atual</span>
                         )}
                       </div>
                       {expandedWeek === week.id ? (
@@ -78,7 +78,7 @@ export default function ProgramPage() {
                     </button>
 
                     {expandedWeek === week.id && (
-                      <div className="px-5 pb-4 space-y-2">
+                      <div className="px-4 sm:px-5 pb-4 space-y-2">
                         {week.days.map((day, dayIdx) => (
                           <button
                             key={day.id}
@@ -87,7 +87,7 @@ export default function ProgramPage() {
                           >
                             <div>
                               <p className="text-sm font-medium text-foreground">{day.dayOfWeek} — {day.name}</p>
-                              <p className="text-xs text-muted-foreground">{day.exercises.length} exercises · {day.focus}</p>
+                              <p className="text-xs text-muted-foreground">{day.exercises.length} exercícios · {day.focus}</p>
                             </div>
                             <ChevronRight className="w-4 h-4 text-muted-foreground" />
                           </button>

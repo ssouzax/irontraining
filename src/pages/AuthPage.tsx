@@ -25,7 +25,7 @@ export default function AuthPage() {
     if (authError) {
       setError(authError.message);
     } else if (!isLogin) {
-      setMessage('Check your email to confirm your account.');
+      setMessage('Verifique seu e-mail para confirmar a conta.');
     }
     setLoading(false);
   };
@@ -42,28 +42,28 @@ export default function AuthPage() {
             <Dumbbell className="w-8 h-8 text-primary-foreground" />
           </div>
           <h1 className="text-3xl font-bold text-foreground tracking-tight">PowerBuild</h1>
-          <p className="text-muted-foreground mt-1">Strength & Hypertrophy Training</p>
+          <p className="text-muted-foreground mt-1">Treino de Força & Hipertrofia</p>
         </div>
 
-        <div className="bg-card border border-border rounded-2xl p-8 card-elevated">
+        <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 card-elevated">
           <h2 className="text-lg font-semibold text-foreground mb-6">
-            {isLogin ? 'Welcome back' : 'Create account'}
+            {isLogin ? 'Bem-vindo de volta' : 'Criar conta'}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-sm text-muted-foreground block mb-1.5">Email</label>
+              <label className="text-sm text-muted-foreground block mb-1.5">E-mail</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
                 className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                placeholder="you@example.com"
+                placeholder="voce@exemplo.com"
               />
             </div>
             <div>
-              <label className="text-sm text-muted-foreground block mb-1.5">Password</label>
+              <label className="text-sm text-muted-foreground block mb-1.5">Senha</label>
               <input
                 type="password"
                 value={password}
@@ -84,17 +84,17 @@ export default function AuthPage() {
               className="w-full bg-primary text-primary-foreground rounded-lg py-2.5 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-              {isLogin ? 'Sign In' : 'Sign Up'}
+              {isLogin ? 'Entrar' : 'Cadastrar'}
             </button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            {isLogin ? "Don't have an account? " : 'Already have an account? '}
+            {isLogin ? 'Não tem conta? ' : 'Já tem conta? '}
             <button
               onClick={() => { setIsLogin(!isLogin); setError(''); setMessage(''); }}
               className="text-primary hover:underline"
             >
-              {isLogin ? 'Sign up' : 'Sign in'}
+              {isLogin ? 'Cadastre-se' : 'Entrar'}
             </button>
           </p>
         </div>
