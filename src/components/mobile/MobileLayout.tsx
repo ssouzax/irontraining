@@ -17,6 +17,7 @@ import { MobileLiveGym } from './MobileLiveGym';
 import { MobileWrappedCards } from './MobileWrappedCards';
 import { MobileGymMap } from './MobileGymMap';
 import { NotificationBell } from '../NotificationBell';
+import { StreakFireIcon } from '../StreakFireIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 
