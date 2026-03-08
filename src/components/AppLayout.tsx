@@ -1,8 +1,16 @@
 import { ReactNode } from 'react';
 import { AppSidebar } from './AppSidebar';
 import { NotificationBell } from './NotificationBell';
+import { MobileLayout } from './mobile/MobileLayout';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function AppLayout({ children }: { children: ReactNode }) {
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return <MobileLayout workoutContent={children} />;
+  }
+
   return (
     <div className="flex min-h-screen">
       <AppSidebar />
