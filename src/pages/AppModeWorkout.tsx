@@ -303,9 +303,11 @@ export default function AppModeWorkout() {
       }
 
 
+      // Award XP for completing workout
+      const xpAmount = 50 + (completedSets * 5); // Base 50 + 5 per set
+      await addXP(xpAmount, 'workout_complete');
 
-
-      toast.success('Treino salvo com sucesso!');
+      toast.success(`Treino salvo! +${xpAmount} XP`);
     } catch (err: any) {
       toast.error(err.message || 'Erro ao salvar treino');
     } finally {
