@@ -50,7 +50,7 @@ export function MobileBodyComposition() {
   const saveLog = async () => {
     if (!user || !weight) return;
     setSaving(true);
-    const { error } = await supabase.from('body_weight_logs').upsert({
+    const { error } = await (supabase as any).from('body_weight_logs').upsert({
       user_id: user.id,
       weight_kg: parseFloat(weight),
       body_fat_pct: bodyFat ? parseFloat(bodyFat) : null,

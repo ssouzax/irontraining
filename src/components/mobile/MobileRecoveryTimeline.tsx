@@ -51,7 +51,7 @@ export function MobileRecoveryTimeline() {
     setSaving(true);
     const readiness = Math.round(((10 - fatigue) * 30 + sleep * 30 + (10 - soreness) * 40) / 10);
     
-    const { error } = await supabase.from('recovery_metrics').upsert({
+    const { error } = await (supabase as any).from('recovery_metrics').upsert({
       user_id: user.id,
       metric_date: new Date().toISOString().split('T')[0],
       fatigue_level: fatigue,
