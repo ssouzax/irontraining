@@ -861,6 +861,14 @@ export function MobileGymMap() {
                 </div>
               )}
 
+              {/* Check-in button */}
+              {selectedGym.id === myGymId && (
+                <button onClick={() => handleCheckin(selectedGym)} disabled={checkinLoading}
+                  className="w-full py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25 active:scale-[0.98] transition-all disabled:opacity-50">
+                  {checkinLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Clock className="w-4 h-4" /> Check-in +15 XP 🔥</>}
+                </button>
+              )}
+
               <button onClick={() => selectGym(selectedGym)} disabled={joining || selectedGym.id === myGymId}
                 className={cn(
                   "w-full py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all",
