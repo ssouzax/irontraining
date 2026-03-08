@@ -18,6 +18,7 @@ import PlateCalculator from "./pages/PlateCalculator";
 import RankingsPage from "./pages/RankingsPage";
 import AchievementsPage from "./pages/AchievementsPage";
 import ExerciseLibrary from "./pages/ExerciseLibrary";
+import SocialFeedPage from "./pages/SocialFeedPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
