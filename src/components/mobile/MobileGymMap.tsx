@@ -381,18 +381,58 @@ export function MobileGymMap() {
     if (match && match.latitude && match.longitude) {
       mapInstanceRef.current.flyTo([match.latitude, match.longitude], 15, { duration: 1 });
       setSelectedGym(match);
+      setShowSearchResults(false);
     } else {
-      fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery + ' gym')}&format=json&limit=5`)
-        .then(r => r.json())
-        .then(results => {
-          if (results.length > 0) {
-            mapInstanceRef.current?.flyTo([parseFloat(results[0].lat), parseFloat(results[0].lon)], 14, { duration: 1 });
-          } else {
-            toast.error('Nenhum resultado encontrado');
-          }
-        })
-        .catch(() => toast.error('Erro na busca'));
+      // Search via OSM edge function
+      supabase.functions.invoke('search-gyms-osm', {
+        body: { action: 'search', query: searchQuery },
+      }).then(({ data }) => {
+        if (data?.gyms?.length > 0) {
+          setSearchResults(data.gyms);
+          setShowSearchResults(true);
+        } else {
+          toast.error('Nenhum resultado encontrado');
+        }
+      }).catch(() => toast.error('Erro na busca'));
     }
+  };
+
+  const handleSearchInput = (value: string) => {
+    setSearchQuery(value);
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    if (value.length >= 3) {
+      searchTimeoutRef.current = setTimeout(() => {
+        const query = value.toLowerCase();
+        const localMatches = appGyms.filter(g =>
+          g.name.toLowerCase().includes(query) || g.city?.toLowerCase().includes(query)
+        ).slice(0, 8);
+        if (localMatches.length > 0) {
+          setSearchResults(localMatches.map(g => ({
+            name: g.name,
+            city: g.city,
+            lat: g.latitude,
+            lon: g.longitude,
+            local: true,
+            gym: g,
+          })));
+          setShowSearchResults(true);
+        }
+      }, 200);
+    } else {
+      setShowSearchResults(false);
+      setSearchResults([]);
+    }
+  };
+
+  const selectSearchResult = (result: any) => {
+    if (result.local && result.gym) {
+      setSelectedGym(result.gym);
+      mapInstanceRef.current?.flyTo([result.gym.latitude, result.gym.longitude], 16, { duration: 1 });
+    } else if (result.lat && result.lon) {
+      mapInstanceRef.current?.flyTo([result.lat, result.lon], 15, { duration: 1 });
+    }
+    setShowSearchResults(false);
+    setSearchQuery(result.name);
   };
 
   const selectGym = async (gym: AppGym) => {
