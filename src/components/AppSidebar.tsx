@@ -14,6 +14,7 @@ const navItems = [
   { to: '/analytics', icon: BarChart3, label: 'Análises' },
   { to: '/rankings', icon: Trophy, label: 'Ranking' },
   { to: '/achievements', icon: Award, label: 'Conquistas' },
+  { to: '/feed', icon: Users, label: 'Feed Social' },
   { to: '/exercises', icon: BookOpen, label: 'Exercícios' },
   { to: '/plates', icon: Calculator, label: 'Anilhas' },
   { to: '/coach', icon: Bot, label: 'Coach IA' },

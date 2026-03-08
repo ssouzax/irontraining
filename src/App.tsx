@@ -50,7 +50,7 @@ function ProtectedRoutes() {
           <Route path="/rankings" element={<RankingsPage />} />
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/exercises" element={<ExerciseLibrary />} />
-          <Route path="/plates" element={<PlateCalculator />} />
+          <Route path="/feed" element={<SocialFeedPage />} />
           <Route path="/coach" element={<CoachPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="*" element={<NotFound />} />
