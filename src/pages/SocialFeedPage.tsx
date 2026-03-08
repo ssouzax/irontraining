@@ -123,12 +123,28 @@ export default function SocialFeedPage() {
   };
 
   const loadComments = async (postId: string) => {
-    const { data } = await supabase
+    const { data: commentsData } = await supabase
       .from('comments')
-      .select('*, profiles!comments_user_id_fkey(display_name, username, email)')
+      .select('*')
       .eq('post_id', postId)
       .order('created_at', { ascending: true });
-    if (data) setComments(prev => ({ ...prev, [postId]: data as any }));
+    
+    if (!commentsData) return;
+    
+    const userIds = [...new Set(commentsData.map(c => c.user_id))];
+    const { data: profilesData } = await supabase
+      .from('profiles')
+      .select('user_id, display_name, username, email')
+      .in('user_id', userIds);
+    
+    const profileMap = new Map((profilesData || []).map(p => [p.user_id, p]));
+    
+    const enriched = commentsData.map(c => ({
+      ...c,
+      profiles: profileMap.get(c.user_id) || null,
+    }));
+    
+    setComments(prev => ({ ...prev, [postId]: enriched as any }));
   };
 
   const submitComment = async (postId: string) => {
