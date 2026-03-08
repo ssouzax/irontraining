@@ -30,7 +30,7 @@ import AthleteProfilePage from "./pages/AthleteProfilePage";
 import AuthPage from "./pages/AuthPage";
 import InstallPage from "./pages/InstallPage";
 import StreakLeaderboardPage from "./pages/StreakLeaderboardPage";
-import Exercise3DPage from "./pages/Exercise3DPage";
+
 import BodyCompositionPage from "./pages/BodyCompositionPage";
 import PRSimulatorPage from "./pages/PRSimulatorPage";
 import RecoveryPage from "./pages/RecoveryPage";
@@ -81,7 +81,7 @@ function ProtectedRoutes() {
           <Route path="/plates" element={<PlateCalculator />} />
           <Route path="/streaks" element={<StreakLeaderboardPage />} />
           <Route path="/coach" element={<CoachPage />} />
-          <Route path="/exercise3d" element={<Exercise3DPage />} />
+          
           <Route path="/body" element={<BodyCompositionPage />} />
           <Route path="/prsimulator" element={<PRSimulatorPage />} />
           <Route path="/recovery" element={<RecoveryPage />} />

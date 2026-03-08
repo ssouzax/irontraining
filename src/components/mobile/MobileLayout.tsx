@@ -16,7 +16,7 @@ import { MobileExerciseLeaderboard } from './MobileExerciseLeaderboard';
 import { MobileLiveGym } from './MobileLiveGym';
 import { MobileWrappedCards } from './MobileWrappedCards';
 import { MobileGymMap } from './MobileGymMap';
-import { MobileExercise3D } from './MobileExercise3D';
+
 import { MobileBodyComposition } from './MobileBodyComposition';
 import { MobilePRSimulator } from './MobilePRSimulator';
 import { MobileRecoveryTimeline } from './MobileRecoveryTimeline';
@@ -30,7 +30,7 @@ import { StreakFireIcon } from '../StreakFireIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 
-type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym' | 'gymmap' | 'rivals' | 'powerscore' | 'predictor' | 'explore' | 'heatmap' | 'gympoints' | 'exerciserankings' | 'livegym' | 'wrapped' | 'exercise3d' | 'body' | 'prsim' | 'recovery' | 'cotraining' | 'barvelocity' | 'wearable' | 'replay3d' | 'grading';
+type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym' | 'gymmap' | 'rivals' | 'powerscore' | 'predictor' | 'explore' | 'heatmap' | 'gympoints' | 'exerciserankings' | 'livegym' | 'wrapped' | 'body' | 'prsim' | 'recovery' | 'cotraining' | 'barvelocity' | 'wearable' | 'replay3d' | 'grading';
 
 const bottomTabs: { key: Tab; icon: typeof Home; label: string }[] = [
   { key: 'home', icon: Home, label: 'Home' },
@@ -55,7 +55,7 @@ const menuItems = [
   { key: 'powerscore' as Tab, icon: Zap, label: 'Power Score' },
   { key: 'predictor' as Tab, icon: Brain, label: 'Preditor IA' },
   { key: 'wrapped' as Tab, icon: Sparkles, label: 'Wrapped Cards' },
-  { key: 'exercise3d' as Tab, icon: Dumbbell, label: 'Modelo 3D' },
+  
   { key: 'body' as Tab, icon: Scale, label: 'Evolução Corporal' },
   { key: 'prsim' as Tab, icon: Brain, label: 'Simulador de PR' },
   { key: 'recovery' as Tab, icon: Activity, label: 'Recuperação' },
@@ -87,7 +87,7 @@ interface MobileLayoutProps {
   workoutContent: ReactNode;
 }
 
-const tabOrder: Tab[] = ['home', 'workout', 'post', 'rankings', 'profile', 'gym', 'gymmap', 'rivals', 'powerscore', 'predictor', 'explore', 'heatmap', 'gympoints', 'exerciserankings', 'livegym', 'wrapped', 'exercise3d', 'body', 'prsim', 'recovery', 'cotraining', 'barvelocity', 'wearable', 'replay3d', 'grading'];
+const tabOrder: Tab[] = ['home', 'workout', 'post', 'rankings', 'profile', 'gym', 'gymmap', 'rivals', 'powerscore', 'predictor', 'explore', 'heatmap', 'gympoints', 'exerciserankings', 'livegym', 'wrapped', 'body', 'prsim', 'recovery', 'cotraining', 'barvelocity', 'wearable', 'replay3d', 'grading'];
 
 export function MobileLayout({ workoutContent }: MobileLayoutProps) {
   // Detect if we're on a routed page (not home)
@@ -253,7 +253,7 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
             {activeTab === 'exerciserankings' && <MobileExerciseLeaderboard />}
             {activeTab === 'livegym' && <MobileLiveGym />}
             {activeTab === 'wrapped' && <MobileWrappedCards />}
-            {activeTab === 'exercise3d' && <MobileExercise3D />}
+            
             {activeTab === 'body' && <MobileBodyComposition />}
             {activeTab === 'prsim' && <MobilePRSimulator />}
             {activeTab === 'recovery' && <MobileRecoveryTimeline />}

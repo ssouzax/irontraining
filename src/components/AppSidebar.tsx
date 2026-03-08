@@ -25,7 +25,7 @@ const navItems = [
   { to: '/exercises', icon: BookOpen, label: 'Exercícios' },
   { to: '/plates', icon: Calculator, label: 'Anilhas' },
   { to: '/coach', icon: Bot, label: 'Coach IA' },
-  { to: '/exercise3d', icon: Dumbbell, label: 'Modelo 3D' },
+  
   { to: '/body', icon: Scale, label: 'Evolução Corporal' },
   { to: '/prsimulator', icon: Brain, label: 'Simulador PR' },
   { to: '/recovery', icon: Activity, label: 'Recuperação' },
