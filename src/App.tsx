@@ -19,6 +19,9 @@ import ProfilePage from "./pages/ProfilePage";
 import PlateCalculator from "./pages/PlateCalculator";
 import RankingsPage from "./pages/RankingsPage";
 import GymPage from "./pages/GymPage";
+import RivalsPage from "./pages/RivalsPage";
+import PowerScorePage from "./pages/PowerScorePage";
+import PredictorPage from "./pages/PredictorPage";
 import AchievementsPage from "./pages/AchievementsPage";
 import ExerciseLibrary from "./pages/ExerciseLibrary";
 import SocialFeedPage from "./pages/SocialFeedPage";
@@ -57,6 +60,9 @@ function ProtectedRoutes() {
           <Route path="/rankings" element={<RankingsPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/gym" element={<GymPage />} />
+          <Route path="/rivals" element={<RivalsPage />} />
+          <Route path="/powerscore" element={<PowerScorePage />} />
+          <Route path="/predictor" element={<PredictorPage />} />
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/exercises" element={<ExerciseLibrary />} />
           <Route path="/feed" element={<SocialFeedPage />} />

@@ -1,16 +1,19 @@
 import { ReactNode, useState } from 'react';
-import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin } from 'lucide-react';
+import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin, Swords, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MobileHomeFeed } from './MobileHomeFeed';
 import { MobileCreatePost } from './MobileCreatePost';
 import { MobileRankings } from './MobileRankings';
 import { MobileProfile } from './MobileProfile';
 import { MobileGymPage } from './MobileGymPage';
+import { MobileRivals } from './MobileRivals';
+import { MobilePowerScore } from './MobilePowerScore';
+import { MobilePredictor } from './MobilePredictor';
 import { NotificationBell } from '../NotificationBell';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 
-type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym';
+type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym' | 'rivals' | 'powerscore' | 'predictor';
 
 const bottomTabs: { key: Tab; icon: typeof Home; label: string }[] = [
   { key: 'home', icon: Home, label: 'Home' },
@@ -25,6 +28,9 @@ const menuItems = [
   { key: 'workout' as Tab, icon: Dumbbell, label: 'Treino Atual' },
   { key: 'rankings' as Tab, icon: Crown, label: 'Leaderboard DOTS' },
   { key: 'gym' as Tab, icon: MapPin, label: 'Minha Academia' },
+  { key: 'rivals' as Tab, icon: Swords, label: 'Rivais de Força' },
+  { key: 'powerscore' as Tab, icon: Zap, label: 'Power Score' },
+  { key: 'predictor' as Tab, icon: Brain, label: 'Preditor IA' },
   { key: 'profile' as Tab, icon: User, label: 'Perfil' },
 ];
 
@@ -173,6 +179,9 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
         {activeTab === 'rankings' && <MobileRankings />}
         {activeTab === 'profile' && <MobileProfile />}
         {activeTab === 'gym' && <MobileGymPage />}
+        {activeTab === 'rivals' && <MobileRivals />}
+        {activeTab === 'powerscore' && <MobilePowerScore />}
+        {activeTab === 'predictor' && <MobilePredictor />}
       </main>
 
       {/* Bottom Navigation */}
