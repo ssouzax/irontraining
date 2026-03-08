@@ -258,6 +258,10 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
             {activeTab === 'prsim' && <MobilePRSimulator />}
             {activeTab === 'recovery' && <MobileRecoveryTimeline />}
             {activeTab === 'cotraining' && <MobileCoTraining />}
+            {activeTab === 'barvelocity' && <MobileBarVelocity />}
+            {activeTab === 'wearable' && <MobileWearableDashboard />}
+            {activeTab === 'replay3d' && <MobileReplay3D />}
+            {activeTab === 'grading' && <MobileExecutionGrading />}
           </motion.div>
         </AnimatePresence>
       </main>
