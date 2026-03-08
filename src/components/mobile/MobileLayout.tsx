@@ -28,6 +28,9 @@ const menuItems = [
   { key: 'workout' as Tab, icon: Dumbbell, label: 'Treino Atual' },
   { key: 'rankings' as Tab, icon: Crown, label: 'Leaderboard DOTS' },
   { key: 'gym' as Tab, icon: MapPin, label: 'Minha Academia' },
+  { key: 'rivals' as Tab, icon: Swords, label: 'Rivais de Força' },
+  { key: 'powerscore' as Tab, icon: Zap, label: 'Power Score' },
+  { key: 'predictor' as Tab, icon: Brain, label: 'Preditor IA' },
   { key: 'profile' as Tab, icon: User, label: 'Perfil' },
 ];
 
