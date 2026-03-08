@@ -60,6 +60,9 @@ function ProtectedRoutes() {
           <Route path="/rankings" element={<RankingsPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/gym" element={<GymPage />} />
+          <Route path="/rivals" element={<RivalsPage />} />
+          <Route path="/powerscore" element={<PowerScorePage />} />
+          <Route path="/predictor" element={<PredictorPage />} />
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/exercises" element={<ExerciseLibrary />} />
           <Route path="/feed" element={<SocialFeedPage />} />
