@@ -350,6 +350,38 @@ export type Database = {
           },
         ]
       }
+      content_purchases: {
+        Row: {
+          content_id: string
+          id: string
+          price_cents: number
+          purchased_at: string
+          user_id: string
+        }
+        Insert: {
+          content_id: string
+          id?: string
+          price_cents?: number
+          purchased_at?: string
+          user_id: string
+        }
+        Update: {
+          content_id?: string
+          id?: string
+          price_cents?: number
+          purchased_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_purchases_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "premium_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       current_lifts: {
         Row: {
           created_at: string
@@ -650,6 +682,36 @@ export type Database = {
         }
         Relationships: []
       }
+      gym_business_plans: {
+        Row: {
+          created_at: string
+          description: string | null
+          features: Json
+          id: string
+          is_active: boolean
+          name: string
+          price_cents: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          features?: Json
+          id: string
+          is_active?: boolean
+          name: string
+          price_cents?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          features?: Json
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_cents?: number
+        }
+        Relationships: []
+      }
       gym_checkins: {
         Row: {
           checked_in_at: string
@@ -917,6 +979,51 @@ export type Database = {
           },
         ]
       }
+      gym_subscriptions: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          gym_id: string
+          id: string
+          plan_id: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          gym_id: string
+          id?: string
+          plan_id: string
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          gym_id?: string
+          id?: string
+          plan_id?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_subscriptions_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gym_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "gym_business_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gym_weekly_challenges: {
         Row: {
           bonus_awarded: boolean
@@ -1073,6 +1180,53 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_logs: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          gym_id: string | null
+          id: string
+          metadata: Json | null
+          payment_type: string
+          reference_id: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          gym_id?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_type: string
+          reference_id?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          gym_id?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_type?: string
+          reference_id?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_logs_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
             referencedColumns: ["id"]
           },
         ]
@@ -1389,6 +1543,51 @@ export type Database = {
           pr_frequency_component?: number
           user_id?: string
           volume_component?: number
+        }
+        Relationships: []
+      }
+      premium_content: {
+        Row: {
+          author_name: string | null
+          category: string
+          content_type: string
+          content_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          min_tier: string
+          price_cents: number | null
+          thumbnail_url: string | null
+          title: string
+        }
+        Insert: {
+          author_name?: string | null
+          category?: string
+          content_type?: string
+          content_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          min_tier?: string
+          price_cents?: number | null
+          thumbnail_url?: string | null
+          title: string
+        }
+        Update: {
+          author_name?: string | null
+          category?: string
+          content_type?: string
+          content_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          min_tier?: string
+          price_cents?: number | null
+          thumbnail_url?: string | null
+          title?: string
         }
         Relationships: []
       }
@@ -1798,6 +1997,107 @@ export type Database = {
         }
         Relationships: []
       }
+      shop_items: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          is_seasonal: boolean
+          item_type: string
+          metadata: Json | null
+          name: string
+          preview_url: string | null
+          price_cents: number
+          rarity: string
+          season_id: number | null
+          stock_limit: number | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_seasonal?: boolean
+          item_type?: string
+          metadata?: Json | null
+          name: string
+          preview_url?: string | null
+          price_cents?: number
+          rarity?: string
+          season_id?: number | null
+          stock_limit?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_seasonal?: boolean
+          item_type?: string
+          metadata?: Json | null
+          name?: string
+          preview_url?: string | null
+          price_cents?: number
+          rarity?: string
+          season_id?: number | null
+          stock_limit?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_items_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_plans: {
+        Row: {
+          created_at: string
+          currency: string
+          description: string | null
+          features: Json
+          id: string
+          interval: string
+          is_active: boolean
+          kiwify_product_id: string | null
+          name: string
+          price_cents: number
+          tier: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          features?: Json
+          id: string
+          interval?: string
+          is_active?: boolean
+          kiwify_product_id?: string | null
+          name: string
+          price_cents?: number
+          tier?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          features?: Json
+          id?: string
+          interval?: string
+          is_active?: boolean
+          kiwify_product_id?: string | null
+          name?: string
+          price_cents?: number
+          tier?: string
+        }
+        Relationships: []
+      }
       temporary_badges: {
         Row: {
           badge_title: string
@@ -2021,6 +2321,91 @@ export type Database = {
             columns: ["block_id"]
             isOneToOne: false
             referencedRelation: "training_blocks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_inventory: {
+        Row: {
+          equipped: boolean
+          expires_at: string | null
+          id: string
+          item_id: string
+          purchased_at: string
+          user_id: string
+        }
+        Insert: {
+          equipped?: boolean
+          expires_at?: string | null
+          id?: string
+          item_id: string
+          purchased_at?: string
+          user_id: string
+        }
+        Update: {
+          equipped?: boolean
+          expires_at?: string | null
+          id?: string
+          item_id?: string
+          purchased_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_inventory_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "shop_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_subscriptions: {
+        Row: {
+          canceled_at: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          kiwify_customer_id: string | null
+          kiwify_subscription_id: string | null
+          plan_id: string
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          canceled_at?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          kiwify_customer_id?: string | null
+          kiwify_subscription_id?: string | null
+          plan_id: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          canceled_at?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          kiwify_customer_id?: string | null
+          kiwify_subscription_id?: string | null
+          plan_id?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
             referencedColumns: ["id"]
           },
         ]
