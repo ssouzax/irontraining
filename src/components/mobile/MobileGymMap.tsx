@@ -212,7 +212,8 @@ export function MobileGymMap() {
 
     // Cluster group with custom styling
     const clusterGroup = L.markerClusterGroup({
-      maxClusterRadius: 60,
+      maxClusterRadius: 35,
+      disableClusteringAtZoom: 14,
       spiderfyOnMaxZoom: true,
       showCoverageOnHover: false,
       zoomToBoundsOnClick: true,
