@@ -42,6 +42,8 @@ export default function SocialFeedPage() {
   const [exerciseName, setExerciseName] = useState('');
   const [weight, setWeight] = useState('');
   const [reps, setReps] = useState('');
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [mediaPreviews, setMediaPreviews] = useState<string[]>([]);
   const [posting, setPosting] = useState(false);
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [expandedComments, setExpandedComments] = useState<string | null>(null);
