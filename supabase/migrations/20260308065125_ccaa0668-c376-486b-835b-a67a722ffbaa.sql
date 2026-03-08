@@ -1,0 +1,1 @@
+ALTER FUNCTION public.calculate_dots(NUMERIC, NUMERIC, BOOLEAN) SET search_path = public;
