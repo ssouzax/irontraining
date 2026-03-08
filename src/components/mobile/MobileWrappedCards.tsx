@@ -7,7 +7,7 @@ import { useTraining } from '@/contexts/TrainingContext';
 import { calculate1RM } from '@/data/defaultProfile';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import html2canvas from 'html2canvas';
+// html2canvas is dynamically imported to avoid mixed static/dynamic import issues
 
 type CardType = 'stats' | 'prs' | 'streak' | 'level';
 
