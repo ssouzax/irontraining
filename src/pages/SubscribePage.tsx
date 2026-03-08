@@ -150,7 +150,6 @@ export default function SubscribePage() {
             Seu plano será ativado automaticamente quando os emails coincidirem
           </p>
         </motion.div>
-      </div>
 
         {/* Interval toggle */}
         <div className="flex items-center justify-center gap-2 mt-8 p-1 bg-secondary rounded-xl inline-flex">
