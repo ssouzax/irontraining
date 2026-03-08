@@ -199,17 +199,32 @@ export default function AchievementsPage() {
         key={def.achievement_key}
         initial={{ opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
+        whileHover={isUnlocked ? { scale: 1.02 } : undefined}
         className={cn(
-          "bg-card rounded-xl p-4 card-elevated flex items-start gap-3 border transition-colors",
+          "bg-card rounded-xl p-4 card-elevated flex items-start gap-3 border transition-all relative overflow-hidden",
           isUnlocked ? rarity.border : "border-border opacity-60"
         )}
       >
-        <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0",
+        {/* Glow effect for unlocked */}
+        {isUnlocked && (def.rarity === 'legendary' || def.rarity === 'epic') && (
+          <div className={cn("absolute inset-0 opacity-[0.07]",
+            def.rarity === 'legendary' ? "bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500" : "bg-gradient-to-r from-purple-500 via-violet-500 to-purple-500"
+          )} />
+        )}
+        {/* Shimmer for legendary */}
+        {isUnlocked && def.rarity === 'legendary' && (
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-400/10 to-transparent -translate-x-full animate-[shimmer_4s_ease-in-out_infinite]" />
+        )}
+
+        <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0 relative",
           isUnlocked ? rarity.bg : "bg-secondary grayscale"
         )}>
+          {isUnlocked && (def.rarity === 'legendary' || def.rarity === 'epic') && (
+            <div className="absolute inset-0 rounded-xl animate-pulse opacity-30" style={{ boxShadow: `0 0 16px ${def.rarity === 'legendary' ? 'rgba(234,179,8,0.5)' : 'rgba(168,85,247,0.5)'}` }} />
+          )}
           {isHiddenSecret ? <Lock className="w-5 h-5 text-muted-foreground" /> : (def.icon || '🏆')}
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 relative z-10">
           <div className="flex items-center gap-1.5">
             <p className="text-sm font-semibold text-foreground truncate">
               {isHiddenSecret ? '???' : def.title}
@@ -220,7 +235,6 @@ export default function AchievementsPage() {
             {isHiddenSecret ? 'Conquista secreta — desbloqueie para revelar' : def.description}
           </p>
           
-          {/* Rarity badge */}
           <div className="flex items-center gap-2 mt-1.5">
             <span className={cn("text-[10px] px-1.5 py-0.5 rounded font-medium", rarity.bg, rarity.color)}>
               {rarity.label}
@@ -240,7 +254,12 @@ export default function AchievementsPage() {
           {showProgress && !isHiddenSecret && (
             <div className="mt-2">
               <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-                <div className={cn("h-full rounded-full transition-all", rarity.bg.replace('/10', '/40'))} style={{ width: `${progress}%` }} />
+                <motion.div
+                  className={cn("h-full rounded-full", rarity.bg.replace('/10', '/40'))}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                />
               </div>
               <p className="text-[10px] text-muted-foreground mt-1">
                 {Math.round(current * 100) / 100}{unit} / {def.requirement_value}{unit}
@@ -252,7 +271,7 @@ export default function AchievementsPage() {
           <button onClick={() => setShareCard({
             open: true, title: def.title, subtitle: def.description,
             stat: ach?.value ? `${ach.value}kg` : undefined, icon: def.icon || '🏆', rarity: def.rarity,
-          })} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0">
+          })} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 relative z-10">
             <Share2 className="w-3.5 h-3.5" />
           </button>
         )}
