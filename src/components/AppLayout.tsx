@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { AppSidebar } from './AppSidebar';
 import { NotificationBell } from './NotificationBell';
+import { StreakFireIcon } from './StreakFireIcon';
 import { MobileLayout } from './mobile/MobileLayout';
 import { useIsMobile } from '@/hooks/use-mobile';
 
