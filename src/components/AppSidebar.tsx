@@ -1,5 +1,5 @@
 import { NavLink as RouterNavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Dumbbell, Calendar, BarChart3, Bot, User, Zap, LogOut, Menu, X, Calculator } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, Calendar, BarChart3, Bot, User, Zap, LogOut, Menu, X, Calculator, Sparkles, Trophy, BookOpen, Award } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -8,9 +8,13 @@ import { useAuth } from '@/contexts/AuthContext';
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Painel' },
   { to: '/program', icon: Calendar, label: 'Programa' },
+  { to: '/generate', icon: Sparkles, label: 'Gerar Programa' },
   { to: '/workout', icon: Dumbbell, label: 'Treino' },
   { to: '/train', icon: Zap, label: 'Modo App' },
   { to: '/analytics', icon: BarChart3, label: 'Análises' },
+  { to: '/rankings', icon: Trophy, label: 'Ranking' },
+  { to: '/achievements', icon: Award, label: 'Conquistas' },
+  { to: '/exercises', icon: BookOpen, label: 'Exercícios' },
   { to: '/plates', icon: Calculator, label: 'Anilhas' },
   { to: '/coach', icon: Bot, label: 'Coach IA' },
   { to: '/profile', icon: User, label: 'Perfil' },
@@ -21,7 +25,6 @@ export function AppSidebar() {
   const location = useLocation();
   const { signOut } = useAuth();
 
-  // Close mobile menu on route change
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
   const navContent = (
@@ -33,7 +36,6 @@ export function AppSidebar() {
           </div>
           <span className="font-semibold text-foreground text-sm tracking-tight">PowerBuild</span>
         </div>
-        {/* Close button for mobile */}
         <button onClick={() => setMobileOpen(false)} className="lg:hidden p-1 text-muted-foreground hover:text-foreground">
           <X className="w-5 h-5" />
         </button>
@@ -74,7 +76,6 @@ export function AppSidebar() {
 
   return (
     <>
-      {/* Mobile hamburger */}
       <button
         onClick={() => setMobileOpen(true)}
         className="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-lg bg-card border border-border card-elevated"
@@ -82,7 +83,6 @@ export function AppSidebar() {
         <Menu className="w-5 h-5 text-foreground" />
       </button>
 
-      {/* Mobile overlay */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -95,7 +95,6 @@ export function AppSidebar() {
         )}
       </AnimatePresence>
 
-      {/* Mobile drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.aside
@@ -110,7 +109,6 @@ export function AppSidebar() {
         )}
       </AnimatePresence>
 
-      {/* Desktop sidebar */}
       <aside className="hidden lg:flex fixed left-0 top-0 w-[240px] h-screen z-40 flex-col border-r border-border bg-sidebar">
         {navContent}
       </aside>
