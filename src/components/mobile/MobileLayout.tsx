@@ -121,7 +121,10 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
             <span className="font-bold text-foreground text-base tracking-tight">PowerBuild</span>
           </div>
         </div>
-        <NotificationBell />
+        <div className="flex items-center gap-2">
+          <StreakFireIcon />
+          <NotificationBell />
+        </div>
       </header>
 
       {/* Menu Drawer */}

@@ -16,7 +16,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen">
       <AppSidebar />
       <main className="flex-1 lg:ml-[240px] transition-all duration-200">
-        <div className="fixed top-4 right-4 z-50">
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+          <StreakFireIcon />
           <NotificationBell />
         </div>
         <div className="max-w-7xl mx-auto p-4 pt-16 lg:pt-6 lg:p-8">
