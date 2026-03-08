@@ -2,12 +2,14 @@ import { motion } from 'framer-motion';
 import { useTraining } from '@/contexts/TrainingContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { calculate1RM } from '@/data/defaultProfile';
-import { TrendingUp, Target, Dumbbell, Activity, Zap, CheckCircle, XCircle, Sparkles } from 'lucide-react';
+import { TrendingUp, Target, Dumbbell, Activity, Zap, CheckCircle, XCircle, Sparkles, AlertTriangle, Trophy, Shield, ArrowUpRight } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import { getOverallLevel, STRENGTH_LEVELS } from '@/lib/strengthStandards';
+import { cn } from '@/lib/utils';
 
 const fadeIn = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.4 } };
 
@@ -47,6 +49,8 @@ export default function Dashboard() {
   const deadlift1RM = calculate1RM(profile.currentLifts.deadlift.weight, profile.currentLifts.deadlift.reps);
   const bench1RM = calculate1RM(profile.currentLifts.bench.weight, profile.currentLifts.bench.reps);
 
+  const strengthData = getOverallLevel(squat1RM, bench1RM, deadlift1RM, profile.bodyWeight);
+
   const currentBlock = program.blocks.find(b => b.weeks.some(w => w.weekNumber === currentWeek)) || program.blocks[0];
   const currentWeekData = currentBlock.weeks.find(w => w.weekNumber === currentWeek) || currentBlock.weeks[0];
   const todayIndex = new Date().getDay();
@@ -61,7 +65,7 @@ export default function Dashboard() {
       .eq('user_id', user.id)
       .eq('status', 'pending')
       .order('created_at', { ascending: false })
-      .limit(5)
+      .limit(10)
       .then(({ data }) => {
         if (data) setRecommendations(data as Recommendation[]);
       });
@@ -76,28 +80,16 @@ export default function Dashboard() {
   const runAnalysis = async () => {
     setAnalyzing(true);
     try {
-      // Run both analysis and auto-progression in parallel
       const [analysisRes, progressionRes] = await Promise.allSettled([
         supabase.functions.invoke('analyze-training'),
         supabase.functions.invoke('auto-progression'),
       ]);
-
       let totalRecs = 0;
-      if (analysisRes.status === 'fulfilled' && analysisRes.value.data?.recommendations?.length > 0) {
-        totalRecs += analysisRes.value.data.recommendations.length;
-      }
-      if (progressionRes.status === 'fulfilled' && progressionRes.value.data?.adjustments?.length > 0) {
-        totalRecs += progressionRes.value.data.adjustments.length;
-      }
+      if (analysisRes.status === 'fulfilled' && analysisRes.value.data?.recommendations?.length > 0) totalRecs += analysisRes.value.data.recommendations.length;
+      if (progressionRes.status === 'fulfilled' && progressionRes.value.data?.adjustments?.length > 0) totalRecs += progressionRes.value.data.adjustments.length;
 
       if (totalRecs > 0) {
-        const { data: fresh } = await supabase
-          .from('ai_recommendations')
-          .select('*')
-          .eq('user_id', user!.id)
-          .eq('status', 'pending')
-          .order('created_at', { ascending: false })
-          .limit(10);
+        const { data: fresh } = await supabase.from('ai_recommendations').select('*').eq('user_id', user!.id).eq('status', 'pending').order('created_at', { ascending: false }).limit(10);
         if (fresh) setRecommendations(fresh as Recommendation[]);
         toast.success(`${totalRecs} novas recomendações geradas!`);
       } else {
@@ -123,11 +115,33 @@ export default function Dashboard() {
   ];
 
   const tooltipStyle = {
-    background: 'hsl(var(--card))',
-    border: '1px solid hsl(var(--border))',
-    borderRadius: '8px',
-    color: 'hsl(var(--foreground))',
+    background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))',
   };
+
+  // Generate insight cards
+  const insights: { icon: any; title: string; description: string; type: 'info' | 'warning' | 'success' }[] = [];
+  
+  // Strength level insights
+  const lifts = [
+    { name: 'Agachamento', data: strengthData.squat },
+    { name: 'Supino', data: strengthData.bench },
+    { name: 'Terra', data: strengthData.deadlift },
+  ];
+  for (const lift of lifts) {
+    if (lift.data.nextLevel && lift.data.kgToNext <= 10) {
+      insights.push({
+        icon: ArrowUpRight,
+        title: `${lift.name} próximo do nível ${lift.data.nextLevel.label}`,
+        description: `Faltam apenas ${lift.data.kgToNext}kg para alcançar o nível ${lift.data.nextLevel.label}!`,
+        type: 'info',
+      });
+    }
+  }
+
+  // Total milestone
+  if (strengthData.total >= 400 && strengthData.total < 410) {
+    insights.push({ icon: Trophy, title: '🏆 Total 400kg!', description: 'Você alcançou um total combinado de 400kg. Excelente progresso!', type: 'success' });
+  }
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -144,6 +158,74 @@ export default function Dashboard() {
         <StatCard icon={Activity} label="Peso Corporal" value={`${profile.bodyWeight} kg`} sub="Atual" />
       </div>
 
+      {/* Strength Standards */}
+      <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
+        <div className="flex items-center gap-2 mb-4">
+          <Shield className="w-5 h-5 text-primary" />
+          <h3 className="text-sm font-semibold text-foreground">Nível de Força</h3>
+          <span className={cn("text-xs font-bold px-2 py-0.5 rounded", strengthData.overall.bgColor, strengthData.overall.color)}>
+            {strengthData.overall.label}
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            { name: 'Agachamento', data: strengthData.squat, e1rm: squat1RM },
+            { name: 'Supino', data: strengthData.bench, e1rm: bench1RM },
+            { name: 'Terra', data: strengthData.deadlift, e1rm: deadlift1RM },
+          ].map(lift => (
+            <div key={lift.name} className="p-3 rounded-lg bg-secondary/40">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-muted-foreground">{lift.name}</span>
+                <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded", lift.data.level.bgColor, lift.data.level.color)}>
+                  {lift.data.level.label}
+                </span>
+              </div>
+              <p className="text-lg font-bold text-foreground">{lift.e1rm}kg <span className="text-xs text-muted-foreground font-normal">({lift.data.ratio}× PC)</span></p>
+              {lift.data.nextLevel && (
+                <div className="mt-2">
+                  <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-primary rounded-full transition-all"
+                      style={{ width: `${Math.min(100, ((lift.e1rm) / (lift.e1rm + lift.data.kgToNext)) * 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">{lift.data.kgToNext}kg para {lift.data.nextLevel.label}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">Total: <span className="font-bold text-foreground">{strengthData.total}kg</span></span>
+          <Link to="/rankings" className="text-xs text-primary hover:underline">Ver Ranking →</Link>
+        </div>
+      </motion.div>
+
+      {/* Performance Insights */}
+      {insights.length > 0 && (
+        <motion.div {...fadeIn} className="space-y-2">
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-primary" /> Insights de Performance
+          </h3>
+          {insights.map((insight, i) => (
+            <div key={i} className={cn(
+              "flex items-start gap-3 p-3 rounded-lg border",
+              insight.type === 'warning' ? 'bg-warning/5 border-warning/20' :
+              insight.type === 'success' ? 'bg-success/5 border-success/20' :
+              'bg-primary/5 border-primary/20'
+            )}>
+              <insight.icon className={cn("w-4 h-4 mt-0.5 shrink-0",
+                insight.type === 'warning' ? 'text-warning' : insight.type === 'success' ? 'text-success' : 'text-primary'
+              )} />
+              <div>
+                <p className="text-sm font-medium text-foreground">{insight.title}</p>
+                <p className="text-xs text-muted-foreground">{insight.description}</p>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+      )}
+
       {/* AI Recommendations */}
       <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
@@ -151,11 +233,8 @@ export default function Dashboard() {
             <Sparkles className="w-5 h-5 text-primary" />
             <h3 className="text-sm font-semibold text-foreground">Recomendações IA</h3>
           </div>
-          <button
-            onClick={runAnalysis}
-            disabled={analyzing}
-            className="text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors disabled:opacity-50 flex items-center gap-1"
-          >
+          <button onClick={runAnalysis} disabled={analyzing}
+            className="text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors disabled:opacity-50 flex items-center gap-1">
             {analyzing ? <div className="w-3 h-3 border border-primary/30 border-t-primary rounded-full animate-spin" /> : <Sparkles className="w-3 h-3" />}
             Analisar Treino
           </button>
@@ -165,29 +244,19 @@ export default function Dashboard() {
         ) : (
           <div className="space-y-3">
             {recommendations.map(rec => (
-              <motion.div
-                key={rec.id}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="flex flex-col sm:flex-row items-start justify-between gap-2 p-3 sm:p-4 rounded-lg bg-secondary/30 border border-border"
-              >
+              <motion.div key={rec.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+                className="flex flex-col sm:flex-row items-start justify-between gap-2 p-3 sm:p-4 rounded-lg bg-secondary/30 border border-border">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-primary/20 text-primary">
-                      {rec.type.replace('_', ' ')}
-                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-primary/20 text-primary">{rec.type.replace('_', ' ')}</span>
                     {rec.exercise && <span className="text-xs text-muted-foreground">{rec.exercise}</span>}
                   </div>
                   <p className="text-sm font-medium text-foreground">{rec.title}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">{rec.description}</p>
                 </div>
                 <div className="flex gap-1 shrink-0">
-                  <button onClick={() => handleRecommendation(rec.id, 'accepted')} className="p-1.5 rounded-lg bg-success/10 text-success hover:bg-success/20 transition-colors">
-                    <CheckCircle className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => handleRecommendation(rec.id, 'rejected')} className="p-1.5 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">
-                    <XCircle className="w-4 h-4" />
-                  </button>
+                  <button onClick={() => handleRecommendation(rec.id, 'accepted')} className="p-1.5 rounded-lg bg-success/10 text-success hover:bg-success/20 transition-colors"><CheckCircle className="w-4 h-4" /></button>
+                  <button onClick={() => handleRecommendation(rec.id, 'rejected')} className="p-1.5 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"><XCircle className="w-4 h-4" /></button>
                 </div>
               </motion.div>
             ))}
@@ -211,7 +280,6 @@ export default function Dashboard() {
             </LineChart>
           </ResponsiveContainer>
         </motion.div>
-
         <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
           <h3 className="text-sm font-semibold text-foreground mb-4">Volume Semanal (Séries)</h3>
           <ResponsiveContainer width="100%" height={200}>
@@ -245,9 +313,7 @@ export default function Dashboard() {
                   <div className={`w-2 h-2 rounded-full ${ex.category === 'compound' ? 'bg-primary' : 'bg-muted-foreground'}`} />
                   <span className="text-sm text-foreground">{ex.name}</span>
                 </div>
-                <span className="text-xs text-muted-foreground font-mono">
-                  {ex.sets.map(s => `${s.targetSets}×${s.targetReps}`).join(' + ')}
-                </span>
+                <span className="text-xs text-muted-foreground font-mono">{ex.sets.map(s => `${s.targetSets}×${s.targetReps}`).join(' + ')}</span>
               </div>
             ))}
           </div>

@@ -8,12 +8,16 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AppLayout } from "@/components/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import ProgramPage from "./pages/ProgramPage";
+import ProgramGenerator from "./pages/ProgramGenerator";
 import WorkoutPage from "./pages/WorkoutPage";
 import AppModeWorkout from "./pages/AppModeWorkout";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import CoachPage from "./pages/CoachPage";
 import ProfilePage from "./pages/ProfilePage";
 import PlateCalculator from "./pages/PlateCalculator";
+import RankingsPage from "./pages/RankingsPage";
+import AchievementsPage from "./pages/AchievementsPage";
+import ExerciseLibrary from "./pages/ExerciseLibrary";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
@@ -38,9 +42,13 @@ function ProtectedRoutes() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/program" element={<ProgramPage />} />
+          <Route path="/generate" element={<ProgramGenerator />} />
           <Route path="/workout" element={<WorkoutPage />} />
           <Route path="/train" element={<AppModeWorkout />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/rankings" element={<RankingsPage />} />
+          <Route path="/achievements" element={<AchievementsPage />} />
+          <Route path="/exercises" element={<ExerciseLibrary />} />
           <Route path="/plates" element={<PlateCalculator />} />
           <Route path="/coach" element={<CoachPage />} />
           <Route path="/profile" element={<ProfilePage />} />
