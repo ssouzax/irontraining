@@ -40,6 +40,9 @@ import BarVelocityPage from "./pages/BarVelocityPage";
 import WearablePage from "./pages/WearablePage";
 import Replay3DPage from "./pages/Replay3DPage";
 import ExecutionGradingPage from "./pages/ExecutionGradingPage";
+import SubscribePage from "./pages/SubscribePage";
+import ShopPage from "./pages/ShopPage";
+import PremiumContentPage from "./pages/PremiumContentPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
