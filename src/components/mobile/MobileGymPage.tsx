@@ -562,12 +562,13 @@ export function MobileGymPage() {
           <div className="flex gap-1 bg-secondary/50 rounded-xl p-1">
             {([
               { key: 'ranking' as ViewTab, label: 'Ranking', icon: Crown },
-              { key: 'prs' as ViewTab, label: 'PRs do Dia', icon: TrendingUp },
-              { key: 'checkins' as ViewTab, label: 'Frequência', icon: Calendar },
+              { key: 'prs' as ViewTab, label: 'PRs', icon: TrendingUp },
+              { key: 'checkins' as ViewTab, label: 'Freq.', icon: Calendar },
+              { key: 'challenge' as ViewTab, label: 'Desafio', icon: Swords },
             ]).map(tab => (
               <button key={tab.key} onClick={() => setViewTab(tab.key)}
                 className={cn(
-                  "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-semibold transition-all",
+                  "flex-1 flex items-center justify-center gap-1 py-2.5 rounded-lg text-[11px] font-semibold transition-all",
                   viewTab === tab.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
                 )}>
                 <tab.icon className="w-3.5 h-3.5" /> {tab.label}
