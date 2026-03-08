@@ -24,6 +24,7 @@ import SocialFeedPage from "./pages/SocialFeedPage";
 import DiscoverPage from "./pages/DiscoverPage";
 import AthleteProfilePage from "./pages/AthleteProfilePage";
 import AuthPage from "./pages/AuthPage";
+import InstallPage from "./pages/InstallPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
