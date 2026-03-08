@@ -199,17 +199,32 @@ export default function AchievementsPage() {
         key={def.achievement_key}
         initial={{ opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
+        whileHover={isUnlocked ? { scale: 1.02 } : undefined}
         className={cn(
-          "bg-card rounded-xl p-4 card-elevated flex items-start gap-3 border transition-colors",
+          "bg-card rounded-xl p-4 card-elevated flex items-start gap-3 border transition-all relative overflow-hidden",
           isUnlocked ? rarity.border : "border-border opacity-60"
         )}
       >
-        <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0",
+        {/* Glow effect for unlocked */}
+        {isUnlocked && (def.rarity === 'legendary' || def.rarity === 'epic') && (
+          <div className={cn("absolute inset-0 opacity-[0.07]",
+            def.rarity === 'legendary' ? "bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500" : "bg-gradient-to-r from-purple-500 via-violet-500 to-purple-500"
+          )} />
+        )}
+        {/* Shimmer for legendary */}
+        {isUnlocked && def.rarity === 'legendary' && (
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-400/10 to-transparent -translate-x-full animate-[shimmer_4s_ease-in-out_infinite]" />
+        )}
+
+        <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0 relative",
           isUnlocked ? rarity.bg : "bg-secondary grayscale"
         )}>
+          {isUnlocked && (def.rarity === 'legendary' || def.rarity === 'epic') && (
+            <div className="absolute inset-0 rounded-xl animate-pulse opacity-30" style={{ boxShadow: `0 0 16px ${def.rarity === 'legendary' ? 'rgba(234,179,8,0.5)' : 'rgba(168,85,247,0.5)'}` }} />
+          )}
           {isHiddenSecret ? <Lock className="w-5 h-5 text-muted-foreground" /> : (def.icon || '🏆')}
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 relative z-10">
           <div className="flex items-center gap-1.5">
             <p className="text-sm font-semibold text-foreground truncate">
               {isHiddenSecret ? '???' : def.title}
@@ -220,7 +235,6 @@ export default function AchievementsPage() {
             {isHiddenSecret ? 'Conquista secreta — desbloqueie para revelar' : def.description}
           </p>
           
-          {/* Rarity badge */}
           <div className="flex items-center gap-2 mt-1.5">
             <span className={cn("text-[10px] px-1.5 py-0.5 rounded font-medium", rarity.bg, rarity.color)}>
               {rarity.label}
@@ -240,7 +254,12 @@ export default function AchievementsPage() {
           {showProgress && !isHiddenSecret && (
             <div className="mt-2">
               <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-                <div className={cn("h-full rounded-full transition-all", rarity.bg.replace('/10', '/40'))} style={{ width: `${progress}%` }} />
+                <motion.div
+                  className={cn("h-full rounded-full", rarity.bg.replace('/10', '/40'))}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                />
               </div>
               <p className="text-[10px] text-muted-foreground mt-1">
                 {Math.round(current * 100) / 100}{unit} / {def.requirement_value}{unit}
@@ -252,7 +271,7 @@ export default function AchievementsPage() {
           <button onClick={() => setShareCard({
             open: true, title: def.title, subtitle: def.description,
             stat: ach?.value ? `${ach.value}kg` : undefined, icon: def.icon || '🏆', rarity: def.rarity,
-          })} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0">
+          })} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 relative z-10">
             <Share2 className="w-3.5 h-3.5" />
           </button>
         )}
@@ -347,33 +366,54 @@ export default function AchievementsPage() {
 
       {/* Trees View */}
       {tab === 'trees' ? (
-        <div className="space-y-6">
-          {Object.entries(treeGroups).map(([treeId, nodes]) => (
-            <div key={treeId} className="space-y-2">
-              <h3 className="text-sm font-bold text-foreground">{TREE_LABELS[treeId] || treeId}</h3>
-              <div className="relative">
-                {/* Vertical line */}
-                <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-border" />
-                <div className="space-y-2">
-                  {nodes.map((node, idx) => {
-                    const isUnlocked = unlockedTypes.has(node.achievement_key);
-                    const ach = unlocked.find(a => a.type === node.achievement_key);
-                    const rarity = RARITY_CONFIG[node.rarity] || RARITY_CONFIG.common;
-                    return (
-                      <div key={node.achievement_key} className="relative pl-14">
-                        {/* Node dot */}
-                        <div className={cn(
-                          "absolute left-4 top-4 w-4 h-4 rounded-full border-2 z-10",
-                          isUnlocked ? "bg-primary border-primary" : "bg-secondary border-border"
-                        )} />
-                        {renderAchievementCard(node, isUnlocked, ach)}
-                      </div>
-                    );
-                  })}
+        <div className="space-y-8">
+          {Object.entries(treeGroups).map(([treeId, nodes]) => {
+            const totalNodes = nodes.length;
+            const unlockedNodes = nodes.filter(n => unlockedTypes.has(n.achievement_key)).length;
+            const treePct = totalNodes > 0 ? Math.round((unlockedNodes / totalNodes) * 100) : 0;
+
+            return (
+              <motion.div key={treeId} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-foreground">{TREE_LABELS[treeId] || treeId}</h3>
+                  <span className="text-[10px] font-semibold text-muted-foreground px-2 py-0.5 rounded-full bg-secondary">{unlockedNodes}/{totalNodes} • {treePct}%</span>
                 </div>
-              </div>
-            </div>
-          ))}
+                {/* Tree progress bar */}
+                <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                  <motion.div className="h-full bg-primary rounded-full" initial={{ width: 0 }} animate={{ width: `${treePct}%` }} transition={{ duration: 1, ease: 'easeOut' }} />
+                </div>
+                <div className="relative">
+                  {/* Animated connection line */}
+                  <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-gradient-to-b from-primary/50 via-border to-border" />
+                  <div className="space-y-2">
+                    {nodes.map((node, idx) => {
+                      const isUnlocked = unlockedTypes.has(node.achievement_key);
+                      const ach = unlocked.find(a => a.type === node.achievement_key);
+                      const prevUnlocked = idx === 0 || unlockedTypes.has(nodes[idx - 1].achievement_key);
+                      const nodeRarity = RARITY_CONFIG[node.rarity] || RARITY_CONFIG.common;
+                      return (
+                        <motion.div key={node.achievement_key} className="relative pl-14"
+                          initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.08 }}>
+                          {/* Node dot with glow */}
+                          <div className={cn(
+                            "absolute left-4 top-4 w-5 h-5 rounded-full border-2 z-10 transition-all",
+                            isUnlocked ? "bg-primary border-primary shadow-[0_0_10px_rgba(139,92,246,0.5)]" : prevUnlocked ? "bg-secondary border-primary/40" : "bg-secondary border-border"
+                          )}>
+                            {isUnlocked && <motion.div className="absolute inset-0 rounded-full bg-primary" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: idx * 0.1 }} />}
+                          </div>
+                          {/* Connecting glow segment */}
+                          {isUnlocked && idx > 0 && (
+                            <div className="absolute left-[1.35rem] top-0 w-0.5 h-6 bg-primary/50 -translate-y-full" />
+                          )}
+                          {renderAchievementCard(node, isUnlocked, ach)}
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       ) : (
         <>
