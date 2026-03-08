@@ -8,11 +8,13 @@ import { useAuth } from '@/contexts/AuthContext';
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Painel' },
   { to: '/program', icon: Calendar, label: 'Programa' },
+  { to: '/programs', icon: FolderOpen, label: 'Meus Programas' },
   { to: '/generate', icon: Sparkles, label: 'Gerar Programa' },
   { to: '/workout', icon: Dumbbell, label: 'Treino' },
   { to: '/train', icon: Zap, label: 'Modo App' },
   { to: '/analytics', icon: BarChart3, label: 'Análises' },
   { to: '/rankings', icon: Trophy, label: 'Ranking' },
+  { to: '/leaderboard', icon: Crown, label: 'Ranking DOTS' },
   { to: '/achievements', icon: Award, label: 'Conquistas' },
   { to: '/feed', icon: Users, label: 'Feed Social' },
   { to: '/exercises', icon: BookOpen, label: 'Exercícios' },

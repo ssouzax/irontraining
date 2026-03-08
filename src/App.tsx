@@ -45,11 +45,13 @@ function ProtectedRoutes() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/program" element={<ProgramPage />} />
+          <Route path="/programs" element={<ProgramManagerPage />} />
           <Route path="/generate" element={<ProgramGenerator />} />
           <Route path="/workout" element={<WorkoutPage />} />
           <Route path="/train" element={<AppModeWorkout />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/rankings" element={<RankingsPage />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/exercises" element={<ExerciseLibrary />} />
           <Route path="/feed" element={<SocialFeedPage />} />
