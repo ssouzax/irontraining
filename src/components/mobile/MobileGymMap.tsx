@@ -120,7 +120,7 @@ export function MobileGymMap() {
 
   const getUserLocation = () => {
     if (!navigator.geolocation) {
-      setUserLocation({ lat: -23.5505, lng: -46.6333 });
+      setUserLocation({ lat: -23.2640, lng: -47.2990 }); // Default: Itu, SP
       return;
     }
     navigator.geolocation.getCurrentPosition(
