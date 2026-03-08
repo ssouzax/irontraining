@@ -26,7 +26,9 @@ const GRADIENTS: Record<string, string> = {
 export default function ShareableCard({ open, onClose, type, title, subtitle, stat, statLabel, icon, username, streakDays }: ShareableCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
-  const gradient = GRADIENTS[Math.abs(title.length) % GRADIENTS.length];
+  const gradient = type === 'streak' 
+    ? ((streakDays || 0) >= 30 ? GRADIENTS.streak_hot : GRADIENTS.streak)
+    : (GRADIENTS[type] || GRADIENTS.achievement);
 
   const downloadCard = async () => {
     if (!cardRef.current) return;
