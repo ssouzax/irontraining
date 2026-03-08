@@ -14,7 +14,224 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ai_recommendations: {
+        Row: {
+          created_at: string
+          description: string
+          exercise: string | null
+          id: string
+          status: string
+          suggested_change: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          exercise?: string | null
+          id?: string
+          status?: string
+          suggested_change?: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          exercise?: string | null
+          id?: string
+          status?: string
+          suggested_change?: Json | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      current_lifts: {
+        Row: {
+          created_at: string
+          exercise: string
+          id: string
+          is_pr: boolean | null
+          recorded_at: string
+          reps: number
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          exercise: string
+          id?: string
+          is_pr?: boolean | null
+          recorded_at?: string
+          reps?: number
+          user_id: string
+          weight: number
+        }
+        Update: {
+          created_at?: string
+          exercise?: string
+          id?: string
+          is_pr?: boolean | null
+          recorded_at?: string
+          reps?: number
+          user_id?: string
+          weight?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          body_weight: number | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          goals: string | null
+          id: string
+          target_bench: string | null
+          target_deadlift: string | null
+          target_squat: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body_weight?: number | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          goals?: string | null
+          id?: string
+          target_bench?: string | null
+          target_deadlift?: string | null
+          target_squat?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body_weight?: number | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          goals?: string | null
+          id?: string
+          target_bench?: string | null
+          target_deadlift?: string | null
+          target_squat?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      set_logs: {
+        Row: {
+          actual_reps: number | null
+          actual_rir: number | null
+          actual_weight: number | null
+          completed: boolean | null
+          created_at: string
+          exercise_name: string
+          id: string
+          notes: string | null
+          set_number: number
+          set_type: string
+          target_reps: number | null
+          target_rir: number | null
+          target_weight: number | null
+          user_id: string
+          workout_log_id: string
+        }
+        Insert: {
+          actual_reps?: number | null
+          actual_rir?: number | null
+          actual_weight?: number | null
+          completed?: boolean | null
+          created_at?: string
+          exercise_name: string
+          id?: string
+          notes?: string | null
+          set_number: number
+          set_type?: string
+          target_reps?: number | null
+          target_rir?: number | null
+          target_weight?: number | null
+          user_id: string
+          workout_log_id: string
+        }
+        Update: {
+          actual_reps?: number | null
+          actual_rir?: number | null
+          actual_weight?: number | null
+          completed?: boolean | null
+          created_at?: string
+          exercise_name?: string
+          id?: string
+          notes?: string | null
+          set_number?: number
+          set_type?: string
+          target_reps?: number | null
+          target_rir?: number | null
+          target_weight?: number | null
+          user_id?: string
+          workout_log_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "set_logs_workout_log_id_fkey"
+            columns: ["workout_log_id"]
+            isOneToOne: false
+            referencedRelation: "workout_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workout_logs: {
+        Row: {
+          body_weight: number | null
+          completed_at: string | null
+          created_at: string
+          day_index: number
+          day_name: string
+          fatigue: number | null
+          id: string
+          notes: string | null
+          program_week: number
+          started_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body_weight?: number | null
+          completed_at?: string | null
+          created_at?: string
+          day_index: number
+          day_name: string
+          fatigue?: number | null
+          id?: string
+          notes?: string | null
+          program_week: number
+          started_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body_weight?: number | null
+          completed_at?: string | null
+          created_at?: string
+          day_index?: number
+          day_name?: string
+          fatigue?: number | null
+          id?: string
+          notes?: string | null
+          program_week?: number
+          started_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
