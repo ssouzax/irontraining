@@ -745,6 +745,39 @@ export type Database = {
           },
         ]
       }
+      power_scores: {
+        Row: {
+          consistency_component: number
+          dots_component: number
+          id: string
+          last_updated: string
+          power_score: number
+          pr_frequency_component: number
+          user_id: string
+          volume_component: number
+        }
+        Insert: {
+          consistency_component?: number
+          dots_component?: number
+          id?: string
+          last_updated?: string
+          power_score?: number
+          pr_frequency_component?: number
+          user_id: string
+          volume_component?: number
+        }
+        Update: {
+          consistency_component?: number
+          dots_component?: number
+          id?: string
+          last_updated?: string
+          power_score?: number
+          pr_frequency_component?: number
+          user_id?: string
+          volume_component?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -842,6 +875,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      rivals: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          rival_user_id: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          rival_user_id: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          rival_user_id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       season_rewards: {
         Row: {
@@ -1269,6 +1326,25 @@ export type Database = {
         Args: { bw_kg: number; is_male?: boolean; total_kg: number }
         Returns: number
       }
+      find_potential_rivals: {
+        Args: {
+          bw_threshold?: number
+          dots_threshold?: number
+          target_user_id: string
+        }
+        Returns: {
+          avatar_url: string
+          bench_pr: number
+          bodyweight: number
+          deadlift_pr: number
+          display_name: string
+          dots_score: number
+          squat_pr: number
+          total: number
+          user_id: string
+          username: string
+        }[]
+      }
       get_dots_leaderboard: {
         Args: { max_bw?: number; min_bw?: number }
         Returns: {
@@ -1313,6 +1389,17 @@ export type Database = {
           recorded_at: string
           reps: number
           weight: number
+        }[]
+      }
+      get_power_score_leaderboard: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          display_name: string
+          last_updated: string
+          power_score: number
+          user_id: string
+          username: string
         }[]
       }
     }
