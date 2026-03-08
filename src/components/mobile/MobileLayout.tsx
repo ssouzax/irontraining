@@ -68,13 +68,23 @@ interface MobileLayoutProps {
   workoutContent: ReactNode;
 }
 
+const tabOrder: Tab[] = ['home', 'workout', 'post', 'rankings', 'profile', 'gym', 'gymmap', 'rivals', 'powerscore', 'predictor', 'explore', 'heatmap', 'gympoints', 'exerciserankings', 'livegym', 'wrapped'];
+
 export function MobileLayout({ workoutContent }: MobileLayoutProps) {
   const [activeTab, setActiveTab] = useState<Tab>('home');
+  const [direction, setDirection] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const { signOut } = useAuth();
 
-  const navigateToTab = (tab: Tab) => {
+  const changeTab = (tab: Tab) => {
+    const oldIdx = tabOrder.indexOf(activeTab);
+    const newIdx = tabOrder.indexOf(tab);
+    setDirection(newIdx > oldIdx ? 1 : -1);
     setActiveTab(tab);
+  };
+
+  const navigateToTab = (tab: Tab) => {
+    changeTab(tab);
     setMenuOpen(false);
   };
 
