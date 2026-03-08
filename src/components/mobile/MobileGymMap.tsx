@@ -186,7 +186,8 @@ export function MobileGymMap() {
         </div>
       `;
 
-      const marker = new google.maps.marker.AdvancedMarkerElement({
+      const gMaps = (window as any).google.maps;
+      const marker = new gMaps.marker.AdvancedMarkerElement({
         map: mapInstanceRef.current!,
         position: { lat: gym.latitude, lng: gym.longitude },
         content: markerEl,
