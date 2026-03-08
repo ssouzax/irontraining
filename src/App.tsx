@@ -29,6 +29,7 @@ import DiscoverPage from "./pages/DiscoverPage";
 import AthleteProfilePage from "./pages/AthleteProfilePage";
 import AuthPage from "./pages/AuthPage";
 import InstallPage from "./pages/InstallPage";
+import StreakLeaderboardPage from "./pages/StreakLeaderboardPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -69,6 +70,7 @@ function ProtectedRoutes() {
           <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/athlete/:userId" element={<AthleteProfilePage />} />
           <Route path="/plates" element={<PlateCalculator />} />
+          <Route path="/streaks" element={<StreakLeaderboardPage />} />
           <Route path="/coach" element={<CoachPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="*" element={<NotFound />} />

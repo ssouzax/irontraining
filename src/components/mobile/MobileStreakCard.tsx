@@ -5,6 +5,7 @@ import { useTrainingStreak } from '@/hooks/useTrainingStreak';
 import { usePlayerLevel } from '@/hooks/usePlayerLevel';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
@@ -12,6 +13,7 @@ export function MobileStreakCard() {
   const { streak, loading } = useTrainingStreak();
   const { playerLevel } = usePlayerLevel();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const shareStreak = async () => {
     if (!user || !streak) return;
@@ -42,9 +44,14 @@ export function MobileStreakCard() {
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Dias de Streak</p>
           </div>
         </div>
-        <button onClick={shareStreak} className="p-2 rounded-full bg-background/50 text-muted-foreground hover:text-foreground">
-          <Share2 className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button onClick={() => navigate('/streaks')} className="p-2 rounded-full bg-background/50 text-muted-foreground hover:text-foreground">
+            <Trophy className="w-4 h-4" />
+          </button>
+          <button onClick={shareStreak} className="p-2 rounded-full bg-background/50 text-muted-foreground hover:text-foreground">
+            <Share2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-2">

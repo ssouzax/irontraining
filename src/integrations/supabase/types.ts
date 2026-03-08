@@ -1817,6 +1817,20 @@ export type Database = {
           username: string
         }[]
       }
+      get_streak_leaderboard: {
+        Args: { target_gym_id?: string }
+        Returns: {
+          avatar_url: string
+          current_streak: number
+          display_name: string
+          gym_id: string
+          gym_name: string
+          longest_streak: number
+          user_id: string
+          username: string
+          weekly_consistency_streak: number
+        }[]
+      }
       get_trending_posts: {
         Args: { limit_count?: number }
         Returns: {
