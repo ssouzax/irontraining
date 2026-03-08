@@ -16,14 +16,14 @@ interface ShareableCardProps {
   streakDays?: number;
 }
 
-const GRADIENTS = [
-  'from-violet-600 via-purple-600 to-indigo-700',
-  'from-amber-500 via-orange-600 to-red-600',
-  'from-emerald-500 via-teal-600 to-cyan-700',
-  'from-rose-500 via-pink-600 to-fuchsia-700',
-];
+const GRADIENTS: Record<string, string> = {
+  achievement: 'from-violet-600 via-purple-600 to-indigo-700',
+  pr: 'from-amber-500 via-orange-600 to-red-600',
+  streak: 'from-orange-500 via-red-600 to-rose-700',
+  streak_hot: 'from-red-600 via-orange-500 to-yellow-500',
+};
 
-export default function ShareableCard({ open, onClose, type, title, subtitle, stat, statLabel, icon, username }: ShareableCardProps) {
+export default function ShareableCard({ open, onClose, type, title, subtitle, stat, statLabel, icon, username, streakDays }: ShareableCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
   const gradient = GRADIENTS[Math.abs(title.length) % GRADIENTS.length];
