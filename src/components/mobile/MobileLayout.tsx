@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useRef } from 'react';
 import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin, Swords, Brain, Flame, Radio, Star, Map } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MobileHomeFeed } from './MobileHomeFeed';
@@ -68,13 +68,23 @@ interface MobileLayoutProps {
   workoutContent: ReactNode;
 }
 
+const tabOrder: Tab[] = ['home', 'workout', 'post', 'rankings', 'profile', 'gym', 'gymmap', 'rivals', 'powerscore', 'predictor', 'explore', 'heatmap', 'gympoints', 'exerciserankings', 'livegym', 'wrapped'];
+
 export function MobileLayout({ workoutContent }: MobileLayoutProps) {
   const [activeTab, setActiveTab] = useState<Tab>('home');
+  const [direction, setDirection] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const { signOut } = useAuth();
 
-  const navigateToTab = (tab: Tab) => {
+  const changeTab = (tab: Tab) => {
+    const oldIdx = tabOrder.indexOf(activeTab);
+    const newIdx = tabOrder.indexOf(tab);
+    setDirection(newIdx > oldIdx ? 1 : -1);
     setActiveTab(tab);
+  };
+
+  const navigateToTab = (tab: Tab) => {
+    changeTab(tab);
     setMenuOpen(false);
   };
 
@@ -184,25 +194,34 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
       </AnimatePresence>
 
       {/* Content */}
-      <main className="flex-1 pt-14 pb-20 overflow-y-auto">
-        {activeTab === 'home' && <MobileHomeFeed />}
-        {activeTab === 'workout' && (
-          <div className="p-4">{workoutContent}</div>
-        )}
-        {activeTab === 'post' && <MobileCreatePost onPostCreated={() => setActiveTab('home')} />}
-        {activeTab === 'rankings' && <MobileRankings />}
-        {activeTab === 'profile' && <MobileProfile />}
-        {activeTab === 'gym' && <MobileGymPage />}
-        {activeTab === 'gymmap' && <MobileGymMap />}
-        {activeTab === 'rivals' && <MobileRivals />}
-        {activeTab === 'powerscore' && <MobilePowerScore />}
-        {activeTab === 'predictor' && <MobilePredictor />}
-        {activeTab === 'explore' && <MobileExplore />}
-        {activeTab === 'heatmap' && <MobileGymHeatmap />}
-        {activeTab === 'gympoints' && <MobileGymPoints />}
-        {activeTab === 'exerciserankings' && <MobileExerciseLeaderboard />}
-        {activeTab === 'livegym' && <MobileLiveGym />}
-        {activeTab === 'wrapped' && <MobileWrappedCards />}
+      <main className="flex-1 pt-14 pb-20 overflow-y-auto overflow-x-hidden">
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={activeTab}
+            custom={direction}
+            initial={{ opacity: 0, x: direction > 0 ? 60 : -60 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -60 : 60 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+          >
+            {activeTab === 'home' && <MobileHomeFeed />}
+            {activeTab === 'workout' && <div className="p-4">{workoutContent}</div>}
+            {activeTab === 'post' && <MobileCreatePost onPostCreated={() => changeTab('home')} />}
+            {activeTab === 'rankings' && <MobileRankings />}
+            {activeTab === 'profile' && <MobileProfile />}
+            {activeTab === 'gym' && <MobileGymPage />}
+            {activeTab === 'gymmap' && <MobileGymMap />}
+            {activeTab === 'rivals' && <MobileRivals />}
+            {activeTab === 'powerscore' && <MobilePowerScore />}
+            {activeTab === 'predictor' && <MobilePredictor />}
+            {activeTab === 'explore' && <MobileExplore />}
+            {activeTab === 'heatmap' && <MobileGymHeatmap />}
+            {activeTab === 'gympoints' && <MobileGymPoints />}
+            {activeTab === 'exerciserankings' && <MobileExerciseLeaderboard />}
+            {activeTab === 'livegym' && <MobileLiveGym />}
+            {activeTab === 'wrapped' && <MobileWrappedCards />}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Bottom Navigation */}
@@ -214,7 +233,7 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
             return (
               <button
                 key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
+                onClick={() => changeTab(tab.key)}
                 className={cn(
                   "flex flex-col items-center gap-0.5 py-1 px-3 transition-colors",
                   isPost && "relative -mt-4"
