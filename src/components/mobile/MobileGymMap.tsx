@@ -129,6 +129,8 @@ export function MobileGymMap() {
   const [appGyms, setAppGyms] = useState<AppGym[]>([]);
   const [selectedGym, setSelectedGym] = useState<AppGym | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
   const [showAddManual, setShowAddManual] = useState(false);
   const [newGymName, setNewGymName] = useState('');
   const [newGymAddress, setNewGymAddress] = useState('');
@@ -139,6 +141,8 @@ export function MobileGymMap() {
   const [myGymId, setMyGymId] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterMode>('all');
   const [friendGymIds, setFriendGymIds] = useState<Set<string>>(new Set());
+  const [osmLoading, setOsmLoading] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     getUserLocation();
@@ -249,23 +253,58 @@ export function MobileGymMap() {
     
     const heatmapMap = new Map((data || []).map((g: any) => [g.gym_id, g]));
     
-    const enriched: AppGym[] = await Promise.all(
-      (allGyms || []).map(async (g: any) => {
-        const hm = heatmapMap.get(g.id) as any;
-        const { count: memberCount } = await supabase.from('gym_members').select('id', { count: 'exact', head: true }).eq('gym_id', g.id);
-        const { count: prCount } = await supabase.from('gym_points_log').select('id', { count: 'exact', head: true }).eq('gym_id', g.id).eq('reason', 'pr');
-        return {
-          ...g,
-          member_count: memberCount || (hm?.member_count || 0),
-          pr_count: prCount || (hm?.total_prs || 0),
-          top_squat: hm?.top_squat || 0,
-          top_bench: hm?.top_bench || 0,
-          top_deadlift: hm?.top_deadlift || 0,
-          intensity_score: hm?.intensity_score || 0,
-        };
-      })
-    );
+    const enriched: AppGym[] = (allGyms || []).map((g: any) => {
+      const hm = heatmapMap.get(g.id) as any;
+      return {
+        ...g,
+        member_count: hm?.member_count || 0,
+        pr_count: hm?.total_prs || 0,
+        top_squat: hm?.top_squat || 0,
+        top_bench: hm?.top_bench || 0,
+        top_deadlift: hm?.top_deadlift || 0,
+        intensity_score: hm?.intensity_score || 0,
+      };
+    });
     setAppGyms(enriched);
+
+    // Auto-discover nearby gyms from OSM in background
+    if (userLocation) {
+      discoverOSMGyms(userLocation.lat, userLocation.lng);
+    }
+  };
+
+  const discoverOSMGyms = async (lat: number, lng: number) => {
+    try {
+      setOsmLoading(true);
+      const { data, error } = await supabase.functions.invoke('search-gyms-osm', {
+        body: { action: 'nearby', lat, lon: lng, radius_km: 20 },
+      });
+      if (data?.count > 0) {
+        // Reload gyms from DB since OSM function auto-imports new ones
+        const { data: allGyms } = await supabase.from('gyms').select('*');
+        if (allGyms && allGyms.length > appGyms.length) {
+          const { data: heatData } = await supabase.rpc('get_gym_heatmap', { days_back: 30 });
+          const heatmapMap = new Map((heatData || []).map((g: any) => [g.gym_id, g]));
+          const enriched: AppGym[] = (allGyms || []).map((g: any) => {
+            const hm = heatmapMap.get(g.id) as any;
+            return {
+              ...g,
+              member_count: hm?.member_count || 0,
+              pr_count: hm?.total_prs || 0,
+              top_squat: hm?.top_squat || 0,
+              top_bench: hm?.top_bench || 0,
+              top_deadlift: hm?.top_deadlift || 0,
+              intensity_score: hm?.intensity_score || 0,
+            };
+          });
+          setAppGyms(enriched);
+        }
+      }
+    } catch (e) {
+      console.error('OSM discovery error:', e);
+    } finally {
+      setOsmLoading(false);
+    }
   };
 
   const renderMarkers = () => {
@@ -342,18 +381,58 @@ export function MobileGymMap() {
     if (match && match.latitude && match.longitude) {
       mapInstanceRef.current.flyTo([match.latitude, match.longitude], 15, { duration: 1 });
       setSelectedGym(match);
+      setShowSearchResults(false);
     } else {
-      fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery + ' gym')}&format=json&limit=5`)
-        .then(r => r.json())
-        .then(results => {
-          if (results.length > 0) {
-            mapInstanceRef.current?.flyTo([parseFloat(results[0].lat), parseFloat(results[0].lon)], 14, { duration: 1 });
-          } else {
-            toast.error('Nenhum resultado encontrado');
-          }
-        })
-        .catch(() => toast.error('Erro na busca'));
+      // Search via OSM edge function
+      supabase.functions.invoke('search-gyms-osm', {
+        body: { action: 'search', query: searchQuery },
+      }).then(({ data }) => {
+        if (data?.gyms?.length > 0) {
+          setSearchResults(data.gyms);
+          setShowSearchResults(true);
+        } else {
+          toast.error('Nenhum resultado encontrado');
+        }
+      }).catch(() => toast.error('Erro na busca'));
     }
+  };
+
+  const handleSearchInput = (value: string) => {
+    setSearchQuery(value);
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    if (value.length >= 3) {
+      searchTimeoutRef.current = setTimeout(() => {
+        const query = value.toLowerCase();
+        const localMatches = appGyms.filter(g =>
+          g.name.toLowerCase().includes(query) || g.city?.toLowerCase().includes(query)
+        ).slice(0, 8);
+        if (localMatches.length > 0) {
+          setSearchResults(localMatches.map(g => ({
+            name: g.name,
+            city: g.city,
+            lat: g.latitude,
+            lon: g.longitude,
+            local: true,
+            gym: g,
+          })));
+          setShowSearchResults(true);
+        }
+      }, 200);
+    } else {
+      setShowSearchResults(false);
+      setSearchResults([]);
+    }
+  };
+
+  const selectSearchResult = (result: any) => {
+    if (result.local && result.gym) {
+      setSelectedGym(result.gym);
+      mapInstanceRef.current?.flyTo([result.gym.latitude, result.gym.longitude], 16, { duration: 1 });
+    } else if (result.lat && result.lon) {
+      mapInstanceRef.current?.flyTo([result.lat, result.lon], 15, { duration: 1 });
+    }
+    setShowSearchResults(false);
+    setSearchQuery(result.name);
   };
 
   const selectGym = async (gym: AppGym) => {
@@ -453,10 +532,30 @@ export function MobileGymMap() {
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+            <input value={searchQuery} onChange={e => handleSearchInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && searchGyms()}
+              onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
               placeholder="Buscar academia ou cidade..."
               className="w-full bg-card border border-border rounded-xl pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            {/* Autocomplete dropdown */}
+            <AnimatePresence>
+              {showSearchResults && searchResults.length > 0 && (
+                <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+                  className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
+                  {searchResults.map((r, i) => (
+                    <button key={i} onClick={() => selectSearchResult(r)}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-secondary/50 transition-colors border-b border-border/50 last:border-0">
+                      <MapPin className="w-4 h-4 text-primary shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{r.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{r.city || r.address || ''}</p>
+                      </div>
+                      {r.local && <CheckCircle className="w-3 h-3 text-primary shrink-0 ml-auto" />}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
           <button onClick={searchGyms}
             className="px-4 rounded-xl bg-primary text-primary-foreground text-sm font-medium shrink-0">
@@ -474,6 +573,12 @@ export function MobileGymMap() {
             </button>
           ))}
         </div>
+        {osmLoading && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Loader2 className="w-3 h-3 animate-spin" />
+            <span>Descobrindo academias próximas via OpenStreetMap...</span>
+          </div>
+        )}
       </div>
 
       {/* Map */}
