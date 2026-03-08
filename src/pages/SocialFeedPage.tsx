@@ -206,7 +206,10 @@ export default function SocialFeedPage() {
         is_pr: postType === 'pr',
         media_urls: mediaUrls.length > 0 ? mediaUrls : null,
       });
-      toast.success('Post publicado!');
+      // Award XP for posting
+      const postXP = mediaUrls.length > 0 ? 60 : (postType === 'pr' ? 80 : 40);
+      await addXP(postXP, 'social_post');
+      toast.success(`Post publicado! +${postXP} XP`);
       setShowCreate(false);
       setCaption('');
       setExerciseName('');
