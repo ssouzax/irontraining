@@ -29,6 +29,7 @@ import DiscoverPage from "./pages/DiscoverPage";
 import AthleteProfilePage from "./pages/AthleteProfilePage";
 import AuthPage from "./pages/AuthPage";
 import InstallPage from "./pages/InstallPage";
+import StreakLeaderboardPage from "./pages/StreakLeaderboardPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
