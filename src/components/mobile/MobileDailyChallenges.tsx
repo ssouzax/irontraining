@@ -35,9 +35,9 @@ export function MobileDailyChallenges() {
   if (loading) return null;
 
   const getRankIcon = (index: number) => {
-    if (index === 0) return <Crown className="w-4 h-4 text-yellow-500" />;
-    if (index === 1) return <Medal className="w-4 h-4 text-gray-400" />;
-    if (index === 2) return <Award className="w-4 h-4 text-amber-600" />;
+    if (index === 0) return <Crown className="w-4 h-4 text-primary" />;
+    if (index === 1) return <Medal className="w-4 h-4 text-muted-foreground" />;
+    if (index === 2) return <Award className="w-4 h-4 text-accent-foreground" />;
     return <span className="text-[10px] font-bold text-muted-foreground w-4 text-center">{index + 1}</span>;
   };
 
