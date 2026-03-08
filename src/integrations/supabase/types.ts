@@ -267,6 +267,56 @@ export type Database = {
         }
         Relationships: []
       }
+      exercise_rankings: {
+        Row: {
+          bodyweight: number
+          created_at: string
+          dots_score: number
+          estimated_1rm: number
+          exercise_name: string
+          gym_id: string | null
+          id: string
+          reps: number
+          updated_at: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          bodyweight?: number
+          created_at?: string
+          dots_score?: number
+          estimated_1rm?: number
+          exercise_name: string
+          gym_id?: string | null
+          id?: string
+          reps?: number
+          updated_at?: string
+          user_id: string
+          weight?: number
+        }
+        Update: {
+          bodyweight?: number
+          created_at?: string
+          dots_score?: number
+          estimated_1rm?: number
+          exercise_name?: string
+          gym_id?: string | null
+          id?: string
+          reps?: number
+          updated_at?: string
+          user_id?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_rankings_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercises: {
         Row: {
           common_mistakes: string | null
@@ -442,6 +492,53 @@ export type Database = {
           },
         ]
       }
+      gym_live_activity: {
+        Row: {
+          activity_type: string
+          created_at: string
+          estimated_1rm: number
+          exercise_name: string
+          gym_id: string
+          id: string
+          message: string | null
+          reps: number
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          activity_type?: string
+          created_at?: string
+          estimated_1rm?: number
+          exercise_name: string
+          gym_id: string
+          id?: string
+          message?: string | null
+          reps?: number
+          user_id: string
+          weight?: number
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          estimated_1rm?: number
+          exercise_name?: string
+          gym_id?: string
+          id?: string
+          message?: string | null
+          reps?: number
+          user_id?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_live_activity_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gym_members: {
         Row: {
           gym_id: string
@@ -471,6 +568,41 @@ export type Database = {
           },
         ]
       }
+      gym_points_log: {
+        Row: {
+          created_at: string
+          gym_id: string
+          id: string
+          points: number
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          gym_id: string
+          id?: string
+          points?: number
+          reason: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          gym_id?: string
+          id?: string
+          points?: number
+          reason?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_points_log_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gyms: {
         Row: {
           city: string | null
@@ -481,6 +613,8 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           name: string
+          tier: string
+          total_points: number
           verified: boolean
         }
         Insert: {
@@ -492,6 +626,8 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           name: string
+          tier?: string
+          total_points?: number
           verified?: boolean
         }
         Update: {
@@ -503,6 +639,8 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           name?: string
+          tier?: string
+          total_points?: number
           verified?: boolean
         }
         Relationships: []
@@ -1511,6 +1649,22 @@ export type Database = {
           username: string
         }[]
       }
+      get_exercise_leaderboard: {
+        Args: { limit_count?: number; target_exercise: string }
+        Returns: {
+          avatar_url: string
+          bodyweight: number
+          display_name: string
+          dots_score: number
+          estimated_1rm: number
+          exercise_name: string
+          gym_name: string
+          reps: number
+          user_id: string
+          username: string
+          weight: number
+        }[]
+      }
       get_gym_heatmap: {
         Args: { days_back?: number }
         Returns: {
@@ -1542,6 +1696,19 @@ export type Database = {
           user_id: string
           username: string
           weight_lifted: number
+        }[]
+      }
+      get_gym_rankings: {
+        Args: { limit_count?: number }
+        Returns: {
+          city: string
+          country: string
+          gym_id: string
+          gym_name: string
+          member_count: number
+          pr_count: number
+          tier: string
+          total_points: number
         }[]
       }
       get_leaderboard: {
