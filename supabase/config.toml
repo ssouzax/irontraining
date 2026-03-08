@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.auto-progression]
 verify_jwt = false
+
+[functions.predict-strength]
+verify_jwt = false
