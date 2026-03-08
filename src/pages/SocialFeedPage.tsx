@@ -56,12 +56,29 @@ export default function SocialFeedPage() {
   }, [user]);
 
   const loadFeed = async () => {
-    const { data } = await supabase
+    const { data: postsData } = await supabase
       .from('posts')
-      .select('*, profiles!posts_user_id_fkey(display_name, username, avatar_url, email)')
+      .select('*')
       .order('created_at', { ascending: false })
       .limit(50);
-    if (data) setPosts(data as any);
+    
+    if (!postsData) { setLoading(false); return; }
+    
+    // Load profiles for post authors
+    const userIds = [...new Set(postsData.map(p => p.user_id))];
+    const { data: profilesData } = await supabase
+      .from('profiles')
+      .select('user_id, display_name, username, avatar_url, email')
+      .in('user_id', userIds);
+    
+    const profileMap = new Map((profilesData || []).map(p => [p.user_id, p]));
+    
+    const enriched = postsData.map(p => ({
+      ...p,
+      profiles: profileMap.get(p.user_id) || null,
+    }));
+    
+    setPosts(enriched as any);
     setLoading(false);
   };
 
