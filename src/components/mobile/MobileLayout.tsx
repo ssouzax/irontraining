@@ -33,12 +33,16 @@ const menuItems = [
   { key: 'home' as Tab, icon: LayoutDashboard, label: 'Painel / Feed' },
   { key: 'workout' as Tab, icon: Dumbbell, label: 'Treino Atual' },
   { key: 'explore' as Tab, icon: Compass, label: 'Explorar' },
+  { key: 'livegym' as Tab, icon: Radio, label: 'Live Gym' },
   { key: 'heatmap' as Tab, icon: Flame, label: 'Mapa de Força' },
   { key: 'rankings' as Tab, icon: Crown, label: 'Leaderboard DOTS' },
+  { key: 'exerciserankings' as Tab, icon: Dumbbell, label: 'Ranking Exercícios' },
   { key: 'gym' as Tab, icon: MapPin, label: 'Minha Academia' },
+  { key: 'gympoints' as Tab, icon: Star, label: 'Gym Points' },
   { key: 'rivals' as Tab, icon: Swords, label: 'Rivais de Força' },
   { key: 'powerscore' as Tab, icon: Zap, label: 'Power Score' },
   { key: 'predictor' as Tab, icon: Brain, label: 'Preditor IA' },
+  { key: 'wrapped' as Tab, icon: Sparkles, label: 'Wrapped Cards' },
   { key: 'profile' as Tab, icon: User, label: 'Perfil' },
 ];
 
