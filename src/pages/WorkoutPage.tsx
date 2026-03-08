@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Check, ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LoggedSet } from '@/types/training';
+import { Link } from 'react-router-dom';
+import { Zap } from 'lucide-react';
 
 export default function WorkoutPage() {
   const { program, currentWeek, currentDay, setCurrentDay } = useTraining();
@@ -15,16 +17,11 @@ export default function WorkoutPage() {
   const weekData = currentBlock.weeks.find(w => w.weekNumber === currentWeek) || currentBlock.weeks[0];
   const dayData = weekData.days[currentDay];
 
-  // Local workout state
   const [logData, setLogData] = useState<Record<string, Record<string, LoggedSet[]>>>({});
 
   const getSetLog = (exerciseId: string, setId: string, setIdx: number, targetReps: number): LoggedSet => {
     return logData[exerciseId]?.[setId]?.[setIdx] || {
-      setNumber: setIdx + 1,
-      weight: 0,
-      reps: targetReps,
-      rir: undefined,
-      completed: false,
+      setNumber: setIdx + 1, weight: 0, reps: targetReps, rir: undefined, completed: false,
     };
   };
 
@@ -41,45 +38,34 @@ export default function WorkoutPage() {
   if (!dayData) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-muted-foreground">No workout scheduled</p>
+        <p className="text-muted-foreground">Nenhum treino agendado</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h1 className="text-3xl font-bold text-foreground tracking-tight">{dayData.name}</h1>
-            <p className="text-muted-foreground mt-1">
-              Week {currentWeek} · {dayData.dayOfWeek} · {dayData.focus}
-            </p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">{dayData.name}</h1>
+            <p className="text-muted-foreground mt-1">Semana {currentWeek} · {dayData.dayOfWeek} · {dayData.focus}</p>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setCurrentDay(Math.max(0, currentDay - 1))}
-              disabled={currentDay === 0}
-              className="p-2 rounded-lg bg-secondary hover:bg-secondary/80 disabled:opacity-30 transition-colors"
-            >
+            <Link to="/train" className="text-xs bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-1">
+              <Zap className="w-3 h-3" /> Modo App
+            </Link>
+            <button onClick={() => setCurrentDay(Math.max(0, currentDay - 1))} disabled={currentDay === 0} className="p-2 rounded-lg bg-secondary hover:bg-secondary/80 disabled:opacity-30 transition-colors">
               <ChevronLeft className="w-4 h-4 text-foreground" />
             </button>
-            <span className="text-sm text-muted-foreground font-mono px-2">
-              {currentDay + 1}/{weekData.days.length}
-            </span>
-            <button
-              onClick={() => setCurrentDay(Math.min(weekData.days.length - 1, currentDay + 1))}
-              disabled={currentDay === weekData.days.length - 1}
-              className="p-2 rounded-lg bg-secondary hover:bg-secondary/80 disabled:opacity-30 transition-colors"
-            >
+            <span className="text-sm text-muted-foreground font-mono px-2">{currentDay + 1}/{weekData.days.length}</span>
+            <button onClick={() => setCurrentDay(Math.min(weekData.days.length - 1, currentDay + 1))} disabled={currentDay === weekData.days.length - 1} className="p-2 rounded-lg bg-secondary hover:bg-secondary/80 disabled:opacity-30 transition-colors">
               <ChevronRight className="w-4 h-4 text-foreground" />
             </button>
           </div>
         </div>
       </motion.div>
 
-      {/* Exercises */}
       <div className="space-y-4">
         {dayData.exercises.map((exercise, exIdx) => (
           <motion.div
@@ -91,10 +77,7 @@ export default function WorkoutPage() {
           >
             <div className="p-4 border-b border-border">
               <div className="flex items-center gap-3">
-                <div className={cn(
-                  "w-2 h-8 rounded-full",
-                  exercise.category === 'compound' ? 'bg-primary' : 'bg-muted-foreground/40'
-                )} />
+                <div className={cn("w-2 h-8 rounded-full", exercise.category === 'compound' ? 'bg-primary' : 'bg-muted-foreground/40')} />
                 <div>
                   <h3 className="font-semibold text-foreground text-sm">{exercise.name}</h3>
                   <p className="text-xs text-muted-foreground">{exercise.muscleGroup}</p>
@@ -112,77 +95,43 @@ export default function WorkoutPage() {
                       setGroup.type === 'backoff' ? 'bg-warning/20 text-warning' :
                       'bg-secondary text-secondary-foreground'
                     )}>
-                      {setGroup.type === 'top' ? 'Top Set' : setGroup.type === 'backoff' ? 'Back Off' : 'Working'}
+                      {setGroup.type === 'top' ? 'Top Set' : setGroup.type === 'backoff' ? 'Back Off' : 'Trabalho'}
                     </span>
                     <span className="text-xs text-muted-foreground font-mono">
                       {setGroup.targetSets}×{setGroup.targetReps}
                       {setGroup.targetRIR !== undefined && ` RIR${setGroup.targetRIR}`}
                       {setGroup.percentage && ` @${setGroup.percentage}%`}
                     </span>
-                    {setGroup.notes && (
-                      <span className="text-xs text-muted-foreground italic">· {setGroup.notes}</span>
-                    )}
                   </div>
 
-                  {/* Individual sets */}
                   <div className="space-y-1.5">
                     {Array.from({ length: setGroup.targetSets }, (_, i) => {
                       const log = getSetLog(exercise.id, setGroup.id, i, setGroup.targetReps);
                       return (
-                        <div key={i} className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-secondary/30">
+                        <div key={i} className="flex flex-wrap sm:flex-nowrap items-center gap-2 py-1.5 px-3 rounded-lg bg-secondary/30">
                           <span className="text-xs text-muted-foreground font-mono w-6">{i + 1}</span>
-                          
                           <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'weight', Math.max(0, log.weight - 2.5))}
-                              className="p-1 rounded hover:bg-secondary transition-colors"
-                            >
+                            <button onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'weight', Math.max(0, log.weight - 2.5))} className="p-1 rounded hover:bg-secondary transition-colors">
                               <Minus className="w-3 h-3 text-muted-foreground" />
                             </button>
-                            <input
-                              type="number"
-                              value={log.weight || ''}
-                              onChange={e => updateSetLog(exercise.id, setGroup.id, i, 'weight', parseFloat(e.target.value) || 0)}
-                              placeholder="kg"
-                              className="w-16 bg-background border border-border rounded px-2 py-1 text-xs text-center text-foreground font-mono"
-                            />
-                            <button
-                              onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'weight', log.weight + 2.5)}
-                              className="p-1 rounded hover:bg-secondary transition-colors"
-                            >
+                            <input type="number" value={log.weight || ''} onChange={e => updateSetLog(exercise.id, setGroup.id, i, 'weight', parseFloat(e.target.value) || 0)} placeholder="kg" className="w-14 sm:w-16 bg-background border border-border rounded px-2 py-1 text-xs text-center text-foreground font-mono" />
+                            <button onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'weight', log.weight + 2.5)} className="p-1 rounded hover:bg-secondary transition-colors">
                               <Plus className="w-3 h-3 text-muted-foreground" />
                             </button>
                           </div>
-
                           <span className="text-xs text-muted-foreground">×</span>
-
                           <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'reps', Math.max(0, log.reps - 1))}
-                              className="p-1 rounded hover:bg-secondary transition-colors"
-                            >
+                            <button onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'reps', Math.max(0, log.reps - 1))} className="p-1 rounded hover:bg-secondary transition-colors">
                               <Minus className="w-3 h-3 text-muted-foreground" />
                             </button>
-                            <input
-                              type="number"
-                              value={log.reps}
-                              onChange={e => updateSetLog(exercise.id, setGroup.id, i, 'reps', parseInt(e.target.value) || 0)}
-                              className="w-12 bg-background border border-border rounded px-2 py-1 text-xs text-center text-foreground font-mono"
-                            />
-                            <button
-                              onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'reps', log.reps + 1)}
-                              className="p-1 rounded hover:bg-secondary transition-colors"
-                            >
+                            <input type="number" value={log.reps} onChange={e => updateSetLog(exercise.id, setGroup.id, i, 'reps', parseInt(e.target.value) || 0)} className="w-10 sm:w-12 bg-background border border-border rounded px-2 py-1 text-xs text-center text-foreground font-mono" />
+                            <button onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'reps', log.reps + 1)} className="p-1 rounded hover:bg-secondary transition-colors">
                               <Plus className="w-3 h-3 text-muted-foreground" />
                             </button>
                           </div>
-
                           <button
                             onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'completed', !log.completed)}
-                            className={cn(
-                              "ml-auto p-1.5 rounded-lg transition-all",
-                              log.completed ? "bg-success text-success-foreground" : "bg-secondary hover:bg-secondary/80"
-                            )}
+                            className={cn("ml-auto p-1.5 rounded-lg transition-all", log.completed ? "bg-success text-success-foreground" : "bg-secondary hover:bg-secondary/80")}
                           >
                             <Check className="w-3 h-3" />
                           </button>
