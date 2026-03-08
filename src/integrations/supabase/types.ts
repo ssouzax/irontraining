@@ -166,6 +166,42 @@ export type Database = {
         }
         Relationships: []
       }
+      city_strength_metrics: {
+        Row: {
+          city: string
+          country: string | null
+          date: string
+          id: string
+          intensity_score: number
+          pr_count: number
+          top_lift: number
+          top_lift_type: string | null
+          total_volume: number
+        }
+        Insert: {
+          city: string
+          country?: string | null
+          date?: string
+          id?: string
+          intensity_score?: number
+          pr_count?: number
+          top_lift?: number
+          top_lift_type?: string | null
+          total_volume?: number
+        }
+        Update: {
+          city?: string
+          country?: string | null
+          date?: string
+          id?: string
+          intensity_score?: number
+          pr_count?: number
+          top_lift?: number
+          top_lift_type?: string | null
+          total_volume?: number
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           content: string
@@ -311,6 +347,53 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      gym_heatmap_metrics: {
+        Row: {
+          daily_pr_count: number
+          daily_volume: number
+          date: string
+          gym_id: string
+          id: string
+          intensity_score: number
+          top_bench: number
+          top_deadlift: number
+          top_squat: number
+          top_total: number
+        }
+        Insert: {
+          daily_pr_count?: number
+          daily_volume?: number
+          date?: string
+          gym_id: string
+          id?: string
+          intensity_score?: number
+          top_bench?: number
+          top_deadlift?: number
+          top_squat?: number
+          top_total?: number
+        }
+        Update: {
+          daily_pr_count?: number
+          daily_volume?: number
+          date?: string
+          gym_id?: string
+          id?: string
+          intensity_score?: number
+          top_bench?: number
+          top_deadlift?: number
+          top_squat?: number
+          top_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_heatmap_metrics_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       gym_leaderboards: {
         Row: {
@@ -685,6 +768,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      post_engagement: {
+        Row: {
+          boost_multiplier: number
+          engagement_score: number
+          id: string
+          is_trending: boolean
+          post_id: string
+          updated_at: string
+        }
+        Insert: {
+          boost_multiplier?: number
+          engagement_score?: number
+          id?: string
+          is_trending?: boolean
+          post_id: string
+          updated_at?: string
+        }
+        Update: {
+          boost_multiplier?: number
+          engagement_score?: number
+          id?: string
+          is_trending?: boolean
+          post_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_engagement_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: true
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       posts: {
         Row: {
@@ -1157,6 +1275,39 @@ export type Database = {
         }
         Relationships: []
       }
+      training_streaks: {
+        Row: {
+          current_streak: number
+          id: string
+          last_workout_date: string | null
+          longest_streak: number
+          program_streak: number
+          updated_at: string
+          user_id: string
+          weekly_consistency_streak: number
+        }
+        Insert: {
+          current_streak?: number
+          id?: string
+          last_workout_date?: string | null
+          longest_streak?: number
+          program_streak?: number
+          updated_at?: string
+          user_id: string
+          weekly_consistency_streak?: number
+        }
+        Update: {
+          current_streak?: number
+          id?: string
+          last_workout_date?: string | null
+          longest_streak?: number
+          program_streak?: number
+          updated_at?: string
+          user_id?: string
+          weekly_consistency_streak?: number
+        }
+        Relationships: []
+      }
       training_weeks: {
         Row: {
           block_id: string
@@ -1360,6 +1511,24 @@ export type Database = {
           username: string
         }[]
       }
+      get_gym_heatmap: {
+        Args: { days_back?: number }
+        Returns: {
+          city: string
+          country: string
+          gym_id: string
+          gym_name: string
+          intensity_score: number
+          latitude: number
+          longitude: number
+          member_count: number
+          top_bench: number
+          top_deadlift: number
+          top_squat: number
+          total_prs: number
+          total_volume: number
+        }[]
+      }
       get_gym_leaderboard: {
         Args: { target_exercise?: string; target_gym_id: string }
         Returns: {
@@ -1400,6 +1569,26 @@ export type Database = {
           power_score: number
           user_id: string
           username: string
+        }[]
+      }
+      get_trending_posts: {
+        Args: { limit_count?: number }
+        Returns: {
+          boost_multiplier: number
+          caption: string
+          comments_count: number
+          created_at: string
+          engagement_score: number
+          estimated_1rm: number
+          exercise_name: string
+          is_pr: boolean
+          likes_count: number
+          media_urls: string[]
+          post_id: string
+          post_type: string
+          reps: number
+          user_id: string
+          weight: number
         }[]
       }
     }
