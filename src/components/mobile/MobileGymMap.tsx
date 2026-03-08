@@ -42,31 +42,66 @@ const tierConfig: Record<string, { color: string; emoji: string; glow: string }>
   legendary: { color: '#ef4444', emoji: '🔥', glow: 'rgba(239,68,68,0.5)' },
 };
 
-const createGymIcon = (gym: AppGym, isMyGym: boolean) => {
+const createGymIcon = (gym: AppGym, isMyGym: boolean, hasFriend: boolean) => {
   const tc = tierConfig[gym.tier] || tierConfig.bronze;
   const color = isMyGym ? '#3b82f6' : tc.color;
   const glow = isMyGym ? 'rgba(59,130,246,0.5)' : tc.glow;
   const members = gym.member_count || 0;
-  const size = Math.min(44, 28 + members * 2);
+  const points = gym.total_points || 0;
   const intensity = gym.intensity_score || 0;
-  const pulse = intensity > 30 ? `
-    <div style="position:absolute;inset:-6px;border-radius:50%;border:2px solid ${color};opacity:0.4;animation:marker-ping 2s cubic-bezier(0,0,0.2,1) infinite"></div>
-  ` : '';
+  const prCount = gym.pr_count || 0;
+
+  // Dynamic size based on activity
+  const activityScore = Math.min(1, (points / 500) + (members / 20) + (prCount / 10));
+  const size = Math.round(28 + activityScore * 20); // 28-48px
+
+  // Multi-ring animation for high-activity gyms
+  const hasRecentPRs = prCount > 0;
+  const isHighActivity = intensity > 20 || points > 100;
+  const isLegendary = gym.tier === 'legendary' || gym.tier === 'elite';
+
+  let rings = '';
+  if (isLegendary) {
+    rings = `
+      <div style="position:absolute;inset:-8px;border-radius:50%;border:2px solid ${color};opacity:0.6;animation:marker-ping 1.5s cubic-bezier(0,0,0.2,1) infinite"></div>
+      <div style="position:absolute;inset:-14px;border-radius:50%;border:1.5px solid ${color};opacity:0.3;animation:marker-ping 1.5s cubic-bezier(0,0,0.2,1) infinite 0.5s"></div>
+      <div style="position:absolute;inset:-4px;border-radius:50%;background:${color};opacity:0.08;animation:gym-glow 3s ease-in-out infinite"></div>
+    `;
+  } else if (isHighActivity) {
+    rings = `
+      <div style="position:absolute;inset:-6px;border-radius:50%;border:2px solid ${color};opacity:0.4;animation:marker-ping 2s cubic-bezier(0,0,0.2,1) infinite"></div>
+    `;
+  } else if (hasRecentPRs) {
+    rings = `
+      <div style="position:absolute;inset:-5px;border-radius:50%;border:1.5px dashed ${color};opacity:0.35;animation:gym-spin 8s linear infinite"></div>
+    `;
+  }
+
+  // Friend badge
+  const friendBadge = hasFriend ? `<div style="position:absolute;top:-6px;left:-4px;background:linear-gradient(135deg,#ec4899,#f43f5e);color:white;border-radius:8px;width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3)">👥</div>` : '';
+
+  // Points badge (for gyms with significant points)
+  const pointsBadge = points > 50 ? `<div style="position:absolute;top:-5px;right:-5px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border-radius:10px;min-width:20px;height:20px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid white;padding:0 4px;box-shadow:0 2px 6px rgba(0,0,0,0.3)">${points > 999 ? Math.round(points/1000)+'k' : points}</div>` :
+    members > 0 ? `<div style="position:absolute;top:-5px;right:-5px;background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border-radius:10px;min-width:20px;height:20px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid white;padding:0 4px;box-shadow:0 2px 6px rgba(0,0,0,0.3)">${members}</div>` : '';
+
+  // Bounce animation for very active gyms
+  const bounceStyle = isHighActivity ? 'animation:gym-bounce 3s ease-in-out infinite;' : '';
 
   return L.divIcon({
     className: 'custom-gym-marker',
     html: `
-      <div style="position:relative;display:flex;align-items:center;justify-content:center">
-        ${pulse}
-        <div style="width:${size}px;height:${size}px;border-radius:50%;background:radial-gradient(circle at 30% 30%, ${color}, ${color}cc);border:3px solid rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px ${glow}, 0 0 0 2px ${color}33;font-size:${size * 0.4}px;cursor:pointer;transition:transform 0.2s">
-          🏋️
+      <div style="position:relative;display:flex;align-items:center;justify-content:center;${bounceStyle}">
+        ${rings}
+        <div style="width:${size}px;height:${size}px;border-radius:50%;background:radial-gradient(circle at 30% 30%, ${color}, ${color}cc);border:3px solid rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px ${glow}, 0 0 0 2px ${color}33${isLegendary ? ', 0 0 24px ' + glow : ''};font-size:${size * 0.4}px;cursor:pointer;transition:transform 0.2s">
+          ${tc.emoji || '🏋️'}
         </div>
-        ${members > 0 ? `<div style="position:absolute;top:-5px;right:-5px;background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border-radius:10px;min-width:20px;height:20px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid white;padding:0 4px;box-shadow:0 2px 6px rgba(0,0,0,0.3)">${members}</div>` : ''}
+        ${pointsBadge}
+        ${friendBadge}
         ${isMyGym ? `<div style="position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);background:#3b82f6;color:white;border-radius:6px;padding:1px 6px;font-size:8px;font-weight:700;white-space:nowrap;border:1.5px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3)">MEU</div>` : ''}
       </div>
     `,
-    iconSize: [size + 16, size + 16],
-    iconAnchor: [(size + 16) / 2, (size + 16) / 2],
+    iconSize: [size + 20, size + 20],
+    iconAnchor: [(size + 20) / 2, (size + 20) / 2],
   });
 };
 
