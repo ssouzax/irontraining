@@ -299,10 +299,8 @@ export default function AppModeWorkout() {
         const { error: pError } = await supabase.from('performed_sets').insert(performedInserts);
         if (pError) throw pError;
       }
-      
-      const results = await Promise.all(promises);
-      for (const r of results) {
-        if (r.error) throw r.error;
+
+
       }
 
       toast.success('Treino salvo com sucesso!');
