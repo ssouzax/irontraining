@@ -613,6 +613,77 @@ export type Database = {
         }
         Relationships: []
       }
+      season_rewards: {
+        Row: {
+          badge_title: string | null
+          created_at: string | null
+          final_dots: number | null
+          final_rank: number | null
+          id: string
+          league: string | null
+          season_id: number
+          user_id: string
+        }
+        Insert: {
+          badge_title?: string | null
+          created_at?: string | null
+          final_dots?: number | null
+          final_rank?: number | null
+          id?: string
+          league?: string | null
+          season_id: number
+          user_id: string
+        }
+        Update: {
+          badge_title?: string | null
+          created_at?: string | null
+          final_dots?: number | null
+          final_rank?: number | null
+          id?: string
+          league?: string | null
+          season_id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "season_rewards_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seasons: {
+        Row: {
+          created_at: string | null
+          end_date: string
+          id: number
+          is_active: boolean | null
+          name: string
+          season_number: number
+          start_date: string
+        }
+        Insert: {
+          created_at?: string | null
+          end_date: string
+          id?: number
+          is_active?: boolean | null
+          name: string
+          season_number: number
+          start_date: string
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string
+          id?: number
+          is_active?: boolean | null
+          name?: string
+          season_number?: number
+          start_date?: string
+        }
+        Relationships: []
+      }
       set_logs: {
         Row: {
           actual_reps: number | null
