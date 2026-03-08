@@ -126,7 +126,7 @@ export function MobileCoTraining() {
 
   const joinWorkout = async () => {
     if (!user || !joinId.trim()) return;
-    const { error } = await supabase.from('shared_workout_members').insert({
+    const { error } = await (supabase as any).from('shared_workout_members').insert({
       workout_id: joinId.trim(),
       user_id: user.id,
     });
