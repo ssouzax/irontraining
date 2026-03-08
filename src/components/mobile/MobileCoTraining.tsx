@@ -169,7 +169,7 @@ export function MobileCoTraining() {
       .limit(50);
     
     if (!data) return;
-    const userIds = [...new Set(data.map(a => a.user_id))];
+    const userIds = [...new Set(data.map((a: any) => a.user_id))] as string[];
     const { data: profiles } = await supabase
       .from('profiles')
       .select('user_id, display_name')
