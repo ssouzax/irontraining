@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
-import { Dumbbell, Loader2 } from 'lucide-react';
+import { Dumbbell, Loader2, Download } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function AuthPage() {
   const { signIn, signUp } = useAuth();
