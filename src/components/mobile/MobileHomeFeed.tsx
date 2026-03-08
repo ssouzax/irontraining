@@ -137,8 +137,9 @@ export function MobileHomeFeed() {
   }
 
   return (
-    <div className="divide-y divide-border">
-      {posts.length === 0 ? (
+    <div>
+      <MobileStreakCard />
+      <div className="divide-y divide-border mt-3">
         <div className="text-center py-20 px-4">
           <Dumbbell className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
           <p className="text-muted-foreground text-sm">Nenhum post ainda. Seja o primeiro!</p>
