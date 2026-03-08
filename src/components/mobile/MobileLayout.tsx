@@ -1,4 +1,4 @@
-import { ReactNode, useState, useRef } from 'react';
+import { ReactNode, useState, useRef, useEffect } from 'react';
 import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin, Swords, Brain, Flame, Radio, Star, Map } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MobileHomeFeed } from './MobileHomeFeed';
@@ -71,7 +71,15 @@ interface MobileLayoutProps {
 const tabOrder: Tab[] = ['home', 'workout', 'post', 'rankings', 'profile', 'gym', 'gymmap', 'rivals', 'powerscore', 'predictor', 'explore', 'heatmap', 'gympoints', 'exerciserankings', 'livegym', 'wrapped'];
 
 export function MobileLayout({ workoutContent }: MobileLayoutProps) {
-  const [activeTab, setActiveTab] = useState<Tab>('home');
+  // Detect if we're on a routed page (not home)
+  const getInitialTab = (): Tab => {
+    const path = window.location.pathname;
+    if (path === '/' || path === '') return 'home';
+    // If it's a known route, show workout content (which holds the routed page)
+    return 'workout';
+  };
+
+  const [activeTab, setActiveTab] = useState<Tab>(getInitialTab);
   const [direction, setDirection] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const { signOut } = useAuth();
@@ -81,6 +89,10 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
     const newIdx = tabOrder.indexOf(tab);
     setDirection(newIdx > oldIdx ? 1 : -1);
     setActiveTab(tab);
+    // When switching to internal mobile tabs, go back to home route
+    if (tab !== 'workout' && window.location.pathname !== '/') {
+      window.history.pushState({}, '', '/');
+    }
   };
 
   const navigateToTab = (tab: Tab) => {
@@ -90,7 +102,6 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
 
   const navigateToRoute = (route: string) => {
     setMenuOpen(false);
-    // Use window.location for routes handled by React Router in desktop
     window.location.href = route;
   };
 
