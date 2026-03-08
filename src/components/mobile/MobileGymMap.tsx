@@ -176,7 +176,20 @@ export function MobileGymMap() {
     if (data?.gym_id) setMyGymId(data.gym_id);
   };
 
-  const initMap = async () => {
+  const loadFriendGyms = async () => {
+    if (!user) return;
+    // Get users I follow
+    const { data: follows } = await supabase.from('follows').select('following_id').eq('follower_id', user.id);
+    if (!follows || follows.length === 0) return;
+    const followingIds = follows.map(f => f.following_id);
+    // Get their gym_ids from profiles
+    const { data: profiles } = await supabase.from('profiles').select('gym_id').in('user_id', followingIds).not('gym_id', 'is', null);
+    if (profiles) {
+      setFriendGymIds(new Set(profiles.map(p => p.gym_id!).filter(Boolean)));
+    }
+  };
+
+
     if (!mapRef.current || !userLocation) return;
 
     const map = L.map(mapRef.current, {
