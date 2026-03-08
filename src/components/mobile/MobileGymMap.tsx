@@ -312,13 +312,32 @@ export function MobileGymMap() {
     setJoining(false);
   };
 
+  const geocodeAddress = async (address: string) => {
+    if (address.length < 5) { setNewGymCoords(null); return; }
+    setGeocoding(true);
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(address)}&countrycodes=br&limit=1`, {
+        headers: { 'User-Agent': 'IronTraining-PWA/1.0' }
+      });
+      const data = await res.json();
+      if (data.length > 0) {
+        setNewGymCoords({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
+      } else {
+        setNewGymCoords(null);
+      }
+    } catch { setNewGymCoords(null); }
+    setGeocoding(false);
+  };
+
   const addManualGym = async () => {
-    if (!user || !newGymName.trim() || !userLocation) return;
+    if (!user || !newGymName.trim()) return;
     setJoining(true);
+    const coords = newGymCoords || userLocation;
+    if (!coords) { toast.error('Não foi possível determinar a localização'); setJoining(false); return; }
     const duplicate = appGyms.find(g =>
       g.name.toLowerCase() === newGymName.trim().toLowerCase() &&
       g.latitude && g.longitude &&
-      getDistance(userLocation.lat, userLocation.lng, g.latitude, g.longitude) < 0.5
+      getDistance(coords.lat, coords.lng, g.latitude, g.longitude) < 0.5
     );
     if (duplicate) {
       toast.error('Já existe uma academia com esse nome próxima!');
@@ -328,8 +347,8 @@ export function MobileGymMap() {
     const { data: newGym, error } = await supabase.from('gyms').insert({
       name: newGymName.trim(),
       city: newGymCity.trim() || null,
-      latitude: userLocation.lat,
-      longitude: userLocation.lng,
+      latitude: coords.lat,
+      longitude: coords.lng,
       created_by: user.id,
     }).select().single();
     if (error || !newGym) { toast.error('Erro ao criar academia'); setJoining(false); return; }
@@ -339,7 +358,9 @@ export function MobileGymMap() {
     setMyGymId(newGym.id);
     setShowAddManual(false);
     setNewGymName('');
+    setNewGymAddress('');
     setNewGymCity('');
+    setNewGymCoords(null);
     toast.success(`${newGymName} criada! 🎉`);
     setJoining(false);
     await loadAppGyms();
