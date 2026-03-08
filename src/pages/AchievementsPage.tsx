@@ -366,33 +366,54 @@ export default function AchievementsPage() {
 
       {/* Trees View */}
       {tab === 'trees' ? (
-        <div className="space-y-6">
-          {Object.entries(treeGroups).map(([treeId, nodes]) => (
-            <div key={treeId} className="space-y-2">
-              <h3 className="text-sm font-bold text-foreground">{TREE_LABELS[treeId] || treeId}</h3>
-              <div className="relative">
-                {/* Vertical line */}
-                <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-border" />
-                <div className="space-y-2">
-                  {nodes.map((node, idx) => {
-                    const isUnlocked = unlockedTypes.has(node.achievement_key);
-                    const ach = unlocked.find(a => a.type === node.achievement_key);
-                    const rarity = RARITY_CONFIG[node.rarity] || RARITY_CONFIG.common;
-                    return (
-                      <div key={node.achievement_key} className="relative pl-14">
-                        {/* Node dot */}
-                        <div className={cn(
-                          "absolute left-4 top-4 w-4 h-4 rounded-full border-2 z-10",
-                          isUnlocked ? "bg-primary border-primary" : "bg-secondary border-border"
-                        )} />
-                        {renderAchievementCard(node, isUnlocked, ach)}
-                      </div>
-                    );
-                  })}
+        <div className="space-y-8">
+          {Object.entries(treeGroups).map(([treeId, nodes]) => {
+            const totalNodes = nodes.length;
+            const unlockedNodes = nodes.filter(n => unlockedTypes.has(n.achievement_key)).length;
+            const treePct = totalNodes > 0 ? Math.round((unlockedNodes / totalNodes) * 100) : 0;
+
+            return (
+              <motion.div key={treeId} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-foreground">{TREE_LABELS[treeId] || treeId}</h3>
+                  <span className="text-[10px] font-semibold text-muted-foreground px-2 py-0.5 rounded-full bg-secondary">{unlockedNodes}/{totalNodes} • {treePct}%</span>
                 </div>
-              </div>
-            </div>
-          ))}
+                {/* Tree progress bar */}
+                <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                  <motion.div className="h-full bg-primary rounded-full" initial={{ width: 0 }} animate={{ width: `${treePct}%` }} transition={{ duration: 1, ease: 'easeOut' }} />
+                </div>
+                <div className="relative">
+                  {/* Animated connection line */}
+                  <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-gradient-to-b from-primary/50 via-border to-border" />
+                  <div className="space-y-2">
+                    {nodes.map((node, idx) => {
+                      const isUnlocked = unlockedTypes.has(node.achievement_key);
+                      const ach = unlocked.find(a => a.type === node.achievement_key);
+                      const prevUnlocked = idx === 0 || unlockedTypes.has(nodes[idx - 1].achievement_key);
+                      const nodeRarity = RARITY_CONFIG[node.rarity] || RARITY_CONFIG.common;
+                      return (
+                        <motion.div key={node.achievement_key} className="relative pl-14"
+                          initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.08 }}>
+                          {/* Node dot with glow */}
+                          <div className={cn(
+                            "absolute left-4 top-4 w-5 h-5 rounded-full border-2 z-10 transition-all",
+                            isUnlocked ? "bg-primary border-primary shadow-[0_0_10px_rgba(139,92,246,0.5)]" : prevUnlocked ? "bg-secondary border-primary/40" : "bg-secondary border-border"
+                          )}>
+                            {isUnlocked && <motion.div className="absolute inset-0 rounded-full bg-primary" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: idx * 0.1 }} />}
+                          </div>
+                          {/* Connecting glow segment */}
+                          {isUnlocked && idx > 0 && (
+                            <div className="absolute left-[1.35rem] top-0 w-0.5 h-6 bg-primary/50 -translate-y-full" />
+                          )}
+                          {renderAchievementCard(node, isUnlocked, ach)}
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       ) : (
         <>
