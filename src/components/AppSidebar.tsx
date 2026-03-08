@@ -1,5 +1,5 @@
 import { NavLink as RouterNavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Dumbbell, Calendar, BarChart3, Bot, User, Zap, LogOut, Menu, X, Calculator, Sparkles, Trophy, BookOpen, Award, Users, FolderOpen, Crown, Compass, Download, MapPin, Swords, Brain } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, Calendar, BarChart3, Bot, User, Zap, LogOut, Menu, X, Calculator, Sparkles, Trophy, BookOpen, Award, Users, FolderOpen, Crown, Compass, Download, MapPin, Swords, Brain, Scale, Activity, HeartHandshake, Gauge, Heart, RotateCw, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,15 @@ const navItems = [
   { to: '/exercises', icon: BookOpen, label: 'Exercícios' },
   { to: '/plates', icon: Calculator, label: 'Anilhas' },
   { to: '/coach', icon: Bot, label: 'Coach IA' },
+  { to: '/exercise3d', icon: Dumbbell, label: 'Modelo 3D' },
+  { to: '/body', icon: Scale, label: 'Evolução Corporal' },
+  { to: '/prsimulator', icon: Brain, label: 'Simulador PR' },
+  { to: '/recovery', icon: Activity, label: 'Recuperação' },
+  { to: '/cotraining', icon: HeartHandshake, label: 'Co-Training' },
+  { to: '/barvelocity', icon: Gauge, label: 'Velocidade Barra' },
+  { to: '/wearable', icon: Heart, label: 'Wearable' },
+  { to: '/replay3d', icon: RotateCw, label: 'Replay 3D' },
+  { to: '/grading', icon: CheckCircle, label: 'Notas Execução' },
   { to: '/profile', icon: User, label: 'Perfil' },
   { to: '/install', icon: Download, label: 'Instalar App' },
 ];

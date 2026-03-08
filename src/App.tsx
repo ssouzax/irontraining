@@ -30,6 +30,15 @@ import AthleteProfilePage from "./pages/AthleteProfilePage";
 import AuthPage from "./pages/AuthPage";
 import InstallPage from "./pages/InstallPage";
 import StreakLeaderboardPage from "./pages/StreakLeaderboardPage";
+import Exercise3DPage from "./pages/Exercise3DPage";
+import BodyCompositionPage from "./pages/BodyCompositionPage";
+import PRSimulatorPage from "./pages/PRSimulatorPage";
+import RecoveryPage from "./pages/RecoveryPage";
+import CoTrainingPage from "./pages/CoTrainingPage";
+import BarVelocityPage from "./pages/BarVelocityPage";
+import WearablePage from "./pages/WearablePage";
+import Replay3DPage from "./pages/Replay3DPage";
+import ExecutionGradingPage from "./pages/ExecutionGradingPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -72,6 +81,15 @@ function ProtectedRoutes() {
           <Route path="/plates" element={<PlateCalculator />} />
           <Route path="/streaks" element={<StreakLeaderboardPage />} />
           <Route path="/coach" element={<CoachPage />} />
+          <Route path="/exercise3d" element={<Exercise3DPage />} />
+          <Route path="/body" element={<BodyCompositionPage />} />
+          <Route path="/prsimulator" element={<PRSimulatorPage />} />
+          <Route path="/recovery" element={<RecoveryPage />} />
+          <Route path="/cotraining" element={<CoTrainingPage />} />
+          <Route path="/barvelocity" element={<BarVelocityPage />} />
+          <Route path="/wearable" element={<WearablePage />} />
+          <Route path="/replay3d" element={<Replay3DPage />} />
+          <Route path="/grading" element={<ExecutionGradingPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
