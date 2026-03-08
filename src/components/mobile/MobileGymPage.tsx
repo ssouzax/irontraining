@@ -288,6 +288,13 @@ export function MobileGymPage() {
       });
 
       toast.success(`Check-in! +${totalXp} XP 🔥 (Streak: ${streakDay} dias)`);
+
+      // Check for streak achievements
+      const unlocked = await checkAndUnlock(streakDay);
+      unlocked.forEach(a => {
+        toast.success(`🏆 Conquista desbloqueada: ${a.icon} ${a.title}!`, { duration: 5000 });
+      });
+
       loadCheckinInfo();
       loadTopCheckins(myGym.id);
     } catch (e) {
