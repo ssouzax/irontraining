@@ -58,7 +58,7 @@ export function MobileGymMap() {
   }, [user]);
 
   const loadMapsApi = async () => {
-    if (window.google?.maps) {
+    if ((window as any).google?.maps) {
       setMapsLoaded(true);
       return;
     }
