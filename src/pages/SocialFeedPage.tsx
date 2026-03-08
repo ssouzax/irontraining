@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { usePlayerLevel } from '@/hooks/usePlayerLevel';
 
 interface Post {
   id: string;

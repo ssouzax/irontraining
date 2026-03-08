@@ -7,6 +7,7 @@ import { LoggedSet } from '@/types/training';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { usePlayerLevel } from '@/hooks/usePlayerLevel';
 
 function estimate1RM(weight: number, reps: number): number {
   if (reps === 1) return weight;
