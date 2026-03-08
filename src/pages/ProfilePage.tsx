@@ -392,7 +392,9 @@ export default function ProfilePage() {
       </div>
 
       {/* Content */}
-      {tab === 'stats' ? (
+      {tab === 'plan' ? (
+        <SubscriptionManager />
+      ) : tab === 'stats' ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-card rounded-xl border border-border p-5 card-elevated space-y-4">
           <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
             <Target className="w-4 h-4 text-primary" /> Objetivos
