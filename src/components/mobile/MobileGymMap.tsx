@@ -616,6 +616,7 @@ export function MobileGymMap() {
     { key: 'nearby', label: 'Próximas', icon: Navigation },
     { key: 'friends', label: 'Amigos', icon: Heart },
     { key: 'strongest', label: 'Mais Fortes', icon: Flame },
+    { key: 'chain', label: 'Redes', icon: Building2 },
     { key: 'heatmap', label: 'Heatmap', icon: Layers },
   ];
 
