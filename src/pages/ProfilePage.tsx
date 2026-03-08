@@ -380,6 +380,7 @@ export default function ProfilePage() {
           { key: 'posts' as const, label: `Posts (${posts.length})` },
           { key: 'prs' as const, label: `PRs (${prPosts.length})` },
           { key: 'stats' as const, label: 'Dados' },
+          { key: 'plan' as const, label: '👑 Plano' },
         ]).map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
             className={cn("flex-1 py-2 rounded-lg text-xs font-medium transition-colors",
