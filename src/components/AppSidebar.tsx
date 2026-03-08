@@ -15,6 +15,7 @@ const navItems = [
   { to: '/analytics', icon: BarChart3, label: 'Análises' },
   { to: '/rankings', icon: Trophy, label: 'Ranking' },
   { to: '/leaderboard', icon: Crown, label: 'Ranking DOTS' },
+  { to: '/gym', icon: MapPin, label: 'Minha Academia' },
   { to: '/achievements', icon: Award, label: 'Conquistas' },
   { to: '/feed', icon: Users, label: 'Feed Social' },
   { to: '/discover', icon: Compass, label: 'Explorar' },
