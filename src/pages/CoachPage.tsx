@@ -1,62 +1,145 @@
 import { motion } from 'framer-motion';
-import { Bot, Send } from 'lucide-react';
-import { useState } from 'react';
+import { Bot, Send, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useTraining } from '@/contexts/TrainingContext';
+import { calculate1RM } from '@/data/defaultProfile';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
 
-const initialMessages: Message[] = [
-  {
-    role: 'assistant',
-    content: `Hey! I'm your AI Powerbuilding Coach. I can help you with:
-
-• **Load adjustments** based on your performance
-• **Plateau identification** and solutions
-• **Accessory recommendations** for weak points
-• **Recovery tips** and training modifications
-• **Form cues** and technique advice
-
-What would you like help with today?`,
-  },
-];
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-coach`;
 
 export default function CoachPage() {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const { user } = useAuth();
+  const { profile } = useTraining();
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: 'assistant',
+      content: `Hey! I'm your **AI Powerbuilding Coach**. I have deep knowledge of periodized training, RIR-based programming, and powerbuilding methodology.\n\nI can help you with:\n- **Load adjustments** based on your top set performance\n- **Plateau detection** and breaking strategies\n- **RIR accuracy** analysis\n- **Accessory recommendations** for weak points\n- **Fatigue management** and deload timing\n\nWhat would you like help with?`,
+    },
+  ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const buildContext = () => {
+    const squat1RM = calculate1RM(profile.currentLifts.squat.weight, profile.currentLifts.squat.reps);
+    const deadlift1RM = calculate1RM(profile.currentLifts.deadlift.weight, profile.currentLifts.deadlift.reps);
+    const bench1RM = calculate1RM(profile.currentLifts.bench.weight, profile.currentLifts.bench.reps);
+    return {
+      bodyWeight: profile.bodyWeight,
+      estimatedMaxes: { squat: squat1RM, deadlift: deadlift1RM, bench: bench1RM },
+      targets: profile.targetProgression,
+      goals: profile.goals,
+    };
+  };
+
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
     const userMsg: Message = { role: 'user', content: input.trim() };
-    setMessages(prev => [...prev, userMsg]);
+    const allMessages = [...messages, userMsg];
+    setMessages(allMessages);
     setInput('');
     setIsLoading(true);
 
-    // Mock AI response (will be replaced with real AI via Cloud)
-    setTimeout(() => {
-      const responses = [
-        "Based on your current squat at 150kg×4, your estimated 1RM is around 170kg. To hit your 180-190kg target, I'd recommend progressive overload of 2.5kg per week on your top sets during Block 2. Focus on maintaining RIR 1-2 and prioritize quad accessories like leg press and front squats.",
-        "Looking at your deadlift PR of 177.5kg, you're in a great position. During the peaking block, consider adding deficit deadlifts at 60-70% for 3×3 to improve off-the-floor strength. Your target of 185-200kg is very achievable with proper periodization.",
-        "For bench progress, since you're at 90kg (45 each side) ×5, I'd suggest adding close-grip bench as a primary accessory. Also ensure you're doing 3-4 sets of face pulls every push day to maintain shoulder health and stability.",
-      ];
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: responses[Math.floor(Math.random() * responses.length)],
-      }]);
+    let assistantSoFar = '';
+    const upsertAssistant = (chunk: string) => {
+      assistantSoFar += chunk;
+      setMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last?.role === 'assistant' && prev.length === allMessages.length + 1) {
+          return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantSoFar } : m);
+        }
+        return [...prev, { role: 'assistant', content: assistantSoFar }];
+      });
+    };
+
+    try {
+      const resp = await fetch(CHAT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          messages: allMessages.map(m => ({ role: m.role, content: m.content })),
+          context: buildContext(),
+        }),
+      });
+
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        throw new Error(errData.error || `Error ${resp.status}`);
+      }
+
+      if (!resp.body) throw new Error('No response body');
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = '';
+      let streamDone = false;
+
+      while (!streamDone) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (line.startsWith(':') || line.trim() === '') continue;
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') { streamDone = true; break; }
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) upsertAssistant(content);
+          } catch {
+            textBuffer = line + '\n' + textBuffer;
+            break;
+          }
+        }
+      }
+
+      // Flush
+      if (textBuffer.trim()) {
+        for (let raw of textBuffer.split('\n')) {
+          if (!raw || raw.startsWith(':') || raw.trim() === '') continue;
+          if (!raw.startsWith('data: ')) continue;
+          const jsonStr = raw.slice(6).trim();
+          if (jsonStr === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) upsertAssistant(content);
+          } catch {}
+        }
+      }
+    } catch (e: any) {
+      setMessages(prev => [...prev, { role: 'assistant', content: `⚠️ ${e.message || 'Failed to connect to AI coach. Please try again.'}` }]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
         <h1 className="text-3xl font-bold text-foreground tracking-tight">AI Coach</h1>
-        <p className="text-muted-foreground mt-1">Your intelligent training assistant</p>
+        <p className="text-muted-foreground mt-1">Powerbuilding-aware training assistant</p>
       </motion.div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto space-y-4 pb-4">
         {messages.map((msg, i) => (
           <motion.div
@@ -76,33 +159,29 @@ export default function CoachPage() {
                   <span className="text-xs font-medium text-primary">AI Coach</span>
                 </div>
               )}
-              <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+              <div className="text-sm leading-relaxed prose prose-sm prose-invert max-w-none">
+                <ReactMarkdown>{msg.content}</ReactMarkdown>
+              </div>
             </div>
           </motion.div>
         ))}
-        {isLoading && (
+        {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
           <div className="flex justify-start">
-            <div className="bg-card border border-border rounded-xl px-4 py-3">
-              <div className="flex items-center gap-2">
-                <Bot className="w-4 h-4 text-primary" />
-                <div className="flex gap-1">
-                  <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
-              </div>
+            <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center gap-2">
+              <Bot className="w-4 h-4 text-primary" />
+              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
             </div>
           </div>
         )}
+        <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
       <div className="border-t border-border pt-4">
         <div className="flex gap-2">
           <input
             value={input}
             onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleSend()}
+            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
             placeholder="Ask about your training..."
             className="flex-1 bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
           />
@@ -114,9 +193,6 @@ export default function CoachPage() {
             <Send className="w-4 h-4" />
           </button>
         </div>
-        <p className="text-xs text-muted-foreground mt-2 text-center">
-          Connect to Lovable Cloud for real AI coaching
-        </p>
       </div>
     </div>
   );
