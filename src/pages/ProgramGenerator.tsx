@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Sparkles, Loader2, ChevronDown, ChevronRight, Dumbbell, Target, Zap } from 'lucide-react';
+import { Sparkles, Loader2, ChevronDown, ChevronRight, Dumbbell, Target, Zap, Brain } from 'lucide-react';
 import { useTraining } from '@/contexts/TrainingContext';
 import { calculate1RM } from '@/data/defaultProfile';
 import { supabase } from '@/integrations/supabase/client';
@@ -52,6 +52,7 @@ export default function ProgramGenerator() {
   const [bodyWeight, setBodyWeight] = useState(profile.bodyWeight);
   const [goal, setGoal] = useState('powerbuilding');
   const [frequency, setFrequency] = useState(5);
+  const [usePredictions, setUsePredictions] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [program, setProgram] = useState<GeneratedProgram | null>(null);
   const [expandedBlock, setExpandedBlock] = useState<number | null>(null);
@@ -61,13 +62,13 @@ export default function ProgramGenerator() {
     setGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-program', {
-        body: { squat1RM: squat, bench1RM: bench, deadlift1RM: deadlift, bodyWeight, goal, frequency },
+        body: { squat1RM: squat, bench1RM: bench, deadlift1RM: deadlift, bodyWeight, goal, frequency, usePredictions },
       });
       if (error) throw error;
       if (data?.program) {
         setProgram(data.program);
         setExpandedBlock(0);
-        toast.success('Programa gerado com sucesso!');
+        toast.success(usePredictions ? 'Programa gerado com predições IA!' : 'Programa gerado com sucesso!');
       } else if (data?.error) {
         throw new Error(data.error);
       }
@@ -148,6 +149,27 @@ export default function ProgramGenerator() {
           </div>
         </div>
 
+        {/* Prediction Toggle */}
+        <div className="flex items-center justify-between p-3 rounded-xl bg-primary/5 border border-primary/20">
+          <div className="flex items-center gap-2">
+            <Brain className="w-4 h-4 text-primary" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Usar Predições IA</p>
+              <p className="text-[10px] text-muted-foreground">Ajusta cargas baseado no seu histórico de progressão</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setUsePredictions(!usePredictions)}
+            className={cn("w-11 h-6 rounded-full transition-colors relative",
+              usePredictions ? "bg-primary" : "bg-secondary"
+            )}
+          >
+            <div className={cn("absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform",
+              usePredictions ? "translate-x-5" : "translate-x-0.5"
+            )} />
+          </button>
+        </div>
+
         <button
           onClick={generate}
           disabled={generating}
@@ -156,12 +178,12 @@ export default function ProgramGenerator() {
           {generating ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Gerando programa com IA...
+              {usePredictions ? 'Gerando com predições IA...' : 'Gerando programa com IA...'}
             </>
           ) : (
             <>
               <Sparkles className="w-4 h-4" />
-              Gerar Programa Personalizado
+              {usePredictions ? 'Gerar com Predições IA' : 'Gerar Programa Personalizado'}
             </>
           )}
         </button>

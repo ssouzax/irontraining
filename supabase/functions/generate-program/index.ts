@@ -59,17 +59,53 @@ serve(async (req) => {
 
     const { data: { user } } = await supabase.auth.getUser();
 
-    const { squat1RM, bench1RM, deadlift1RM, bodyWeight, goal, frequency, saveToDb } = await req.json();
+    const { squat1RM, bench1RM, deadlift1RM, bodyWeight, goal, frequency, saveToDb, usePredictions } = await req.json();
 
-    const userPrompt = `Generate a complete 12-week powerbuilding program for an athlete with:
-- Squat 1RM: ${squat1RM}kg
-- Bench 1RM: ${bench1RM}kg  
-- Deadlift 1RM: ${deadlift1RM}kg
-- Body Weight: ${bodyWeight}kg
-- Goal: ${goal || 'powerbuilding'}
-- Training frequency: ${frequency || 5} days/week
+    // If usePredictions is true, fetch prediction data to adjust program loads
+    let predictionContext = '';
+    if (usePredictions && user) {
+      try {
+        // Fetch recent PRs and workout data for AI context
+        const threeMonthsAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+        const [prsRes, workoutsRes, liftsRes, streakRes] = await Promise.all([
+          supabase.from("personal_records").select("exercise_name, weight, estimated_1rm, recorded_at").eq("user_id", user.id).gte("recorded_at", threeMonthsAgo).order("recorded_at", { ascending: true }),
+          supabase.from("workout_logs").select("id, created_at, fatigue").eq("user_id", user.id).gte("created_at", threeMonthsAgo),
+          supabase.from("current_lifts").select("exercise, weight, reps, is_pr, recorded_at").eq("user_id", user.id).order("recorded_at", { ascending: false }).limit(30),
+          supabase.from("training_streaks").select("current_streak, longest_streak, weekly_consistency_streak").eq("user_id", user.id).single(),
+        ]);
 
-Generate all 4 blocks with specific exercises, sets, reps, RIR targets, and working weights calculated from the 1RMs. Names in Portuguese.`;
+        predictionContext = `
+
+DADOS DE PROGRESSÃO DO ATLETA (use para ajustar cargas automaticamente):
+- PRs recentes (3 meses): ${JSON.stringify(prsRes.data || [])}
+- Lifts recentes: ${JSON.stringify(liftsRes.data || [])}
+- Total treinos 3 meses: ${(workoutsRes.data || []).length}
+- Fadiga média: ${(workoutsRes.data || []).filter(w => w.fatigue).reduce((a, b) => a + (b.fatigue || 0), 0) / Math.max(1, (workoutsRes.data || []).filter(w => w.fatigue).length) || 'N/A'}
+- Streak: ${JSON.stringify(streakRes.data || {})}
+
+INSTRUÇÕES DE AJUSTE BASEADO EM PREDIÇÕES:
+- Analise a taxa de progressão recente do atleta para cada lift
+- Se o atleta está progredindo bem (PRs frequentes), use cargas mais agressivas (percentuais mais altos dos 1RMs)
+- Se há sinais de plateau ou fadiga alta, use cargas mais conservadoras e inclua deload na semana 2
+- Ajuste o volume de acessórios baseado na consistência de treino
+- Se a consistência é baixa (<3x/sem), reduza volume total em 15-20%
+- Projete as cargas das semanas finais baseado na taxa de ganho semanal observada
+- Inclua notas de progressão automática em cada bloco`;
+      } catch (e) {
+        console.error("Failed to fetch prediction data:", e);
+      }
+    }
+
+    const userPrompt = `Gere um programa completo de 12 semanas de powerbuilding para um atleta com:
+- Agachamento 1RM: ${squat1RM}kg
+- Supino 1RM: ${bench1RM}kg  
+- Terra 1RM: ${deadlift1RM}kg
+- Peso Corporal: ${bodyWeight}kg
+- Objetivo: ${goal || 'powerbuilding'}
+- Frequência: ${frequency || 5} dias/semana
+${predictionContext}
+
+Gere todos os 4 blocos com exercícios específicos, séries, reps, RIR targets e cargas calculadas dos 1RMs. Nomes em Português.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
