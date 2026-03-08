@@ -189,7 +189,7 @@ export function MobileGymMap() {
     }
   };
 
-
+  const initMap = async () => {
     if (!mapRef.current || !userLocation) return;
 
     const map = L.map(mapRef.current, {
