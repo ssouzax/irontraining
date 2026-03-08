@@ -1,5 +1,5 @@
 import { ReactNode, useState } from 'react';
-import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin, Swords, Brain, Flame } from 'lucide-react';
+import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin, Swords, Brain, Flame, Radio, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MobileHomeFeed } from './MobileHomeFeed';
 import { MobileCreatePost } from './MobileCreatePost';
@@ -11,11 +11,15 @@ import { MobilePowerScore } from './MobilePowerScore';
 import { MobilePredictor } from './MobilePredictor';
 import { MobileExplore } from './MobileExplore';
 import { MobileGymHeatmap } from './MobileGymHeatmap';
+import { MobileGymPoints } from './MobileGymPoints';
+import { MobileExerciseLeaderboard } from './MobileExerciseLeaderboard';
+import { MobileLiveGym } from './MobileLiveGym';
+import { MobileWrappedCards } from './MobileWrappedCards';
 import { NotificationBell } from '../NotificationBell';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 
-type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym' | 'rivals' | 'powerscore' | 'predictor' | 'explore' | 'heatmap';
+type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym' | 'rivals' | 'powerscore' | 'predictor' | 'explore' | 'heatmap' | 'gympoints' | 'exerciserankings' | 'livegym' | 'wrapped';
 
 const bottomTabs: { key: Tab; icon: typeof Home; label: string }[] = [
   { key: 'home', icon: Home, label: 'Home' },
