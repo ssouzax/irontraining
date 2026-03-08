@@ -30,7 +30,7 @@ import { StreakFireIcon } from '../StreakFireIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 
-type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym' | 'gymmap' | 'rivals' | 'powerscore' | 'predictor' | 'explore' | 'heatmap' | 'gympoints' | 'exerciserankings' | 'livegym' | 'wrapped' | 'exercise3d' | 'body' | 'prsim' | 'recovery' | 'cotraining' | 'barvelocity' | 'wearable' | 'replay3d' | 'grading';
+type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym' | 'gymmap' | 'rivals' | 'powerscore' | 'predictor' | 'explore' | 'heatmap' | 'gympoints' | 'exerciserankings' | 'livegym' | 'wrapped' | 'body' | 'prsim' | 'recovery' | 'cotraining' | 'barvelocity' | 'wearable' | 'replay3d' | 'grading';
 
 const bottomTabs: { key: Tab; icon: typeof Home; label: string }[] = [
   { key: 'home', icon: Home, label: 'Home' },
