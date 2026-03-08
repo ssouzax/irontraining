@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 interface ShareableCardTriggerProps {
-  type: 'achievement' | 'pr';
+  type: 'achievement' | 'pr' | 'streak';
   title: string;
   subtitle: string;
   stat?: string;
