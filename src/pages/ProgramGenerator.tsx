@@ -52,6 +52,7 @@ export default function ProgramGenerator() {
   const [bodyWeight, setBodyWeight] = useState(profile.bodyWeight);
   const [goal, setGoal] = useState('powerbuilding');
   const [frequency, setFrequency] = useState(5);
+  const [usePredictions, setUsePredictions] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [program, setProgram] = useState<GeneratedProgram | null>(null);
   const [expandedBlock, setExpandedBlock] = useState<number | null>(null);
@@ -61,13 +62,13 @@ export default function ProgramGenerator() {
     setGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-program', {
-        body: { squat1RM: squat, bench1RM: bench, deadlift1RM: deadlift, bodyWeight, goal, frequency },
+        body: { squat1RM: squat, bench1RM: bench, deadlift1RM: deadlift, bodyWeight, goal, frequency, usePredictions },
       });
       if (error) throw error;
       if (data?.program) {
         setProgram(data.program);
         setExpandedBlock(0);
-        toast.success('Programa gerado com sucesso!');
+        toast.success(usePredictions ? 'Programa gerado com predições IA!' : 'Programa gerado com sucesso!');
       } else if (data?.error) {
         throw new Error(data.error);
       }
