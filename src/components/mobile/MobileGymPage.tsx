@@ -752,6 +752,84 @@ export function MobileGymPage() {
               </div>
             </>
           )}
+
+          {/* ==================== WEEKLY CHALLENGE TAB ==================== */}
+          {viewTab === 'challenge' && (
+            <>
+              <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-card to-card border border-primary/20 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                      <Swords className="w-4 h-4 text-primary" /> Desafio Semanal
+                    </h3>
+                    <p className="text-[11px] text-muted-foreground">Semana {weekLabel}</p>
+                  </div>
+                  {myGymRank && (
+                    <span className={cn(
+                      "text-xs font-bold px-2.5 py-1 rounded-full",
+                      myGymRank === 1 ? "bg-yellow-500/20 text-yellow-400" : "bg-secondary text-muted-foreground"
+                    )}>
+                      #{myGymRank}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted-foreground mb-3">A academia com mais check-ins na semana ganha <strong className="text-primary">+100 pontos bônus</strong> e badge especial 🏆</p>
+              </div>
+
+              {challengeLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                </div>
+              ) : challengeRankings.length === 0 ? (
+                <div className="text-center py-12 rounded-2xl bg-card border border-border">
+                  <Swords className="w-8 h-8 text-muted-foreground/20 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">Nenhum check-in esta semana</p>
+                  <p className="text-xs text-muted-foreground mt-1">Faça check-in para começar o desafio!</p>
+                </div>
+              ) : (
+                <div className="rounded-2xl bg-card border border-border overflow-hidden">
+                  <div className="px-4 py-3 border-b border-border">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                      <Trophy className="w-3 h-3 text-yellow-400" /> Ranking de Academias
+                    </p>
+                  </div>
+                  <div className="divide-y divide-border">
+                    {challengeRankings.map((entry, i) => (
+                      <motion.div key={entry.gym_id}
+                        initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3",
+                          entry.gym_id === myGym?.id && "bg-primary/5",
+                          i === 0 && "bg-yellow-500/5"
+                        )}>
+                        <div className={cn(
+                          "w-8 h-8 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0",
+                          i === 0 ? "bg-yellow-500/20 text-yellow-400" :
+                          i === 1 ? "bg-gray-400/20 text-gray-400" :
+                          i === 2 ? "bg-amber-700/20 text-amber-600" :
+                          "bg-secondary text-muted-foreground"
+                        )}>
+                          {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={cn("text-sm font-semibold truncate", entry.gym_id === myGym?.id ? "text-primary" : "text-foreground")}>
+                            {entry.gym_name}
+                          </p>
+                          {entry.is_winner && i === 0 && (
+                            <p className="text-[10px] text-yellow-400 font-medium">🏆 Líder do desafio</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10">
+                          <Clock className="w-3 h-3 text-primary" />
+                          <span className="text-xs font-bold text-primary">{entry.checkin_count}</span>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </motion.div>
       )}
     </div>
