@@ -79,7 +79,7 @@ export default function ProfilePage() {
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [achievementsCount, setAchievementsCount] = useState(0);
-  const [tab, setTab] = useState<'posts' | 'prs' | 'stats'>('posts');
+  const [tab, setTab] = useState<'posts' | 'prs' | 'stats' | 'plan'>('posts');
   const avatarRef = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
 
