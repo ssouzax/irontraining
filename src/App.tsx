@@ -21,6 +21,8 @@ import RankingsPage from "./pages/RankingsPage";
 import AchievementsPage from "./pages/AchievementsPage";
 import ExerciseLibrary from "./pages/ExerciseLibrary";
 import SocialFeedPage from "./pages/SocialFeedPage";
+import DiscoverPage from "./pages/DiscoverPage";
+import AthleteProfilePage from "./pages/AthleteProfilePage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
@@ -55,6 +57,8 @@ function ProtectedRoutes() {
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/exercises" element={<ExerciseLibrary />} />
           <Route path="/feed" element={<SocialFeedPage />} />
+          <Route path="/discover" element={<DiscoverPage />} />
+          <Route path="/athlete/:userId" element={<AthleteProfilePage />} />
           <Route path="/plates" element={<PlateCalculator />} />
           <Route path="/coach" element={<CoachPage />} />
           <Route path="/profile" element={<ProfilePage />} />
