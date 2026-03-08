@@ -1,6 +1,6 @@
-import { useState, Suspense, useRef } from 'react';
+import { useState, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Environment } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
 import { RotateCw, Info, ChevronLeft, ChevronRight, CheckCircle, AlertTriangle, XCircle, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
