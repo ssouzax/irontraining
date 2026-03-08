@@ -70,6 +70,7 @@ function ProtectedRoutes() {
           <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/athlete/:userId" element={<AthleteProfilePage />} />
           <Route path="/plates" element={<PlateCalculator />} />
+          <Route path="/streaks" element={<StreakLeaderboardPage />} />
           <Route path="/coach" element={<CoachPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="*" element={<NotFound />} />
