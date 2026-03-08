@@ -1,0 +1,7 @@
+project_id = "hhsmwbmlifjfbgieqfnk"
+
+[functions.ai-coach]
+verify_jwt = false
+
+[functions.analyze-training]
+verify_jwt = false
