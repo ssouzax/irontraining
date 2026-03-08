@@ -115,7 +115,8 @@ export function MobileGymMap() {
   const initMap = async () => {
     if (!mapRef.current || !userLocation) return;
 
-    const map = new google.maps.Map(mapRef.current, {
+    const gMaps = (window as any).google.maps;
+    const map = new gMaps.Map(mapRef.current, {
       center: userLocation,
       zoom: 14,
       mapId: 'powerbuild-gym-map',
