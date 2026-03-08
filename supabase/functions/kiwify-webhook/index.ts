@@ -12,6 +12,21 @@ serve(async (req) => {
   }
 
   try {
+    // Validate Kiwify webhook token
+    const webhookToken = Deno.env.get('KIWIFY_WEBHOOK_TOKEN');
+    const url = new URL(req.url);
+    const tokenParam = url.searchParams.get('token');
+    const authHeader = req.headers.get('x-kiwify-token') || req.headers.get('authorization');
+    const receivedToken = tokenParam || authHeader?.replace('Bearer ', '');
+
+    if (webhookToken && receivedToken !== webhookToken) {
+      console.error('Invalid webhook token received');
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
