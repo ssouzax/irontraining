@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Check, CheckCheck, Dumbbell, Trophy, Flame, ArrowUpCircle } from 'lucide-react';
+import { Bell, Check, CheckCheck, Dumbbell, Trophy, Flame, ArrowUpCircle, MapPin } from 'lucide-react';
 import { useNotifications, AppNotification } from '@/hooks/useNotifications';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,7 @@ const typeIcons: Record<AppNotification['type'], typeof Dumbbell> = {
   achievement_unlocked: Trophy,
   pr_achieved: Flame,
   level_up: ArrowUpCircle,
+  gym_pr: MapPin,
 };
 
 const typeColors: Record<AppNotification['type'], string> = {
@@ -19,6 +20,7 @@ const typeColors: Record<AppNotification['type'], string> = {
   achievement_unlocked: 'text-primary',
   pr_achieved: 'text-destructive',
   level_up: 'text-success',
+  gym_pr: 'text-primary',
 };
 
 export function NotificationBell() {

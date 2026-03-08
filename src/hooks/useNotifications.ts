@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export interface AppNotification {
   id: string;
-  type: 'workout_pending' | 'achievement_unlocked' | 'pr_achieved' | 'level_up';
+  type: 'workout_pending' | 'achievement_unlocked' | 'pr_achieved' | 'level_up' | 'gym_pr';
   title: string;
   message: string;
   timestamp: Date;
@@ -99,24 +99,65 @@ export function useNotifications() {
     }));
   }, [user]);
 
+  const checkGymPRs = useCallback(async () => {
+    if (!user) return [];
+
+    // Get user's gym
+    const { data: profile } = await supabase.from('profiles').select('gym_id').eq('user_id', user.id).single();
+    if (!profile?.gym_id) return [];
+
+    // Get gym members
+    const { data: members } = await supabase.from('gym_members').select('user_id').eq('gym_id', profile.gym_id);
+    if (!members) return [];
+    const mateIds = members.map(m => m.user_id).filter(id => id !== user.id);
+    if (mateIds.length === 0) return [];
+
+    // Get today's PRs from gym mates
+    const today = new Date().toISOString().split('T')[0];
+    const { data: prs } = await supabase
+      .from('personal_records')
+      .select('id, exercise_name, weight, reps, user_id, recorded_at')
+      .in('user_id', mateIds)
+      .gte('recorded_at', `${today}T00:00:00`)
+      .order('recorded_at', { ascending: false })
+      .limit(5);
+
+    if (!prs || prs.length === 0) return [];
+
+    const prUserIds = [...new Set(prs.map(p => p.user_id))];
+    const { data: profiles } = await supabase.from('profiles').select('user_id, display_name').in('user_id', prUserIds);
+    const nameMap = new Map((profiles || []).map(p => [p.user_id, p.display_name || 'Atleta']));
+
+    return prs.map(pr => ({
+      id: `gym-pr-${pr.id}`,
+      type: 'gym_pr' as const,
+      title: '🏋️ PR na sua academia!',
+      message: `${nameMap.get(pr.user_id)} bateu ${pr.weight}kg x ${pr.reps} no ${pr.exercise_name}`,
+      timestamp: new Date(pr.recorded_at),
+      read: false,
+      link: '/gym',
+    }));
+  }, [user]);
+
   const refreshNotifications = useCallback(async () => {
     if (!user) return;
 
     const readIds = JSON.parse(localStorage.getItem(`notifications_read_${user.id}`) || '[]');
 
-    const [workouts, achievements, prs] = await Promise.all([
+    const [workouts, achievements, prs, gymPrs] = await Promise.all([
       checkPendingWorkouts(),
       checkRecentAchievements(),
       checkRecentPRs(),
+      checkGymPRs(),
     ]);
 
-    const all = [...workouts, ...achievements, ...prs]
+    const all = [...workouts, ...achievements, ...prs, ...gymPrs]
       .map(n => ({ ...n, read: readIds.includes(n.id) }))
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
     setNotifications(all);
     setUnreadCount(all.filter(n => !n.read).length);
-  }, [user, checkPendingWorkouts, checkRecentAchievements, checkRecentPRs]);
+  }, [user, checkPendingWorkouts, checkRecentAchievements, checkRecentPRs, checkGymPRs]);
 
   const markAsRead = useCallback((id: string) => {
     if (!user) return;

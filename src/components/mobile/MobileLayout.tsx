@@ -17,6 +17,7 @@ import { MobileLiveGym } from './MobileLiveGym';
 import { MobileWrappedCards } from './MobileWrappedCards';
 import { MobileGymMap } from './MobileGymMap';
 import { NotificationBell } from '../NotificationBell';
+import { StreakFireIcon } from '../StreakFireIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -120,7 +121,10 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
             <span className="font-bold text-foreground text-base tracking-tight">PowerBuild</span>
           </div>
         </div>
-        <NotificationBell />
+        <div className="flex items-center gap-2">
+          <StreakFireIcon />
+          <NotificationBell />
+        </div>
       </header>
 
       {/* Menu Drawer */}

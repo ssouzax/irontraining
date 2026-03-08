@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Search, Plus, Trophy, Users, Loader2, Crown, Star, CheckCircle, LogOut as LeaveIcon, Building, Clock, Flame, Zap, Calendar, TrendingUp, Award } from 'lucide-react';
+import { MapPin, Search, Plus, Trophy, Users, Loader2, Crown, Star, CheckCircle, LogOut as LeaveIcon, Building, Clock, Flame, Zap, Calendar, TrendingUp, Award, Swords } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,6 +7,8 @@ import { useTraining } from '@/contexts/TrainingContext';
 import { calculate1RM } from '@/data/defaultProfile';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useGymWeeklyChallenge } from '@/hooks/useGymWeeklyChallenge';
+import { useCheckinAchievements } from '@/hooks/useCheckinAchievements';
 
 interface Gym {
   id: string;
@@ -51,7 +53,7 @@ interface CheckinInfo {
 }
 
 type ExerciseTab = 'squat' | 'bench' | 'deadlift' | 'total';
-type ViewTab = 'ranking' | 'prs' | 'checkins';
+type ViewTab = 'ranking' | 'prs' | 'checkins' | 'challenge';
 
 const EXERCISE_OPTIONS = [
   { key: 'squat', label: 'Agachamento', emoji: '🦵' },
@@ -81,6 +83,9 @@ export function MobileGymPage() {
   const [checkinLoading, setCheckinLoading] = useState(false);
   const [topCheckinUsers, setTopCheckinUsers] = useState<{ display_name: string; avatar_url: string | null; count: number }[]>([]);
   const [prExerciseFilter, setPrExerciseFilter] = useState<string>('all');
+
+  const { rankings: challengeRankings, myGymRank, loading: challengeLoading, weekLabel } = useGymWeeklyChallenge(myGym?.id || null);
+  const { checkAndUnlock } = useCheckinAchievements();
 
   const squat1RM = calculate1RM(profile.currentLifts.squat.weight, profile.currentLifts.squat.reps);
   const bench1RM = calculate1RM(profile.currentLifts.bench.weight, profile.currentLifts.bench.reps);
@@ -283,6 +288,13 @@ export function MobileGymPage() {
       });
 
       toast.success(`Check-in! +${totalXp} XP 🔥 (Streak: ${streakDay} dias)`);
+
+      // Check for streak achievements
+      const unlocked = await checkAndUnlock(streakDay);
+      unlocked.forEach(a => {
+        toast.success(`🏆 Conquista desbloqueada: ${a.icon} ${a.title}!`, { duration: 5000 });
+      });
+
       loadCheckinInfo();
       loadTopCheckins(myGym.id);
     } catch (e) {
@@ -550,12 +562,13 @@ export function MobileGymPage() {
           <div className="flex gap-1 bg-secondary/50 rounded-xl p-1">
             {([
               { key: 'ranking' as ViewTab, label: 'Ranking', icon: Crown },
-              { key: 'prs' as ViewTab, label: 'PRs do Dia', icon: TrendingUp },
-              { key: 'checkins' as ViewTab, label: 'Frequência', icon: Calendar },
+              { key: 'prs' as ViewTab, label: 'PRs', icon: TrendingUp },
+              { key: 'checkins' as ViewTab, label: 'Freq.', icon: Calendar },
+              { key: 'challenge' as ViewTab, label: 'Desafio', icon: Swords },
             ]).map(tab => (
               <button key={tab.key} onClick={() => setViewTab(tab.key)}
                 className={cn(
-                  "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-semibold transition-all",
+                  "flex-1 flex items-center justify-center gap-1 py-2.5 rounded-lg text-[11px] font-semibold transition-all",
                   viewTab === tab.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
                 )}>
                 <tab.icon className="w-3.5 h-3.5" /> {tab.label}
@@ -737,6 +750,84 @@ export function MobileGymPage() {
                   </div>
                 )}
               </div>
+            </>
+          )}
+
+          {/* ==================== WEEKLY CHALLENGE TAB ==================== */}
+          {viewTab === 'challenge' && (
+            <>
+              <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-card to-card border border-primary/20 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                      <Swords className="w-4 h-4 text-primary" /> Desafio Semanal
+                    </h3>
+                    <p className="text-[11px] text-muted-foreground">Semana {weekLabel}</p>
+                  </div>
+                  {myGymRank && (
+                    <span className={cn(
+                      "text-xs font-bold px-2.5 py-1 rounded-full",
+                      myGymRank === 1 ? "bg-yellow-500/20 text-yellow-400" : "bg-secondary text-muted-foreground"
+                    )}>
+                      #{myGymRank}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted-foreground mb-3">A academia com mais check-ins na semana ganha <strong className="text-primary">+100 pontos bônus</strong> e badge especial 🏆</p>
+              </div>
+
+              {challengeLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                </div>
+              ) : challengeRankings.length === 0 ? (
+                <div className="text-center py-12 rounded-2xl bg-card border border-border">
+                  <Swords className="w-8 h-8 text-muted-foreground/20 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">Nenhum check-in esta semana</p>
+                  <p className="text-xs text-muted-foreground mt-1">Faça check-in para começar o desafio!</p>
+                </div>
+              ) : (
+                <div className="rounded-2xl bg-card border border-border overflow-hidden">
+                  <div className="px-4 py-3 border-b border-border">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                      <Trophy className="w-3 h-3 text-yellow-400" /> Ranking de Academias
+                    </p>
+                  </div>
+                  <div className="divide-y divide-border">
+                    {challengeRankings.map((entry, i) => (
+                      <motion.div key={entry.gym_id}
+                        initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3",
+                          entry.gym_id === myGym?.id && "bg-primary/5",
+                          i === 0 && "bg-yellow-500/5"
+                        )}>
+                        <div className={cn(
+                          "w-8 h-8 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0",
+                          i === 0 ? "bg-yellow-500/20 text-yellow-400" :
+                          i === 1 ? "bg-gray-400/20 text-gray-400" :
+                          i === 2 ? "bg-amber-700/20 text-amber-600" :
+                          "bg-secondary text-muted-foreground"
+                        )}>
+                          {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={cn("text-sm font-semibold truncate", entry.gym_id === myGym?.id ? "text-primary" : "text-foreground")}>
+                            {entry.gym_name}
+                          </p>
+                          {entry.is_winner && i === 0 && (
+                            <p className="text-[10px] text-yellow-400 font-medium">🏆 Líder do desafio</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10">
+                          <Clock className="w-3 h-3 text-primary" />
+                          <span className="text-xs font-bold text-primary">{entry.checkin_count}</span>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </motion.div>
