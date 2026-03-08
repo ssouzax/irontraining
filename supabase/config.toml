@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.analyze-training]
 verify_jwt = false
+
+[functions.generate-program]
+verify_jwt = false
+
+[functions.auto-progression]
+verify_jwt = false
