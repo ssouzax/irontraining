@@ -157,10 +157,41 @@ export default function SocialFeedPage() {
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p));
   };
 
+  const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length + mediaFiles.length > 4) {
+      toast.error('Máximo 4 arquivos');
+      return;
+    }
+    setMediaFiles(prev => [...prev, ...files]);
+    files.forEach(f => {
+      const reader = new FileReader();
+      reader.onload = () => setMediaPreviews(prev => [...prev, reader.result as string]);
+      reader.readAsDataURL(f);
+    });
+  };
+
+  const removeMedia = (idx: number) => {
+    setMediaFiles(prev => prev.filter((_, i) => i !== idx));
+    setMediaPreviews(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const createPost = async () => {
     if (!user) return;
     setPosting(true);
     try {
+      // Upload media files
+      const mediaUrls: string[] = [];
+      for (const file of mediaFiles) {
+        const ext = file.name.split('.').pop();
+        const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error } = await supabase.storage.from('social-media').upload(path, file);
+        if (!error) {
+          const { data: urlData } = supabase.storage.from('social-media').getPublicUrl(path);
+          mediaUrls.push(urlData.publicUrl);
+        }
+      }
+
       const e1rm = weight && reps ? Math.round(parseFloat(weight) * (1 + parseInt(reps) / 30) * 10) / 10 : null;
       await supabase.from('posts').insert({
         user_id: user.id,
@@ -171,6 +202,7 @@ export default function SocialFeedPage() {
         reps: reps ? parseInt(reps) : null,
         estimated_1rm: e1rm,
         is_pr: postType === 'pr',
+        media_urls: mediaUrls.length > 0 ? mediaUrls : null,
       });
       toast.success('Post publicado!');
       setShowCreate(false);
@@ -178,6 +210,8 @@ export default function SocialFeedPage() {
       setExerciseName('');
       setWeight('');
       setReps('');
+      setMediaFiles([]);
+      setMediaPreviews([]);
       loadFeed();
     } catch {
       toast.error('Erro ao publicar');
