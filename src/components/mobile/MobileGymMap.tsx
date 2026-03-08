@@ -96,7 +96,10 @@ export function MobileGymMap() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddManual, setShowAddManual] = useState(false);
   const [newGymName, setNewGymName] = useState('');
+  const [newGymAddress, setNewGymAddress] = useState('');
   const [newGymCity, setNewGymCity] = useState('');
+  const [newGymCoords, setNewGymCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [geocoding, setGeocoding] = useState(false);
   const [joining, setJoining] = useState(false);
   const [myGymId, setMyGymId] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterMode>('all');
