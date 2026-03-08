@@ -253,23 +253,58 @@ export function MobileGymMap() {
     
     const heatmapMap = new Map((data || []).map((g: any) => [g.gym_id, g]));
     
-    const enriched: AppGym[] = await Promise.all(
-      (allGyms || []).map(async (g: any) => {
-        const hm = heatmapMap.get(g.id) as any;
-        const { count: memberCount } = await supabase.from('gym_members').select('id', { count: 'exact', head: true }).eq('gym_id', g.id);
-        const { count: prCount } = await supabase.from('gym_points_log').select('id', { count: 'exact', head: true }).eq('gym_id', g.id).eq('reason', 'pr');
-        return {
-          ...g,
-          member_count: memberCount || (hm?.member_count || 0),
-          pr_count: prCount || (hm?.total_prs || 0),
-          top_squat: hm?.top_squat || 0,
-          top_bench: hm?.top_bench || 0,
-          top_deadlift: hm?.top_deadlift || 0,
-          intensity_score: hm?.intensity_score || 0,
-        };
-      })
-    );
+    const enriched: AppGym[] = (allGyms || []).map((g: any) => {
+      const hm = heatmapMap.get(g.id) as any;
+      return {
+        ...g,
+        member_count: hm?.member_count || 0,
+        pr_count: hm?.total_prs || 0,
+        top_squat: hm?.top_squat || 0,
+        top_bench: hm?.top_bench || 0,
+        top_deadlift: hm?.top_deadlift || 0,
+        intensity_score: hm?.intensity_score || 0,
+      };
+    });
     setAppGyms(enriched);
+
+    // Auto-discover nearby gyms from OSM in background
+    if (userLocation) {
+      discoverOSMGyms(userLocation.lat, userLocation.lng);
+    }
+  };
+
+  const discoverOSMGyms = async (lat: number, lng: number) => {
+    try {
+      setOsmLoading(true);
+      const { data, error } = await supabase.functions.invoke('search-gyms-osm', {
+        body: { action: 'nearby', lat, lon: lng, radius_km: 20 },
+      });
+      if (data?.count > 0) {
+        // Reload gyms from DB since OSM function auto-imports new ones
+        const { data: allGyms } = await supabase.from('gyms').select('*');
+        if (allGyms && allGyms.length > appGyms.length) {
+          const { data: heatData } = await supabase.rpc('get_gym_heatmap', { days_back: 30 });
+          const heatmapMap = new Map((heatData || []).map((g: any) => [g.gym_id, g]));
+          const enriched: AppGym[] = (allGyms || []).map((g: any) => {
+            const hm = heatmapMap.get(g.id) as any;
+            return {
+              ...g,
+              member_count: hm?.member_count || 0,
+              pr_count: hm?.total_prs || 0,
+              top_squat: hm?.top_squat || 0,
+              top_bench: hm?.top_bench || 0,
+              top_deadlift: hm?.top_deadlift || 0,
+              intensity_score: hm?.intensity_score || 0,
+            };
+          });
+          setAppGyms(enriched);
+        }
+      }
+    } catch (e) {
+      console.error('OSM discovery error:', e);
+    } finally {
+      setOsmLoading(false);
+    }
   };
 
   const renderMarkers = () => {
