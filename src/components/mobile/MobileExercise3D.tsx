@@ -5,7 +5,6 @@ import { RotateCw, Info, ChevronLeft, ChevronRight, CheckCircle, AlertTriangle, 
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnatomicalBody } from './AnatomicalBody3D';
-import { AnatomicalBody } from './AnatomicalBody3D';
 
 const EXERCISE_MUSCLES: Record<string, { primary: string[]; secondary: string[]; tips: string[]; posture: { label: string; angle: number; ideal: number; tolerance: number }[] }> = {
   'Supino Reto': {
