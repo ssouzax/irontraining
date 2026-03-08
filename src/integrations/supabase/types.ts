@@ -166,6 +166,71 @@ export type Database = {
         }
         Relationships: []
       }
+      avatar_config: {
+        Row: {
+          animation_type: string | null
+          avatar_tier: string
+          badge_overlay: string | null
+          frame_style: string | null
+          glow_color: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          animation_type?: string | null
+          avatar_tier?: string
+          badge_overlay?: string | null
+          frame_style?: string | null
+          glow_color?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          animation_type?: string | null
+          avatar_tier?: string
+          badge_overlay?: string | null
+          frame_style?: string | null
+          glow_color?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      challenge_entries: {
+        Row: {
+          challenge_id: string
+          created_at: string
+          id: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+          value?: number
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_entries_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "daily_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       city_strength_metrics: {
         Row: {
           city: string
@@ -266,6 +331,118 @@ export type Database = {
           weight?: number
         }
         Relationships: []
+      }
+      daily_challenges: {
+        Row: {
+          challenge_date: string
+          challenge_type: string
+          created_at: string
+          exercise_name: string
+          gym_id: string | null
+          id: string
+        }
+        Insert: {
+          challenge_date?: string
+          challenge_type?: string
+          created_at?: string
+          exercise_name: string
+          gym_id?: string | null
+          id?: string
+        }
+        Update: {
+          challenge_date?: string
+          challenge_type?: string
+          created_at?: string
+          exercise_name?: string
+          gym_id?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_challenges_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_goals: {
+        Row: {
+          completed: boolean
+          created_at: string
+          current_value: number
+          exercise_name: string | null
+          goal_date: string
+          goal_type: string
+          id: string
+          target_unit: string
+          target_value: number
+          user_id: string
+          xp_reward: number
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          current_value?: number
+          exercise_name?: string | null
+          goal_date?: string
+          goal_type?: string
+          id?: string
+          target_unit?: string
+          target_value?: number
+          user_id: string
+          xp_reward?: number
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          current_value?: number
+          exercise_name?: string | null
+          goal_date?: string
+          goal_type?: string
+          id?: string
+          target_unit?: string
+          target_value?: number
+          user_id?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
+      event_participation: {
+        Row: {
+          challenges_completed: number
+          event_id: string
+          id: string
+          joined_at: string
+          points_earned: number
+          user_id: string
+        }
+        Insert: {
+          challenges_completed?: number
+          event_id: string
+          id?: string
+          joined_at?: string
+          points_earned?: number
+          user_id: string
+        }
+        Update: {
+          challenges_completed?: number
+          event_id?: string
+          id?: string
+          joined_at?: string
+          points_earned?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_participation_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "seasonal_events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       exercise_rankings: {
         Row: {
@@ -1276,6 +1453,48 @@ export type Database = {
           },
         ]
       }
+      seasonal_events: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string
+          event_type: string
+          icon: string | null
+          id: string
+          is_active: boolean
+          name: string
+          start_date: string
+          theme_color: string | null
+          xp_multiplier: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date: string
+          event_type?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          start_date: string
+          theme_color?: string | null
+          xp_multiplier?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          event_type?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          start_date?: string
+          theme_color?: string | null
+          xp_multiplier?: number
+        }
+        Relationships: []
+      }
       seasons: {
         Row: {
           created_at: string | null
@@ -1364,6 +1583,47 @@ export type Database = {
             columns: ["workout_log_id"]
             isOneToOne: false
             referencedRelation: "workout_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      temporary_badges: {
+        Row: {
+          badge_title: string
+          badge_type: string
+          challenge_id: string | null
+          created_at: string
+          exercise_name: string | null
+          expires_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_title: string
+          badge_type: string
+          challenge_id?: string | null
+          created_at?: string
+          exercise_name?: string | null
+          expires_at: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_title?: string
+          badge_type?: string
+          challenge_id?: string | null
+          created_at?: string
+          exercise_name?: string | null
+          expires_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "temporary_badges_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "daily_challenges"
             referencedColumns: ["id"]
           },
         ]
