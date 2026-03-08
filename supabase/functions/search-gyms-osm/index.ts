@@ -6,6 +6,29 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Detect gym chain from name
+function detectChain(name: string): string | null {
+  const n = name.toLowerCase();
+  const chains: Record<string, string[]> = {
+    'smart_fit': ['smart fit', 'smartfit'],
+    'blue_fit': ['blue fit', 'bluefit'],
+    'skyfit': ['sky fit', 'skyfit'],
+    'crossfit': ['crossfit', 'cross fit'],
+    'panobianco': ['panobianco', 'pano bianco'],
+    'bodytech': ['bodytech', 'body tech'],
+    'selfit': ['selfit', 'self it'],
+    'total_pass': ['totalpass', 'total pass'],
+    'academia_runner': ['runner'],
+    'bio_ritmo': ['bio ritmo', 'bioritmo'],
+    'competition': ['competition'],
+    'forma': ['academia forma'],
+  };
+  for (const [chain, keywords] of Object.entries(chains)) {
+    if (keywords.some(k => n.includes(k))) return chain;
+  }
+  return null;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
@@ -36,6 +59,7 @@ serve(async (req) => {
           lat: parseFloat(r.lat),
           lon: parseFloat(r.lon),
           source: 'nominatim',
+          chain: detectChain(r.display_name.split(',')[0]),
         }));
 
       return new Response(JSON.stringify({ gyms }), {
@@ -103,6 +127,7 @@ serve(async (req) => {
           lat: elLat,
           lon: elLon,
           source: 'overpass',
+          chain: detectChain(name),
         });
       }
 
@@ -128,6 +153,8 @@ serve(async (req) => {
             latitude: g.lat,
             longitude: g.lon,
             verified: false,
+            chain: g.chain,
+            address: g.address || null,
           }));
           await supabase.from('gyms').insert(rows);
         }
@@ -160,6 +187,8 @@ serve(async (req) => {
           latitude: g.lat,
           longitude: g.lon,
           verified: g.verified || false,
+          chain: detectChain(g.name),
+          address: g.address || null,
         }));
         const { error } = await supabase.from('gyms').insert(rows);
         if (error) throw error;
@@ -174,7 +203,79 @@ serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ error: 'Invalid action. Use: search, nearby, import_gyms' }), {
+    // CRON: auto-discover gyms for major cities
+    if (action === 'cron_discover') {
+      const cities = [
+        { name: 'Itu', lat: -23.2640, lon: -47.2990 },
+        { name: 'Sorocaba', lat: -23.5015, lon: -47.4526 },
+        { name: 'São Paulo', lat: -23.5505, lon: -46.6333 },
+        { name: 'Campinas', lat: -22.9056, lon: -47.0608 },
+        { name: 'Jundiaí', lat: -23.1857, lon: -46.8978 },
+      ];
+      let totalImported = 0;
+
+      for (const city of cities) {
+        try {
+          const radiusDeg = 20 / 111.0;
+          const bbox = `${city.lat - radiusDeg},${city.lon - radiusDeg},${city.lat + radiusDeg},${city.lon + radiusDeg}`;
+          const overpassQuery = `[out:json][timeout:25];(node["leisure"="fitness_centre"](${bbox});way["leisure"="fitness_centre"](${bbox});node["sport"="fitness"](${bbox});way["sport"="fitness"](${bbox});node["amenity"="gym"](${bbox});way["amenity"="gym"](${bbox}););out center body;`;
+          
+          const res = await fetch('https://overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: `data=${encodeURIComponent(overpassQuery)}`,
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'IronTraining/1.0' },
+          });
+          const data = await res.json();
+
+          const { data: existingGyms } = await supabase.from('gyms').select('name, latitude, longitude');
+          const existingSet = new Set(
+            (existingGyms || []).map((g: any) =>
+              `${g.name.toLowerCase().trim()}_${Math.round((g.latitude || 0) * 100)}_${Math.round((g.longitude || 0) * 100)}`
+            )
+          );
+
+          const newRows: any[] = [];
+          for (const el of data.elements || []) {
+            const name = el.tags?.name;
+            if (!name) continue;
+            const elLat = el.lat || el.center?.lat;
+            const elLon = el.lon || el.center?.lon;
+            if (!elLat || !elLon) continue;
+            const k = `${name.toLowerCase().trim()}_${Math.round(elLat * 100)}_${Math.round(elLon * 100)}`;
+            if (existingSet.has(k)) continue;
+            existingSet.add(k);
+
+            const addr = [el.tags?.['addr:street'], el.tags?.['addr:housenumber'], el.tags?.['addr:suburb']].filter(Boolean).join(', ');
+            newRows.push({
+              name,
+              city: el.tags?.['addr:city'] || city.name,
+              country: 'Brasil',
+              latitude: elLat,
+              longitude: elLon,
+              verified: false,
+              chain: detectChain(name),
+              address: addr || null,
+            });
+          }
+
+          if (newRows.length > 0) {
+            await supabase.from('gyms').insert(newRows);
+            totalImported += newRows.length;
+          }
+
+          // Rate limit for Nominatim/Overpass
+          await new Promise(r => setTimeout(r, 2000));
+        } catch (e) {
+          console.error(`Error discovering gyms in ${city.name}:`, e);
+        }
+      }
+
+      return new Response(JSON.stringify({ success: true, imported: totalImported }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: 'Invalid action. Use: search, nearby, import_gyms, cron_discover' }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
