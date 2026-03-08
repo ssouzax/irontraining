@@ -1,46 +1,63 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTraining } from '@/contexts/TrainingContext';
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Check, ChevronLeft, ChevronRight, Minus, Plus, Timer, RotateCcw, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Check, ChevronLeft, ChevronRight, Minus, Plus, Timer, RotateCcw, X, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { LoggedSet, Exercise, TrainingSet } from '@/types/training';
+import { LoggedSet } from '@/types/training';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
-function RestTimer({ seconds, onComplete, onDismiss }: { seconds: number; onComplete: () => void; onDismiss: () => void }) {
+function RestTimer({ seconds, onComplete, onDismiss, elapsed }: { seconds: number; onComplete: () => void; onDismiss: () => void; elapsed?: number }) {
   const [remaining, setRemaining] = useState(seconds);
+  const [totalElapsed, setTotalElapsed] = useState(elapsed || 0);
 
   useEffect(() => {
-    if (remaining <= 0) { onComplete(); return; }
-    const t = setTimeout(() => setRemaining(r => r - 1), 1000);
-    return () => clearTimeout(t);
-  }, [remaining, onComplete]);
+    const t = setInterval(() => {
+      setRemaining(r => {
+        if (r <= 0) return 0;
+        return r - 1;
+      });
+      setTotalElapsed(e => e + 1);
+    }, 1000);
+    return () => clearInterval(t);
+  }, []);
 
-  const mins = Math.floor(remaining / 60);
-  const secs = remaining % 60;
-  const progress = ((seconds - remaining) / seconds) * 100;
+  useEffect(() => {
+    if (remaining <= 0 && seconds > 0) onComplete();
+  }, [remaining, onComplete, seconds]);
+
+  const mins = Math.floor(Math.abs(remaining) / 60);
+  const secs = Math.abs(remaining) % 60;
+  const isOvertime = remaining < 0;
+  const progress = seconds > 0 ? Math.min(((seconds - remaining) / seconds) * 100, 100) : 0;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 20 }}
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-card border border-border rounded-2xl p-6 card-elevated flex flex-col items-center gap-3 min-w-[200px]"
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 20, scale: 0.95 }}
+      className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 bg-card border border-border rounded-2xl p-5 sm:p-6 card-elevated flex flex-col items-center gap-3 min-w-[220px] sm:min-w-[260px]"
     >
-      <button onClick={onDismiss} className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-foreground">
+      <button onClick={onDismiss} className="absolute top-2 right-2 p-1.5 text-muted-foreground hover:text-foreground">
         <X className="w-4 h-4" />
       </button>
-      <Timer className="w-5 h-5 text-primary" />
-      <p className="text-3xl font-bold text-foreground font-mono">{mins}:{secs.toString().padStart(2, '0')}</p>
-      <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+      <Timer className={cn("w-5 h-5", isOvertime ? "text-warning" : "text-primary")} />
+      <p className={cn("text-4xl font-bold font-mono", isOvertime ? "text-warning" : "text-foreground")}>
+        {isOvertime ? '+' : ''}{mins}:{secs.toString().padStart(2, '0')}
+      </p>
+      <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
         <motion.div
-          className="h-full bg-primary rounded-full"
-          animate={{ width: `${progress}%` }}
+          className={cn("h-full rounded-full", isOvertime ? "bg-warning" : "bg-primary")}
+          animate={{ width: `${Math.min(progress, 100)}%` }}
           transition={{ duration: 0.5 }}
         />
       </div>
-      <p className="text-xs text-muted-foreground">Rest Timer</p>
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Clock className="w-3 h-3" />
+        <span>Descanso: {Math.floor(totalElapsed / 60)}:{(totalElapsed % 60).toString().padStart(2, '0')}</span>
+      </div>
+      <p className="text-xs text-muted-foreground">{isOvertime ? 'Tempo extra!' : 'Descansando...'}</p>
     </motion.div>
   );
 }
@@ -52,18 +69,19 @@ interface SetRowProps {
   setType: string;
   log: LoggedSet;
   lastWeight?: number;
+  restTime?: number;
   onUpdate: (field: keyof LoggedSet, value: any) => void;
   onComplete: () => void;
 }
 
-function SetRow({ setIndex, targetReps, targetRIR, setType, log, lastWeight, onUpdate, onComplete }: SetRowProps) {
+function SetRow({ setIndex, targetReps, targetRIR, setType, log, lastWeight, restTime, onUpdate, onComplete }: SetRowProps) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -8 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: setIndex * 0.03 }}
       className={cn(
-        "flex items-center gap-2 py-2.5 px-3 rounded-xl transition-all",
+        "flex flex-wrap sm:flex-nowrap items-center gap-2 py-2.5 px-3 rounded-xl transition-all",
         log.completed ? "bg-success/10 border border-success/20" : "bg-secondary/30"
       )}
     >
@@ -78,15 +96,15 @@ function SetRow({ setIndex, targetReps, targetRIR, setType, log, lastWeight, onU
       </div>
 
       {/* Target info */}
-      <div className="w-20 shrink-0">
+      <div className="w-16 sm:w-20 shrink-0">
         <p className="text-xs text-muted-foreground font-mono">
           {targetReps}r {targetRIR !== undefined ? `RIR${targetRIR}` : ''}
         </p>
       </div>
 
       {/* Weight input */}
-      <div className="flex items-center gap-1 flex-1">
-        <button onClick={() => onUpdate('weight', Math.max(0, log.weight - 2.5))} className="p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+      <div className="flex items-center gap-1">
+        <button onClick={() => onUpdate('weight', Math.max(0, log.weight - 2.5))} className="p-1 sm:p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
           <Minus className="w-3 h-3 text-muted-foreground" />
         </button>
         <input
@@ -94,9 +112,9 @@ function SetRow({ setIndex, targetReps, targetRIR, setType, log, lastWeight, onU
           value={log.weight || ''}
           onChange={e => onUpdate('weight', parseFloat(e.target.value) || 0)}
           placeholder="kg"
-          className="w-16 bg-background border border-border rounded-lg px-2 py-1.5 text-sm text-center text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-14 sm:w-16 bg-background border border-border rounded-lg px-1 sm:px-2 py-1.5 text-sm text-center text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
         />
-        <button onClick={() => onUpdate('weight', log.weight + 2.5)} className="p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+        <button onClick={() => onUpdate('weight', log.weight + 2.5)} className="p-1 sm:p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
           <Plus className="w-3 h-3 text-muted-foreground" />
         </button>
       </div>
@@ -105,16 +123,16 @@ function SetRow({ setIndex, targetReps, targetRIR, setType, log, lastWeight, onU
 
       {/* Reps input */}
       <div className="flex items-center gap-1">
-        <button onClick={() => onUpdate('reps', Math.max(0, log.reps - 1))} className="p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+        <button onClick={() => onUpdate('reps', Math.max(0, log.reps - 1))} className="p-1 sm:p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
           <Minus className="w-3 h-3 text-muted-foreground" />
         </button>
         <input
           type="number"
           value={log.reps}
           onChange={e => onUpdate('reps', parseInt(e.target.value) || 0)}
-          className="w-12 bg-background border border-border rounded-lg px-2 py-1.5 text-sm text-center text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-10 sm:w-12 bg-background border border-border rounded-lg px-1 py-1.5 text-sm text-center text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
         />
-        <button onClick={() => onUpdate('reps', log.reps + 1)} className="p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+        <button onClick={() => onUpdate('reps', log.reps + 1)} className="p-1 sm:p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
           <Plus className="w-3 h-3 text-muted-foreground" />
         </button>
       </div>
@@ -125,25 +143,33 @@ function SetRow({ setIndex, targetReps, targetRIR, setType, log, lastWeight, onU
         value={log.rir ?? ''}
         onChange={e => onUpdate('rir', parseInt(e.target.value))}
         placeholder="RIR"
-        className="w-12 bg-background border border-border rounded-lg px-1 py-1.5 text-xs text-center text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+        className="w-10 sm:w-12 bg-background border border-border rounded-lg px-1 py-1.5 text-xs text-center text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
       />
 
-      {/* Quick buttons */}
-      <div className="flex gap-1">
+      {/* Quick buttons - hide on small screens */}
+      <div className="hidden sm:flex gap-1">
         <button onClick={() => onUpdate('weight', log.weight + 2.5)} className="text-[10px] px-1.5 py-1 rounded bg-secondary text-muted-foreground hover:text-foreground transition-colors">+2.5</button>
         <button onClick={() => onUpdate('weight', log.weight + 5)} className="text-[10px] px-1.5 py-1 rounded bg-secondary text-muted-foreground hover:text-foreground transition-colors">+5</button>
-        {lastWeight && (
-          <button onClick={() => onUpdate('weight', lastWeight)} className="p-1 rounded bg-secondary text-muted-foreground hover:text-foreground transition-colors" title="Repeat last">
+        {lastWeight && lastWeight > 0 && (
+          <button onClick={() => onUpdate('weight', lastWeight)} className="p-1 rounded bg-secondary text-muted-foreground hover:text-foreground transition-colors" title="Repetir último">
             <RotateCcw className="w-3 h-3" />
           </button>
         )}
       </div>
 
+      {/* Rest time display */}
+      {restTime !== undefined && restTime > 0 && log.completed && (
+        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+          <Clock className="w-3 h-3" />
+          {Math.floor(restTime / 60)}:{(restTime % 60).toString().padStart(2, '0')}
+        </div>
+      )}
+
       {/* Complete */}
       <button
         onClick={onComplete}
         className={cn(
-          "p-2 rounded-xl transition-all shrink-0",
+          "p-2 rounded-xl transition-all shrink-0 ml-auto",
           log.completed ? "bg-success text-success-foreground scale-110" : "bg-secondary hover:bg-primary/20 hover:text-primary"
         )}
       >
@@ -164,10 +190,13 @@ export default function AppModeWorkout() {
   const dayData = weekData.days[currentDay];
 
   const [logData, setLogData] = useState<Record<string, LoggedSet[]>>({});
-  const [restTimer, setRestTimer] = useState<{ active: boolean; seconds: number }>({ active: false, seconds: 0 });
+  const [restTimes, setRestTimes] = useState<Record<string, number>>({});
+  const [restTimer, setRestTimer] = useState<{ active: boolean; seconds: number; key: string }>({ active: false, seconds: 0, key: '' });
   const [saving, setSaving] = useState(false);
+  const lastCompletionTime = useRef<number | null>(null);
 
   const getSetKey = (exerciseId: string, setId: string) => `${exerciseId}__${setId}`;
+  const getSetRestKey = (exerciseId: string, setId: string, idx: number) => `${exerciseId}__${setId}__${idx}`;
 
   const getSetLog = (key: string, setIdx: number, targetReps: number): LoggedSet => {
     return logData[key]?.[setIdx] || {
@@ -187,10 +216,19 @@ export default function AppModeWorkout() {
     });
   };
 
-  const completeSet = (key: string, setIdx: number, restSeconds?: number) => {
+  const completeSet = (key: string, setIdx: number, restSeconds?: number, exerciseId?: string, setId?: string) => {
+    // Record actual rest time from last completion
+    if (lastCompletionTime.current && exerciseId && setId) {
+      const actualRest = Math.round((Date.now() - lastCompletionTime.current) / 1000);
+      const restKey = getSetRestKey(exerciseId, setId, setIdx);
+      setRestTimes(prev => ({ ...prev, [restKey]: actualRest }));
+    }
+    
     updateSetLog(key, setIdx, 'completed', true);
+    lastCompletionTime.current = Date.now();
+    
     if (restSeconds && restSeconds > 0) {
-      setRestTimer({ active: true, seconds: restSeconds });
+      setRestTimer({ active: true, seconds: restSeconds, key: `${key}__${setIdx}` });
     }
   };
 
@@ -222,6 +260,7 @@ export default function AppModeWorkout() {
           for (let i = 0; i < setGroup.targetSets; i++) {
             const log = getSetLog(key, i, setGroup.targetReps);
             if (log.completed) {
+              const restKey = getSetRestKey(exercise.id, setGroup.id, i);
               setInserts.push({
                 user_id: user.id,
                 workout_log_id: workoutLog.id,
@@ -235,6 +274,7 @@ export default function AppModeWorkout() {
                 actual_reps: log.reps,
                 actual_rir: log.rir,
                 completed: true,
+                notes: restTimes[restKey] ? `descanso:${restTimes[restKey]}s` : undefined,
               });
             }
           }
@@ -246,9 +286,9 @@ export default function AppModeWorkout() {
         if (sError) throw sError;
       }
 
-      toast.success('Workout saved!');
+      toast.success('Treino salvo com sucesso!');
     } catch (err: any) {
-      toast.error(err.message || 'Failed to save workout');
+      toast.error(err.message || 'Erro ao salvar treino');
     } finally {
       setSaving(false);
     }
@@ -257,7 +297,7 @@ export default function AppModeWorkout() {
   if (!dayData) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-muted-foreground">No workout scheduled</p>
+        <p className="text-muted-foreground">Nenhum treino agendado</p>
       </div>
     );
   }
@@ -265,10 +305,10 @@ export default function AppModeWorkout() {
   return (
     <div className="space-y-4 pb-24">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">{dayData.name}</h1>
-          <p className="text-sm text-muted-foreground">W{currentWeek} · {dayData.dayOfWeek} · {dayData.focus}</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">{dayData.name}</h1>
+          <p className="text-sm text-muted-foreground">S{currentWeek} · {dayData.dayOfWeek} · {dayData.focus}</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => setCurrentDay(Math.max(0, currentDay - 1))} disabled={currentDay === 0} className="p-2 rounded-lg bg-secondary hover:bg-secondary/80 disabled:opacity-30 transition-colors">
@@ -284,8 +324,8 @@ export default function AppModeWorkout() {
       {/* Progress bar */}
       <div className="bg-card rounded-xl border border-border p-3 card-elevated">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-muted-foreground">Progress</span>
-          <span className="text-xs font-mono text-foreground">{completedSets}/{totalSets} sets</span>
+          <span className="text-xs text-muted-foreground">Progresso</span>
+          <span className="text-xs font-mono text-foreground">{completedSets}/{totalSets} séries</span>
         </div>
         <div className="h-2 bg-secondary rounded-full overflow-hidden">
           <motion.div
@@ -305,7 +345,7 @@ export default function AppModeWorkout() {
           transition={{ delay: exIdx * 0.04 }}
           className="bg-card rounded-xl border border-border card-elevated overflow-hidden"
         >
-          <div className="p-4 border-b border-border flex items-center gap-3">
+          <div className="p-3 sm:p-4 border-b border-border flex items-center gap-3">
             <div className={cn("w-1.5 h-10 rounded-full", exercise.category === 'compound' ? 'bg-primary' : 'bg-muted-foreground/30')} />
             <div>
               <h3 className="font-semibold text-foreground text-sm">{exercise.name}</h3>
@@ -313,7 +353,7 @@ export default function AppModeWorkout() {
             </div>
           </div>
 
-          <div className="p-3 space-y-2">
+          <div className="p-2 sm:p-3 space-y-2">
             {exercise.sets.map(setGroup => {
               const key = getSetKey(exercise.id, setGroup.id);
               return (
@@ -324,17 +364,23 @@ export default function AppModeWorkout() {
                       setGroup.type === 'backoff' ? 'bg-warning/20 text-warning' :
                       'bg-secondary text-secondary-foreground'
                     )}>
-                      {setGroup.type === 'top' ? 'TOP SET' : setGroup.type === 'backoff' ? 'BACK OFF' : 'WORKING'}
+                      {setGroup.type === 'top' ? 'TOP SET' : setGroup.type === 'backoff' ? 'BACK OFF' : 'TRABALHO'}
                     </span>
                     <span className="text-[10px] text-muted-foreground font-mono">
                       {setGroup.targetSets}×{setGroup.targetReps}
                       {setGroup.targetRIR !== undefined && ` RIR${setGroup.targetRIR}`}
                       {setGroup.percentage && ` @${setGroup.percentage}%`}
                     </span>
+                    {setGroup.restSeconds && (
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                        <Timer className="w-3 h-3" />{Math.floor(setGroup.restSeconds / 60)}:{(setGroup.restSeconds % 60).toString().padStart(2, '0')}
+                      </span>
+                    )}
                   </div>
                   {Array.from({ length: setGroup.targetSets }, (_, i) => {
                     const log = getSetLog(key, i, setGroup.targetReps);
                     const prevLog = i > 0 ? getSetLog(key, i - 1, setGroup.targetReps) : undefined;
+                    const restKey = getSetRestKey(exercise.id, setGroup.id, i);
                     return (
                       <SetRow
                         key={i}
@@ -344,8 +390,9 @@ export default function AppModeWorkout() {
                         setType={setGroup.type}
                         log={log}
                         lastWeight={prevLog?.weight}
+                        restTime={restTimes[restKey]}
                         onUpdate={(field, value) => updateSetLog(key, i, field, value)}
-                        onComplete={() => completeSet(key, i, setGroup.restSeconds)}
+                        onComplete={() => completeSet(key, i, setGroup.restSeconds, exercise.id, setGroup.id)}
                       />
                     );
                   })}
@@ -356,15 +403,22 @@ export default function AppModeWorkout() {
         </motion.div>
       ))}
 
+      {/* Mobile quick actions */}
+      <div className="flex sm:hidden gap-2 px-1">
+        <button onClick={() => {/* placeholder for future */}} className="flex-1 py-2.5 rounded-lg bg-secondary text-xs text-muted-foreground">+2.5kg</button>
+        <button onClick={() => {/* placeholder for future */ }} className="flex-1 py-2.5 rounded-lg bg-secondary text-xs text-muted-foreground">+5kg</button>
+        <button onClick={() => {/* placeholder for future */ }} className="flex-1 py-2.5 rounded-lg bg-secondary text-xs text-muted-foreground flex items-center justify-center gap-1"><RotateCcw className="w-3 h-3" /> Repetir</button>
+      </div>
+
       {/* Save button */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed bottom-6 right-6 z-40">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-40">
         <button
           onClick={saveWorkout}
           disabled={saving || completedSets === 0}
-          className="bg-primary text-primary-foreground px-6 py-3 rounded-xl font-medium text-sm hover:bg-primary/90 disabled:opacity-50 transition-all card-elevated flex items-center gap-2"
+          className="bg-primary text-primary-foreground px-5 sm:px-6 py-3 rounded-xl font-medium text-sm hover:bg-primary/90 disabled:opacity-50 transition-all card-elevated flex items-center gap-2"
         >
           {saving ? <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" /> : <Check className="w-4 h-4" />}
-          Save Workout
+          Salvar Treino
         </button>
       </motion.div>
 
@@ -373,8 +427,8 @@ export default function AppModeWorkout() {
         {restTimer.active && (
           <RestTimer
             seconds={restTimer.seconds}
-            onComplete={() => setRestTimer({ active: false, seconds: 0 })}
-            onDismiss={() => setRestTimer({ active: false, seconds: 0 })}
+            onComplete={() => {/* timer keeps running overtime */}}
+            onDismiss={() => setRestTimer({ active: false, seconds: 0, key: '' })}
           />
         )}
       </AnimatePresence>
