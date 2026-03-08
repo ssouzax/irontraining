@@ -291,9 +291,14 @@ export default function AppModeWorkout() {
         });
       });
 
-      const promises: Promise<any>[] = [];
-      if (setInserts.length > 0) promises.push(supabase.from('set_logs').insert(setInserts));
-      if (performedInserts.length > 0) promises.push(supabase.from('performed_sets').insert(performedInserts));
+      if (setInserts.length > 0) {
+        const { error: sError } = await supabase.from('set_logs').insert(setInserts);
+        if (sError) throw sError;
+      }
+      if (performedInserts.length > 0) {
+        const { error: pError } = await supabase.from('performed_sets').insert(performedInserts);
+        if (pError) throw pError;
+      }
       
       const results = await Promise.all(promises);
       for (const r of results) {
