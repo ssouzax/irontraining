@@ -76,7 +76,7 @@ export function MobileCoTraining() {
   const loadWorkouts = async () => {
     if (!user) return;
     // Get workouts where user is member or creator
-    const { data: memberOf } = await supabase
+    const { data: memberOf } = await (supabase as any)
       .from('shared_workout_members')
       .select('workout_id')
       .eq('user_id', user.id);
