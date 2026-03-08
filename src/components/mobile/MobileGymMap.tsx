@@ -32,7 +32,28 @@ interface AppGym {
   intensity_score?: number;
 }
 
-type FilterMode = 'all' | 'nearby' | 'strongest' | 'friends' | 'heatmap';
+type FilterMode = 'all' | 'nearby' | 'strongest' | 'friends' | 'heatmap' | 'chain';
+
+const GYM_CHAINS = [
+  { key: 'smart_fit', label: 'Smart Fit', emoji: '💙' },
+  { key: 'blue_fit', label: 'Blue Fit', emoji: '🔵' },
+  { key: 'skyfit', label: 'Skyfit', emoji: '🌤️' },
+  { key: 'crossfit', label: 'CrossFit', emoji: '🏋️' },
+  { key: 'panobianco', label: 'Panobianco', emoji: '🟡' },
+  { key: 'bodytech', label: 'Bodytech', emoji: '💪' },
+  { key: 'selfit', label: 'Selfit', emoji: '🟢' },
+  { key: 'bio_ritmo', label: 'Bio Ritmo', emoji: '🫀' },
+  { key: 'competition', label: 'Competition', emoji: '🏆' },
+];
+
+function detectChainLocal(name: string): string | null {
+  const n = name.toLowerCase();
+  for (const c of GYM_CHAINS) {
+    const keywords = c.label.toLowerCase().split(' ');
+    if (keywords.some(k => n.includes(k))) return c.key;
+  }
+  return null;
+}
 
 const tierConfig: Record<string, { color: string; emoji: string; glow: string }> = {
   bronze: { color: '#cd7f32', emoji: '🥉', glow: 'rgba(205,127,50,0.4)' },
