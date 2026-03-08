@@ -227,7 +227,7 @@ export function MobileGymMap() {
     let filtered = appGyms.filter(g => g.latitude && g.longitude);
 
     if (filter === 'nearby' && userLocation) {
-      filtered = filtered.filter(g => getDistance(userLocation.lat, userLocation.lng, g.latitude!, g.longitude!) < 5);
+      filtered = filtered.filter(g => getDistance(userLocation.lat, userLocation.lng, g.latitude!, g.longitude!) < 80);
     } else if (filter === 'strongest') {
       filtered = [...filtered].sort((a, b) => (b.intensity_score || 0) - (a.intensity_score || 0)).slice(0, 20);
     }
