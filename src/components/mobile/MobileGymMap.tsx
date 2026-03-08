@@ -125,7 +125,7 @@ export function MobileGymMap() {
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => setUserLocation({ lat: -23.5505, lng: -46.6333 }),
+      () => setUserLocation({ lat: -23.2640, lng: -47.2990 }), // Default: Itu, SP
       { enableHighAccuracy: true, timeout: 10000 }
     );
   };
