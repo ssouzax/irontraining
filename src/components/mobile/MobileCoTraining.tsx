@@ -83,13 +83,13 @@ export function MobileCoTraining() {
     
     const workoutIds = ((memberOf as any[]) || []).map(m => m.workout_id);
     
-    const { data: created } = await supabase
+    const { data: created } = await (supabase as any)
       .from('shared_workouts')
       .select('*')
       .eq('created_by', user.id);
 
     const { data: joined } = workoutIds.length > 0 
-      ? await supabase.from('shared_workouts').select('*').in('id', workoutIds)
+      ? await (supabase as any).from('shared_workouts').select('*').in('id', workoutIds)
       : { data: [] };
 
     const all = [...(created || []), ...(joined || [])];
