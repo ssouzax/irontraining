@@ -1,5 +1,5 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
-import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin, Swords, Brain, Flame, Radio, Star, Map, Scale, Activity, HeartHandshake, Gauge, Heart, RotateCw as Replay, CheckCircle } from 'lucide-react';
+import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin, Swords, Brain, Flame, Radio, Star, Map, Scale, Activity, HeartHandshake, Gauge, Heart, RotateCw as Replay, CheckCircle, ShoppingBag, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MobileHomeFeed } from './MobileHomeFeed';
 import { MobileCreatePost } from './MobileCreatePost';
@@ -80,6 +80,9 @@ const extraMenuItems = [
   { icon: BookOpen, label: 'Exercícios', route: '/exercises' },
   { icon: Calculator, label: 'Calculadora de Anilhas', route: '/plates' },
   { icon: Bot, label: 'Coach IA', route: '/coach' },
+  { icon: Crown, label: 'Planos Premium', route: '/subscribe' },
+  { icon: ShoppingBag, label: 'Loja', route: '/shop' },
+  { icon: Star, label: 'Conteúdo Premium', route: '/premium-content' },
   { icon: Download, label: 'Instalar App', route: '/install' },
 ];
 
