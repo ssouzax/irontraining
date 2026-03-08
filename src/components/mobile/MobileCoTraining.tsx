@@ -81,7 +81,7 @@ export function MobileCoTraining() {
       .select('workout_id')
       .eq('user_id', user.id);
     
-    const workoutIds = (memberOf || []).map(m => m.workout_id);
+    const workoutIds = ((memberOf as any[]) || []).map(m => m.workout_id);
     
     const { data: created } = await supabase
       .from('shared_workouts')
