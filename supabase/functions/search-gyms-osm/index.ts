@@ -6,28 +6,18 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface OSMGym {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  lat: number;
-  lon: number;
-  source: string;
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
-    const { lat, lon, radius_km = 15, query, action } = await req.json();
+    const body = await req.json();
+    const { lat, lon, radius_km = 15, query, action, gyms_to_import } = body;
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Action: search by name using Nominatim
+    // Search by name using Nominatim
     if (action === 'search' && query) {
       const searchUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + ' academia brasil')}&format=json&limit=20&addressdetails=1&countrycodes=br`;
       const res = await fetch(searchUrl, {
@@ -35,10 +25,10 @@ serve(async (req) => {
       });
       const results = await res.json();
 
-      const gyms: OSMGym[] = results
+      const gyms = results
         .filter((r: any) => r.display_name)
         .map((r: any) => ({
-          id: `osm_${r.osm_id}`,
+          osm_id: `osm_${r.osm_id}`,
           name: r.display_name.split(',')[0],
           address: r.display_name,
           city: r.address?.city || r.address?.town || r.address?.village || '',
@@ -53,10 +43,14 @@ serve(async (req) => {
       });
     }
 
-    // Action: nearby search using Overpass API
+    // Nearby search using Overpass API
     if (action === 'nearby' && lat && lon) {
       const radiusDeg = radius_km / 111.0;
-      const bbox = `${lat - radiusDeg},${lon - radiusDeg},${lat + radiusDeg},${lon + radiusDeg}`;
+      const south = lat - radiusDeg;
+      const north = lat + radiusDeg;
+      const west = lon - radiusDeg;
+      const east = lon + radiusDeg;
+      const bbox = `${south},${west},${north},${east}`;
 
       const overpassQuery = `
         [out:json][timeout:25];
@@ -67,7 +61,7 @@ serve(async (req) => {
           way["sport"="fitness"](${bbox});
           node["amenity"="gym"](${bbox});
           way["amenity"="gym"](${bbox});
-          node["name"~"[Aa]cademia|[Gg]ym|[Ff]it|[Cc]rossfit|[Mm]usculação"](${bbox});
+          node["name"~"[Aa]cademia|[Gg]ym|[Ff]it|[Cc]rossfit|[Mm]uscula"](${bbox});
         );
         out center body;
       `;
@@ -80,7 +74,7 @@ serve(async (req) => {
       const overpassData = await overpassRes.json();
 
       const seen = new Set<string>();
-      const gyms: OSMGym[] = [];
+      const gyms: any[] = [];
 
       for (const el of overpassData.elements || []) {
         const name = el.tags?.name;
@@ -90,7 +84,6 @@ serve(async (req) => {
         const elLon = el.lon || el.center?.lon;
         if (!elLat || !elLon) continue;
 
-        // Dedup by name similarity + proximity
         const key = `${name.toLowerCase().trim()}_${Math.round(elLat * 1000)}_${Math.round(elLon * 1000)}`;
         if (seen.has(key)) continue;
         seen.add(key);
@@ -99,56 +92,89 @@ serve(async (req) => {
           el.tags?.['addr:street'],
           el.tags?.['addr:housenumber'],
           el.tags?.['addr:suburb'],
-          el.tags?.['addr:city'],
-          el.tags?.['addr:state'],
         ].filter(Boolean).join(', ');
 
         gyms.push({
-          id: `osm_${el.id}`,
+          osm_id: `osm_${el.id}`,
           name,
           address: addr || '',
           city: el.tags?.['addr:city'] || '',
-          state: el.tags?.['addr:state'] || 'SP',
+          state: el.tags?.['addr:state'] || '',
           lat: elLat,
           lon: elLon,
           source: 'overpass',
         });
       }
 
-      return new Response(JSON.stringify({ gyms, count: gyms.length }), {
+      // Auto-import new gyms to database
+      if (gyms.length > 0) {
+        const { data: existingGyms } = await supabase.from('gyms').select('name, latitude, longitude');
+        const existingSet = new Set(
+          (existingGyms || []).map((g: any) => 
+            `${g.name.toLowerCase().trim()}_${Math.round((g.latitude || 0) * 100)}_${Math.round((g.longitude || 0) * 100)}`
+          )
+        );
+
+        const newGyms = gyms.filter(g => {
+          const k = `${g.name.toLowerCase().trim()}_${Math.round(g.lat * 100)}_${Math.round(g.lon * 100)}`;
+          return !existingSet.has(k);
+        });
+
+        if (newGyms.length > 0) {
+          const rows = newGyms.map(g => ({
+            name: g.name,
+            city: g.city || null,
+            country: 'Brasil',
+            latitude: g.lat,
+            longitude: g.lon,
+            verified: false,
+          }));
+          await supabase.from('gyms').insert(rows);
+        }
+      }
+
+      return new Response(JSON.stringify({ gyms, count: gyms.length, source: 'overpass' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Action: import - save OSM gyms to database (with dedup)
-    if (action === 'import') {
-      const { gyms_to_import } = await req.json().catch(() => ({ gyms_to_import: [] }));
-      // Re-parse from original body
-      const body = await req.text().catch(() => '{}');
-      
-      // Actually we already parsed req.json above, let me handle differently
-      const importGyms = (await req.json().catch(() => null)) || [];
-      
-      // This won't work since we already consumed the body. 
-      // The gyms_to_import should be in the original payload
-      return new Response(JSON.stringify({ error: 'Use the import_gyms field in the request body' }), {
-        status: 400,
+    // Bulk import specific gyms
+    if (action === 'import_gyms' && gyms_to_import && Array.isArray(gyms_to_import)) {
+      const { data: existingGyms } = await supabase.from('gyms').select('name, latitude, longitude');
+      const existingSet = new Set(
+        (existingGyms || []).map((g: any) =>
+          `${g.name.toLowerCase().trim()}_${Math.round((g.latitude || 0) * 100)}_${Math.round((g.longitude || 0) * 100)}`
+        )
+      );
+
+      const newGyms = gyms_to_import.filter((g: any) => {
+        const k = `${g.name.toLowerCase().trim()}_${Math.round(g.lat * 100)}_${Math.round(g.lon * 100)}`;
+        return !existingSet.has(k);
+      });
+
+      if (newGyms.length > 0) {
+        const rows = newGyms.map((g: any) => ({
+          name: g.name,
+          city: g.city || null,
+          country: g.country || 'Brasil',
+          latitude: g.lat,
+          longitude: g.lon,
+          verified: g.verified || false,
+        }));
+        const { error } = await supabase.from('gyms').insert(rows);
+        if (error) throw error;
+      }
+
+      return new Response(JSON.stringify({ 
+        imported: newGyms.length, 
+        skipped: gyms_to_import.length - newGyms.length,
+        total: gyms_to_import.length 
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Action: import_gyms - bulk import with deduplication
-    if (action === 'import_gyms') {
-      // gyms_to_import should be passed in the initial req.json() call
-      // We need to re-read it, but req.json() was already consumed
-      // Let's handle this differently - accept import data in the initial payload
-      return new Response(JSON.stringify({ error: 'Not implemented yet' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    return new Response(JSON.stringify({ error: 'Invalid action. Use: search, nearby' }), {
+    return new Response(JSON.stringify({ error: 'Invalid action. Use: search, nearby, import_gyms' }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
