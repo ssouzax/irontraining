@@ -1,15 +1,16 @@
 import { useState, Suspense, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Environment } from '@react-three/drei';
 import { RotateCw, Info, ChevronLeft, ChevronRight, CheckCircle, AlertTriangle, XCircle, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as THREE from 'three';
+import { AnatomicalBody } from './AnatomicalBody3D';
 
 const EXERCISE_MUSCLES: Record<string, { primary: string[]; secondary: string[]; tips: string[]; posture: { label: string; angle: number; ideal: number; tolerance: number }[] }> = {
   'Supino Reto': {
     primary: ['Peitoral Maior'],
-    secondary: ['Tríceps', 'Deltóide Anterior'],
+    secondary: ['Tríceps', 'Deltóide Anterior', 'Core'],
     tips: ['Mantenha escápulas retraídas', 'Pés firmes no chão', 'Desça a barra até o peito'],
     posture: [
       { label: 'Arco lombar', angle: 15, ideal: 15, tolerance: 10 },
@@ -19,7 +20,7 @@ const EXERCISE_MUSCLES: Record<string, { primary: string[]; secondary: string[];
   },
   'Agachamento': {
     primary: ['Quadríceps', 'Glúteos'],
-    secondary: ['Isquiotibiais', 'Core', 'Eretores'],
+    secondary: ['Isquiotibiais', 'Core', 'Eretores', 'Panturrilha'],
     tips: ['Joelhos alinhados com os pés', 'Tronco neutro', 'Desça até paralelo ou abaixo'],
     posture: [
       { label: 'Profundidade', angle: 95, ideal: 100, tolerance: 15 },
@@ -29,7 +30,7 @@ const EXERCISE_MUSCLES: Record<string, { primary: string[]; secondary: string[];
   },
   'Levantamento Terra': {
     primary: ['Posteriores de Coxa', 'Eretores', 'Glúteos'],
-    secondary: ['Trapézio', 'Core', 'Antebraços'],
+    secondary: ['Trapézio', 'Core', 'Antebraços', 'Dorsais', 'Quadríceps'],
     tips: ['Barra próxima ao corpo', 'Lombar neutra', 'Empurre o chão com os pés'],
     posture: [
       { label: 'Curvatura lombar', angle: 5, ideal: 0, tolerance: 8 },
@@ -38,8 +39,8 @@ const EXERCISE_MUSCLES: Record<string, { primary: string[]; secondary: string[];
     ],
   },
   'Desenvolvimento': {
-    primary: ['Deltóides'],
-    secondary: ['Tríceps', 'Trapézio Superior'],
+    primary: ['Deltóides', 'Deltóide Anterior', 'Deltóide Lateral'],
+    secondary: ['Tríceps', 'Trapézio', 'Core'],
     tips: ['Cotovelos levemente à frente', 'Core contraído', 'Extensão completa acima'],
     posture: [
       { label: 'Extensão overhead', angle: 170, ideal: 180, tolerance: 10 },
@@ -49,7 +50,7 @@ const EXERCISE_MUSCLES: Record<string, { primary: string[]; secondary: string[];
   },
   'Remada Curvada': {
     primary: ['Dorsais', 'Rombóides'],
-    secondary: ['Bíceps', 'Eretores', 'Trapézio'],
+    secondary: ['Bíceps Braquial', 'Eretores', 'Trapézio', 'Deltóide Posterior', 'Antebraços'],
     tips: ['Inclinação de 45°', 'Puxe para o abdômen', 'Escápulas juntas no topo'],
     posture: [
       { label: 'Inclinação tronco', angle: 48, ideal: 45, tolerance: 10 },
@@ -59,12 +60,72 @@ const EXERCISE_MUSCLES: Record<string, { primary: string[]; secondary: string[];
   },
   'Rosca Direta': {
     primary: ['Bíceps Braquial'],
-    secondary: ['Braquiorradial', 'Antebraços'],
+    secondary: ['Braquiorradial', 'Antebraços', 'Braquial'],
     tips: ['Cotovelos fixos', 'Sem balanço do tronco', 'Contração controlada'],
     posture: [
       { label: 'Fixação cotovelo', angle: 5, ideal: 0, tolerance: 8 },
       { label: 'Balanço tronco', angle: 3, ideal: 0, tolerance: 5 },
       { label: 'ROM completo', angle: 140, ideal: 145, tolerance: 10 },
+    ],
+  },
+  'Tríceps Pulley': {
+    primary: ['Tríceps'],
+    secondary: ['Antebraços', 'Core'],
+    tips: ['Cotovelos colados ao corpo', 'Extensão completa', 'Contração no final'],
+    posture: [
+      { label: 'Fixação cotovelo', angle: 3, ideal: 0, tolerance: 8 },
+      { label: 'Postura tronco', angle: 5, ideal: 0, tolerance: 8 },
+      { label: 'Extensão completa', angle: 172, ideal: 180, tolerance: 10 },
+    ],
+  },
+  'Elevação Lateral': {
+    primary: ['Deltóide Lateral', 'Deltóides'],
+    secondary: ['Trapézio', 'Core'],
+    tips: ['Leve inclinação no tronco', 'Cotovelos levemente flexionados', 'Eleve até a linha do ombro'],
+    posture: [
+      { label: 'Ângulo elevação', angle: 88, ideal: 90, tolerance: 10 },
+      { label: 'Inclinação tronco', angle: 8, ideal: 5, tolerance: 8 },
+      { label: 'Rotação ombro', angle: 85, ideal: 90, tolerance: 10 },
+    ],
+  },
+  'Leg Press': {
+    primary: ['Quadríceps', 'Glúteos'],
+    secondary: ['Isquiotibiais', 'Panturrilha'],
+    tips: ['Costas bem apoiadas', 'Não trave os joelhos', 'Pés na largura dos ombros'],
+    posture: [
+      { label: 'Ângulo joelho', angle: 88, ideal: 90, tolerance: 10 },
+      { label: 'Apoio lombar', angle: 2, ideal: 0, tolerance: 5 },
+      { label: 'Amplitude', angle: 92, ideal: 100, tolerance: 15 },
+    ],
+  },
+  'Puxada Frontal': {
+    primary: ['Dorsais'],
+    secondary: ['Bíceps Braquial', 'Rombóides', 'Trapézio', 'Deltóide Posterior'],
+    tips: ['Peito para cima', 'Puxe com os cotovelos', 'Desça até o queixo'],
+    posture: [
+      { label: 'Retração escapular', angle: 82, ideal: 90, tolerance: 12 },
+      { label: 'Inclinação tronco', angle: 12, ideal: 10, tolerance: 8 },
+      { label: 'ROM completo', angle: 165, ideal: 170, tolerance: 10 },
+    ],
+  },
+  'Panturrilha em Pé': {
+    primary: ['Panturrilha'],
+    secondary: ['Core'],
+    tips: ['Extensão completa no topo', 'Desça lentamente', 'Mantenha joelhos estendidos'],
+    posture: [
+      { label: 'Extensão plantar', angle: 42, ideal: 45, tolerance: 8 },
+      { label: 'Alinhamento joelho', angle: 2, ideal: 0, tolerance: 5 },
+      { label: 'Amplitude', angle: 88, ideal: 90, tolerance: 10 },
+    ],
+  },
+  'Stiff': {
+    primary: ['Isquiotibiais', 'Posteriores de Coxa', 'Glúteos'],
+    secondary: ['Eretores', 'Core'],
+    tips: ['Joelhos levemente flexionados', 'Lombar neutra', 'Sinta o alongamento posterior'],
+    posture: [
+      { label: 'Curvatura lombar', angle: 4, ideal: 0, tolerance: 8 },
+      { label: 'Flexão joelho', angle: 12, ideal: 10, tolerance: 8 },
+      { label: 'Amplitude quadril', angle: 82, ideal: 90, tolerance: 12 },
     ],
   },
 };
