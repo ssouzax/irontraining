@@ -22,6 +22,7 @@ const navItems = [
   { to: '/plates', icon: Calculator, label: 'Anilhas' },
   { to: '/coach', icon: Bot, label: 'Coach IA' },
   { to: '/profile', icon: User, label: 'Perfil' },
+  { to: '/install', icon: Download, label: 'Instalar App' },
 ];
 
 export function AppSidebar() {

@@ -99,6 +99,14 @@ export default function AuthPage() {
             </button>
           </p>
         </div>
+
+        <Link
+          to="/install"
+          className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground hover:text-primary transition-colors"
+        >
+          <Download className="w-4 h-4" />
+          Instalar app no celular
+        </Link>
       </motion.div>
     </div>
   );
