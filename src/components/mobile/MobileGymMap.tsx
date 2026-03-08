@@ -163,6 +163,9 @@ export function MobileGymMap() {
   const [filter, setFilter] = useState<FilterMode>('all');
   const [friendGymIds, setFriendGymIds] = useState<Set<string>>(new Set());
   const [osmLoading, setOsmLoading] = useState(false);
+  const [selectedChain, setSelectedChain] = useState<string | null>(null);
+  const [checkinLoading, setCheckinLoading] = useState(false);
+  const [lastCheckin, setLastCheckin] = useState<string | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
