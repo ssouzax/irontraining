@@ -178,20 +178,59 @@ export default function SubscribePage() {
         </div>
       </div>
 
+      {/* Free Plan */}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold text-center mb-4">Plano Gratuito</h2>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md mx-auto p-6 rounded-2xl border border-border/50 bg-card/40"
+        >
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-foreground">Grátis</h3>
+            <p className="text-xs text-muted-foreground mt-1">Recursos essenciais para começar</p>
+          </div>
+          <div className="mb-6">
+            <span className="text-4xl font-extrabold text-foreground">R$0</span>
+            <span className="text-sm text-muted-foreground">/para sempre</span>
+          </div>
+          <ul className="space-y-2.5 mb-6">
+            {[
+              'Programas de treino básicos',
+              'Registro de séries e repetições',
+              'Treinos personalizados',
+              'Conquistas e gamificação',
+              'Feed social e interações',
+            ].map((f, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+          <Button className="w-full" variant="outline" disabled>
+            Plano Atual
+          </Button>
+        </motion.div>
+      </div>
+
       {/* Plans Grid */}
-      <div className={cn(
-        'grid gap-6 mb-16',
-        filtered.length <= 1 ? 'max-w-md mx-auto' : filtered.length === 2 ? 'sm:grid-cols-2 max-w-3xl mx-auto' : 'sm:grid-cols-2 lg:grid-cols-3'
-      )}>
-        {filtered.map((plan, i) => (
-          <PlanCard
-            key={plan.id}
-            plan={plan}
-            isPopular={plan.tier === 'standard' || (billingInterval === 'yearly' && plan.tier === 'premium')}
-            isCurrent={planId === plan.id}
-            delay={i * 0.1}
-          />
-        ))}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold text-center mb-4">Planos Premium</h2>
+        <div className={cn(
+          'grid gap-6 mb-16',
+          filtered.length <= 1 ? 'max-w-md mx-auto' : filtered.length === 2 ? 'sm:grid-cols-2 max-w-3xl mx-auto' : 'sm:grid-cols-2 lg:grid-cols-3'
+        )}>
+          {filtered.map((plan, i) => (
+            <PlanCard
+              key={plan.id}
+              plan={plan}
+              isPopular={plan.tier === 'standard' || (billingInterval === 'yearly' && plan.tier === 'premium')}
+              isCurrent={planId === plan.id}
+              delay={i * 0.1}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Features comparison */}
