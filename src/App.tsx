@@ -30,7 +30,7 @@ import AthleteProfilePage from "./pages/AthleteProfilePage";
 import AuthPage from "./pages/AuthPage";
 import InstallPage from "./pages/InstallPage";
 import StreakLeaderboardPage from "./pages/StreakLeaderboardPage";
-import Exercise3DPage from "./pages/Exercise3DPage";
+
 import BodyCompositionPage from "./pages/BodyCompositionPage";
 import PRSimulatorPage from "./pages/PRSimulatorPage";
 import RecoveryPage from "./pages/RecoveryPage";
