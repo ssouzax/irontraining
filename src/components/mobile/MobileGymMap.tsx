@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MapPin, Search, Plus, Loader2, Navigation, X, Trophy, Users, Star, CheckCircle, Zap, Filter, Flame, Layers, Heart } from 'lucide-react';
+import { MapPin, Search, Plus, Loader2, Navigation, X, Trophy, Users, Star, CheckCircle, Zap, Filter, Flame, Layers, Heart, Clock, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
