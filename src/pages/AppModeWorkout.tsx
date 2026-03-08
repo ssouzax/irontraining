@@ -177,6 +177,7 @@ function SetRow({ setIndex, targetReps, targetRIR, setType, log, lastWeight, res
 export default function AppModeWorkout() {
   const { program, currentWeek, currentDay, setCurrentDay } = useTraining();
   const { user } = useAuth();
+  const { addXP } = usePlayerLevel();
 
   const currentBlock = program.blocks.find(b =>
     b.weeks.some(w => w.weekNumber === currentWeek)
