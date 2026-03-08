@@ -1,10 +1,12 @@
 import { motion } from 'framer-motion';
-import { Bot, Send, Loader2 } from 'lucide-react';
+import { Bot, Send, Loader2, Settings2 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTraining } from '@/contexts/TrainingContext';
 import { calculate1RM } from '@/data/defaultProfile';
+import { supabase } from '@/integrations/supabase/client';
 import ReactMarkdown from 'react-markdown';
+import { cn } from '@/lib/utils';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -13,22 +15,61 @@ interface Message {
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-coach`;
 
+const PERSONALITIES = [
+  { id: 'motivational', label: '🔥 Motivacional', desc: 'Encorajador e positivo', tone: 'Encouraging, supportive, celebrates every win' },
+  { id: 'technical', label: '📊 Técnico', desc: 'Analítico e preciso', tone: 'Data-driven, focuses on performance analysis and numbers' },
+  { id: 'hardcore', label: '💀 Hardcore', desc: 'Direto e intenso', tone: 'Intense, demanding, no excuses, pushes hard' },
+  { id: 'friendly', label: '😄 Parceiro', desc: 'Casual e relaxado', tone: 'Casual, friendly, relaxed gym buddy vibe' },
+];
+
 export default function CoachPage() {
   const { user } = useAuth();
   const { profile } = useTraining();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: `Olá! Sou seu **Coach IA de Powerbuilding**. Tenho conhecimento profundo em treino periodizado, programação baseada em RIR e metodologia de powerbuilding.\n\nPosso te ajudar com:\n- **Ajustes de carga** com base no desempenho dos top sets\n- **Detecção de platô** e estratégias de superação\n- **Análise de precisão do RIR**\n- **Recomendações de acessórios** para pontos fracos\n- **Gestão de fadiga** e timing de deload\n\nComo posso te ajudar hoje?`,
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [personality, setPersonality] = useState('motivational');
+  const [showSettings, setShowSettings] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (user) {
+      supabase.from('profiles').select('coach_personality').eq('user_id', user.id).single()
+        .then(({ data }) => {
+          if (data?.coach_personality) setPersonality(data.coach_personality as string);
+        });
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const p = PERSONALITIES.find(p => p.id === personality);
+    setMessages([{
+      role: 'assistant',
+      content: getGreeting(personality),
+    }]);
+  }, [personality]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const getGreeting = (id: string) => {
+    const greetings: Record<string, string> = {
+      motivational: `Olá! 💪 Sou seu **Coach Motivacional de Powerbuilding**. Estou aqui para te ajudar a atingir seus objetivos e celebrar cada conquista!\n\nPosso te ajudar com:\n- **Ajustes de carga** e progressão\n- **Detecção de platô** e estratégias\n- **Gestão de fadiga** e recovery\n\nVamos treinar forte! 🔥`,
+      technical: `Olá. Sou seu **Coach Técnico de Powerbuilding**. Minha abordagem é baseada em dados e análise de performance.\n\nPosso analisar:\n- **Métricas de RIR** e precisão de auto-regulação\n- **Progressão de E1RM** e tendências\n- **Volume e intensidade** por grupo muscular\n\nVamos aos dados.`,
+      hardcore: `E aí. Sou seu **Coach Hardcore**. Sem desculpas, sem mimimi. Aqui é treino pesado e resultado.\n\n🏋️ Vou te cobrar:\n- **Cargas máximas** e progressão agressiva\n- **Consistência** — sem faltar treino\n- **Intensidade** — cada série conta\n\nBora meter peso.`,
+      friendly: `Fala! 😄 Sou seu **parceiro de treino virtual**. Tô aqui pra trocar ideia sobre treino de boa.\n\nPode perguntar sobre:\n- **Dicas de treino** e exercícios\n- **Como tá sua progressão**\n- **Qualquer dúvida** de powerbuilding\n\nManda ver!`,
+    };
+    return greetings[id] || greetings.motivational;
+  };
+
+  const savePersonality = async (id: string) => {
+    setPersonality(id);
+    if (user) {
+      await supabase.from('profiles').update({ coach_personality: id }).eq('user_id', user.id);
+    }
+    setShowSettings(false);
+  };
 
   const buildContext = () => {
     const squat1RM = calculate1RM(profile.currentLifts.squat.weight, profile.currentLifts.squat.reps);
@@ -39,6 +80,7 @@ export default function CoachPage() {
       estimatedMaxes: { squat: squat1RM, deadlift: deadlift1RM, bench: bench1RM },
       targets: profile.targetProgression,
       goals: profile.goals,
+      personality: PERSONALITIES.find(p => p.id === personality)?.tone || '',
     };
   };
 
@@ -123,31 +165,51 @@ export default function CoachPage() {
         }
       }
     } catch (e: any) {
-      setMessages(prev => [...prev, { role: 'assistant', content: `⚠️ ${e.message || 'Falha ao conectar com o coach IA. Tente novamente.'}` }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: `⚠️ ${e.message || 'Falha ao conectar com o coach IA.'}` }]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const currentPersonality = PERSONALITIES.find(p => p.id === personality);
+
   return (
     <div className="flex flex-col h-[calc(100vh-5rem)] sm:h-[calc(100vh-4rem)]">
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">Coach IA</h1>
-        <p className="text-muted-foreground mt-1">Assistente inteligente de powerbuilding</p>
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">Coach IA</h1>
+          <p className="text-muted-foreground mt-1 text-sm flex items-center gap-1.5">
+            {currentPersonality?.label} — {currentPersonality?.desc}
+          </p>
+        </div>
+        <button onClick={() => setShowSettings(!showSettings)}
+          className="p-2.5 rounded-xl bg-secondary text-muted-foreground hover:text-foreground transition-colors">
+          <Settings2 className="w-5 h-5" />
+        </button>
       </motion.div>
+
+      {/* Personality Selector */}
+      {showSettings && (
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+          className="mb-4 grid grid-cols-2 gap-2">
+          {PERSONALITIES.map(p => (
+            <button key={p.id} onClick={() => savePersonality(p.id)}
+              className={cn("p-3 rounded-xl border text-left transition-colors",
+                personality === p.id ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/30"
+              )}>
+              <p className="text-sm font-medium text-foreground">{p.label}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{p.desc}</p>
+            </button>
+          ))}
+        </motion.div>
+      )}
 
       <div className="flex-1 overflow-y-auto space-y-4 pb-4">
         {messages.map((msg, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
+          <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[90%] sm:max-w-[80%] rounded-xl px-4 py-3 ${
-              msg.role === 'user'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-card border border-border'
+              msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-card border border-border'
             }`}>
               {msg.role === 'assistant' && (
                 <div className="flex items-center gap-2 mb-2">
@@ -174,18 +236,12 @@ export default function CoachPage() {
 
       <div className="border-t border-border pt-4">
         <div className="flex gap-2">
-          <input
-            value={input}
-            onChange={e => setInput(e.target.value)}
+          <input value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
             placeholder="Pergunte sobre seu treino..."
-            className="flex-1 bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-          <button
-            onClick={handleSend}
-            disabled={!input.trim() || isLoading}
-            className="p-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
-          >
+            className="flex-1 bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
+          <button onClick={handleSend} disabled={!input.trim() || isLoading}
+            className="p-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors">
             <Send className="w-4 h-4" />
           </button>
         </div>
