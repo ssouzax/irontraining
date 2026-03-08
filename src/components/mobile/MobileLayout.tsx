@@ -19,7 +19,7 @@ import { NotificationBell } from '../NotificationBell';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 
-type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym' | 'rivals' | 'powerscore' | 'predictor' | 'explore' | 'heatmap' | 'gympoints' | 'exerciserankings' | 'livegym' | 'wrapped';
+type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym' | 'gymmap' | 'rivals' | 'powerscore' | 'predictor' | 'explore' | 'heatmap' | 'gympoints' | 'exerciserankings' | 'livegym' | 'wrapped';
 
 const bottomTabs: { key: Tab; icon: typeof Home; label: string }[] = [
   { key: 'home', icon: Home, label: 'Home' },
