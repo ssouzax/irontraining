@@ -6,13 +6,14 @@ import { cn } from '@/lib/utils';
 interface ShareableCardProps {
   open: boolean;
   onClose: () => void;
-  type: 'achievement' | 'pr';
+  type: 'achievement' | 'pr' | 'streak';
   title: string;
   subtitle: string;
   stat?: string;
   statLabel?: string;
   icon?: string;
   username?: string;
+  streakDays?: number;
 }
 
 const GRADIENTS = [
