@@ -30,6 +30,15 @@ import AthleteProfilePage from "./pages/AthleteProfilePage";
 import AuthPage from "./pages/AuthPage";
 import InstallPage from "./pages/InstallPage";
 import StreakLeaderboardPage from "./pages/StreakLeaderboardPage";
+import Exercise3DPage from "./pages/Exercise3DPage";
+import BodyCompositionPage from "./pages/BodyCompositionPage";
+import PRSimulatorPage from "./pages/PRSimulatorPage";
+import RecoveryPage from "./pages/RecoveryPage";
+import CoTrainingPage from "./pages/CoTrainingPage";
+import BarVelocityPage from "./pages/BarVelocityPage";
+import WearablePage from "./pages/WearablePage";
+import Replay3DPage from "./pages/Replay3DPage";
+import ExecutionGradingPage from "./pages/ExecutionGradingPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
