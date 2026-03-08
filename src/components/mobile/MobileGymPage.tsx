@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Search, Plus, Trophy, Users, Loader2, Crown, Star, CheckCircle, LogOut as LeaveIcon, Building, Clock, Flame, Zap, Calendar, TrendingUp, Award } from 'lucide-react';
+import { MapPin, Search, Plus, Trophy, Users, Loader2, Crown, Star, CheckCircle, LogOut as LeaveIcon, Building, Clock, Flame, Zap, Calendar, TrendingUp, Award, Swords } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,6 +7,8 @@ import { useTraining } from '@/contexts/TrainingContext';
 import { calculate1RM } from '@/data/defaultProfile';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useGymWeeklyChallenge } from '@/hooks/useGymWeeklyChallenge';
+import { useCheckinAchievements } from '@/hooks/useCheckinAchievements';
 
 interface Gym {
   id: string;
