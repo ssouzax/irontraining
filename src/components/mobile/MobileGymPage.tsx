@@ -84,6 +84,9 @@ export function MobileGymPage() {
   const [topCheckinUsers, setTopCheckinUsers] = useState<{ display_name: string; avatar_url: string | null; count: number }[]>([]);
   const [prExerciseFilter, setPrExerciseFilter] = useState<string>('all');
 
+  const { rankings: challengeRankings, myGymRank, loading: challengeLoading, weekLabel } = useGymWeeklyChallenge(myGym?.id || null);
+  const { checkAndUnlock } = useCheckinAchievements();
+
   const squat1RM = calculate1RM(profile.currentLifts.squat.weight, profile.currentLifts.squat.reps);
   const bench1RM = calculate1RM(profile.currentLifts.bench.weight, profile.currentLifts.bench.reps);
   const deadlift1RM = calculate1RM(profile.currentLifts.deadlift.weight, profile.currentLifts.deadlift.reps);
