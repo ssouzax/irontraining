@@ -196,6 +196,10 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
         {activeTab === 'predictor' && <MobilePredictor />}
         {activeTab === 'explore' && <MobileExplore />}
         {activeTab === 'heatmap' && <MobileGymHeatmap />}
+        {activeTab === 'gympoints' && <MobileGymPoints />}
+        {activeTab === 'exerciserankings' && <MobileExerciseLeaderboard />}
+        {activeTab === 'livegym' && <MobileLiveGym />}
+        {activeTab === 'wrapped' && <MobileWrappedCards />}
       </main>
 
       {/* Bottom Navigation */}
