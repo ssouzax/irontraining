@@ -110,7 +110,7 @@ export function MobileCoTraining() {
     if (error || !data) { toast.error('Erro ao criar'); setCreating(false); return; }
 
     // Add creator as member
-    await supabase.from('shared_workout_members').insert({
+    await (supabase as any).from('shared_workout_members').insert({
       workout_id: data.id,
       user_id: user.id,
       role: 'owner',
