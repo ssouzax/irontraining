@@ -96,7 +96,10 @@ export function MobileGymMap() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddManual, setShowAddManual] = useState(false);
   const [newGymName, setNewGymName] = useState('');
+  const [newGymAddress, setNewGymAddress] = useState('');
   const [newGymCity, setNewGymCity] = useState('');
+  const [newGymCoords, setNewGymCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [geocoding, setGeocoding] = useState(false);
   const [joining, setJoining] = useState(false);
   const [myGymId, setMyGymId] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterMode>('all');
@@ -120,12 +123,12 @@ export function MobileGymMap() {
 
   const getUserLocation = () => {
     if (!navigator.geolocation) {
-      setUserLocation({ lat: -23.5505, lng: -46.6333 });
+      setUserLocation({ lat: -23.2640, lng: -47.2990 }); // Default: Itu, SP
       return;
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => setUserLocation({ lat: -23.5505, lng: -46.6333 }),
+      () => setUserLocation({ lat: -23.2640, lng: -47.2990 }), // Default: Itu, SP
       { enableHighAccuracy: true, timeout: 10000 }
     );
   };
@@ -141,7 +144,7 @@ export function MobileGymMap() {
 
     const map = L.map(mapRef.current, {
       center: [userLocation.lat, userLocation.lng],
-      zoom: 13,
+      zoom: 12,
       zoomControl: false,
       attributionControl: false,
     });
@@ -227,7 +230,7 @@ export function MobileGymMap() {
     let filtered = appGyms.filter(g => g.latitude && g.longitude);
 
     if (filter === 'nearby' && userLocation) {
-      filtered = filtered.filter(g => getDistance(userLocation.lat, userLocation.lng, g.latitude!, g.longitude!) < 5);
+      filtered = filtered.filter(g => getDistance(userLocation.lat, userLocation.lng, g.latitude!, g.longitude!) < 80);
     } else if (filter === 'strongest') {
       filtered = [...filtered].sort((a, b) => (b.intensity_score || 0) - (a.intensity_score || 0)).slice(0, 20);
     }
@@ -309,13 +312,32 @@ export function MobileGymMap() {
     setJoining(false);
   };
 
+  const geocodeAddress = async (address: string) => {
+    if (address.length < 5) { setNewGymCoords(null); return; }
+    setGeocoding(true);
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(address)}&countrycodes=br&limit=1`, {
+        headers: { 'User-Agent': 'IronTraining-PWA/1.0' }
+      });
+      const data = await res.json();
+      if (data.length > 0) {
+        setNewGymCoords({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
+      } else {
+        setNewGymCoords(null);
+      }
+    } catch { setNewGymCoords(null); }
+    setGeocoding(false);
+  };
+
   const addManualGym = async () => {
-    if (!user || !newGymName.trim() || !userLocation) return;
+    if (!user || !newGymName.trim()) return;
     setJoining(true);
+    const coords = newGymCoords || userLocation;
+    if (!coords) { toast.error('Não foi possível determinar a localização'); setJoining(false); return; }
     const duplicate = appGyms.find(g =>
       g.name.toLowerCase() === newGymName.trim().toLowerCase() &&
       g.latitude && g.longitude &&
-      getDistance(userLocation.lat, userLocation.lng, g.latitude, g.longitude) < 0.5
+      getDistance(coords.lat, coords.lng, g.latitude, g.longitude) < 0.5
     );
     if (duplicate) {
       toast.error('Já existe uma academia com esse nome próxima!');
@@ -325,8 +347,8 @@ export function MobileGymMap() {
     const { data: newGym, error } = await supabase.from('gyms').insert({
       name: newGymName.trim(),
       city: newGymCity.trim() || null,
-      latitude: userLocation.lat,
-      longitude: userLocation.lng,
+      latitude: coords.lat,
+      longitude: coords.lng,
       created_by: user.id,
     }).select().single();
     if (error || !newGym) { toast.error('Erro ao criar academia'); setJoining(false); return; }
@@ -336,7 +358,9 @@ export function MobileGymMap() {
     setMyGymId(newGym.id);
     setShowAddManual(false);
     setNewGymName('');
+    setNewGymAddress('');
     setNewGymCity('');
+    setNewGymCoords(null);
     toast.success(`${newGymName} criada! 🎉`);
     setJoining(false);
     await loadAppGyms();
@@ -581,9 +605,23 @@ export function MobileGymMap() {
               <p className="text-xs text-muted-foreground">Não encontrou? Adicione manualmente.</p>
               <input value={newGymName} onChange={e => setNewGymName(e.target.value)} placeholder="Nome da academia *" maxLength={100}
                 className="w-full bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+              <div className="relative">
+                <input value={newGymAddress} onChange={e => { setNewGymAddress(e.target.value); }} placeholder="Endereço completo (ex: Rua X, 123, Itu SP)" maxLength={200}
+                  onBlur={() => geocodeAddress(newGymAddress)}
+                  className="w-full bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                {geocoding && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-primary" />}
+                {newGymCoords && !geocoding && <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />}
+              </div>
+              {newGymCoords && (
+                <p className="text-[10px] text-green-500 flex items-center gap-1">
+                  <MapPin className="w-3 h-3" /> Coordenadas: {newGymCoords.lat.toFixed(4)}, {newGymCoords.lng.toFixed(4)}
+                </p>
+              )}
               <input value={newGymCity} onChange={e => setNewGymCity(e.target.value)} placeholder="Cidade (opcional)" maxLength={100}
                 className="w-full bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
-              <p className="text-[10px] text-muted-foreground">📍 Localização atual será usada</p>
+              {!newGymCoords && !geocoding && (
+                <p className="text-[10px] text-muted-foreground">📍 Sem endereço, sua localização atual será usada</p>
+              )}
               <button onClick={addManualGym} disabled={joining || !newGymName.trim()}
                 className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-primary/25">
                 {joining ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Criar e Selecionar
