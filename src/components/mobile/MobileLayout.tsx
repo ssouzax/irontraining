@@ -1,5 +1,5 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
-import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin, Swords, Brain, Flame, Radio, Star, Map, Scale, Activity, HeartHandshake } from 'lucide-react';
+import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin, Swords, Brain, Flame, Radio, Star, Map, Scale, Activity, HeartHandshake, Gauge, Heart, RotateCw as Replay, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MobileHomeFeed } from './MobileHomeFeed';
 import { MobileCreatePost } from './MobileCreatePost';
@@ -21,12 +21,16 @@ import { MobileBodyComposition } from './MobileBodyComposition';
 import { MobilePRSimulator } from './MobilePRSimulator';
 import { MobileRecoveryTimeline } from './MobileRecoveryTimeline';
 import { MobileCoTraining } from './MobileCoTraining';
+import { MobileBarVelocity } from './MobileBarVelocity';
+import { MobileWearableDashboard } from './MobileWearableDashboard';
+import { MobileReplay3D } from './MobileReplay3D';
+import { MobileExecutionGrading } from './MobileExecutionGrading';
 import { NotificationBell } from '../NotificationBell';
 import { StreakFireIcon } from '../StreakFireIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 
-type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym' | 'gymmap' | 'rivals' | 'powerscore' | 'predictor' | 'explore' | 'heatmap' | 'gympoints' | 'exerciserankings' | 'livegym' | 'wrapped' | 'exercise3d' | 'body' | 'prsim' | 'recovery' | 'cotraining';
+type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym' | 'gymmap' | 'rivals' | 'powerscore' | 'predictor' | 'explore' | 'heatmap' | 'gympoints' | 'exerciserankings' | 'livegym' | 'wrapped' | 'exercise3d' | 'body' | 'prsim' | 'recovery' | 'cotraining' | 'barvelocity' | 'wearable' | 'replay3d' | 'grading';
 
 const bottomTabs: { key: Tab; icon: typeof Home; label: string }[] = [
   { key: 'home', icon: Home, label: 'Home' },
@@ -56,6 +60,10 @@ const menuItems = [
   { key: 'prsim' as Tab, icon: Brain, label: 'Simulador de PR' },
   { key: 'recovery' as Tab, icon: Activity, label: 'Recuperação' },
   { key: 'cotraining' as Tab, icon: HeartHandshake, label: 'Co-Training' },
+  { key: 'barvelocity' as Tab, icon: Gauge, label: 'Velocidade Barra' },
+  { key: 'wearable' as Tab, icon: Heart, label: 'Wearable' },
+  { key: 'replay3d' as Tab, icon: Replay, label: 'Replay 3D' },
+  { key: 'grading' as Tab, icon: CheckCircle, label: 'Notas Execução' },
   { key: 'profile' as Tab, icon: User, label: 'Perfil' },
 ];
 
@@ -79,7 +87,7 @@ interface MobileLayoutProps {
   workoutContent: ReactNode;
 }
 
-const tabOrder: Tab[] = ['home', 'workout', 'post', 'rankings', 'profile', 'gym', 'gymmap', 'rivals', 'powerscore', 'predictor', 'explore', 'heatmap', 'gympoints', 'exerciserankings', 'livegym', 'wrapped', 'exercise3d', 'body', 'prsim', 'recovery', 'cotraining'];
+const tabOrder: Tab[] = ['home', 'workout', 'post', 'rankings', 'profile', 'gym', 'gymmap', 'rivals', 'powerscore', 'predictor', 'explore', 'heatmap', 'gympoints', 'exerciserankings', 'livegym', 'wrapped', 'exercise3d', 'body', 'prsim', 'recovery', 'cotraining', 'barvelocity', 'wearable', 'replay3d', 'grading'];
 
 export function MobileLayout({ workoutContent }: MobileLayoutProps) {
   // Detect if we're on a routed page (not home)
@@ -250,6 +258,10 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
             {activeTab === 'prsim' && <MobilePRSimulator />}
             {activeTab === 'recovery' && <MobileRecoveryTimeline />}
             {activeTab === 'cotraining' && <MobileCoTraining />}
+            {activeTab === 'barvelocity' && <MobileBarVelocity />}
+            {activeTab === 'wearable' && <MobileWearableDashboard />}
+            {activeTab === 'replay3d' && <MobileReplay3D />}
+            {activeTab === 'grading' && <MobileExecutionGrading />}
           </motion.div>
         </AnimatePresence>
       </main>
