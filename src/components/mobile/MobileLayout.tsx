@@ -79,7 +79,7 @@ interface MobileLayoutProps {
   workoutContent: ReactNode;
 }
 
-const tabOrder: Tab[] = ['home', 'workout', 'post', 'rankings', 'profile', 'gym', 'gymmap', 'rivals', 'powerscore', 'predictor', 'explore', 'heatmap', 'gympoints', 'exerciserankings', 'livegym', 'wrapped', 'exercise3d'];
+const tabOrder: Tab[] = ['home', 'workout', 'post', 'rankings', 'profile', 'gym', 'gymmap', 'rivals', 'powerscore', 'predictor', 'explore', 'heatmap', 'gympoints', 'exerciserankings', 'livegym', 'wrapped', 'exercise3d', 'body', 'prsim', 'recovery', 'cotraining'];
 
 export function MobileLayout({ workoutContent }: MobileLayoutProps) {
   // Detect if we're on a routed page (not home)
