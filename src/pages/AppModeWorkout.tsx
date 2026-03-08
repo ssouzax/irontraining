@@ -7,6 +7,7 @@ import { LoggedSet } from '@/types/training';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { usePlayerLevel } from '@/hooks/usePlayerLevel';
 
 function estimate1RM(weight: number, reps: number): number {
   if (reps === 1) return weight;
@@ -176,6 +177,7 @@ function SetRow({ setIndex, targetReps, targetRIR, setType, log, lastWeight, res
 export default function AppModeWorkout() {
   const { program, currentWeek, currentDay, setCurrentDay } = useTraining();
   const { user } = useAuth();
+  const { addXP } = usePlayerLevel();
 
   const currentBlock = program.blocks.find(b =>
     b.weeks.some(w => w.weekNumber === currentWeek)
@@ -301,9 +303,11 @@ export default function AppModeWorkout() {
       }
 
 
+      // Award XP for completing workout
+      const xpAmount = 50 + (completedSets * 5); // Base 50 + 5 per set
+      await addXP(xpAmount, 'workout_complete');
 
-
-      toast.success('Treino salvo com sucesso!');
+      toast.success(`Treino salvo! +${xpAmount} XP`);
     } catch (err: any) {
       toast.error(err.message || 'Erro ao salvar treino');
     } finally {

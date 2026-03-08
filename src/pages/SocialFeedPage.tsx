@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { usePlayerLevel } from '@/hooks/usePlayerLevel';
 
 interface Post {
   id: string;
@@ -34,6 +35,7 @@ interface Comment {
 
 export default function SocialFeedPage() {
   const { user } = useAuth();
+  const { addXP } = usePlayerLevel();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -204,7 +206,10 @@ export default function SocialFeedPage() {
         is_pr: postType === 'pr',
         media_urls: mediaUrls.length > 0 ? mediaUrls : null,
       });
-      toast.success('Post publicado!');
+      // Award XP for posting
+      const postXP = mediaUrls.length > 0 ? 60 : (postType === 'pr' ? 80 : 40);
+      await addXP(postXP, 'social_post');
+      toast.success(`Post publicado! +${postXP} XP`);
       setShowCreate(false);
       setCaption('');
       setExerciseName('');
