@@ -60,6 +60,10 @@ const menuItems = [
   { key: 'prsim' as Tab, icon: Brain, label: 'Simulador de PR' },
   { key: 'recovery' as Tab, icon: Activity, label: 'Recuperação' },
   { key: 'cotraining' as Tab, icon: HeartHandshake, label: 'Co-Training' },
+  { key: 'barvelocity' as Tab, icon: Gauge, label: 'Velocidade Barra' },
+  { key: 'wearable' as Tab, icon: Heart, label: 'Wearable' },
+  { key: 'replay3d' as Tab, icon: Replay, label: 'Replay 3D' },
+  { key: 'grading' as Tab, icon: CheckCircle, label: 'Notas Execução' },
   { key: 'profile' as Tab, icon: User, label: 'Perfil' },
 ];
 
