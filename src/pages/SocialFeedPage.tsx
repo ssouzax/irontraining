@@ -425,12 +425,25 @@ export default function SocialFeedPage() {
                 </div>
               )}
 
+              {/* Media */}
+              {(post as any).media_urls && (post as any).media_urls.length > 0 && (
+                <div className={cn("mx-4 mb-3 grid gap-1 rounded-xl overflow-hidden",
+                  (post as any).media_urls.length === 1 ? "grid-cols-1" : "grid-cols-2"
+                )}>
+                  {((post as any).media_urls as string[]).map((url: string, idx: number) => (
+                    url.match(/\.(mp4|mov|webm)$/i) ? (
+                      <video key={idx} src={url} controls className="w-full max-h-80 object-cover bg-secondary" />
+                    ) : (
+                      <img key={idx} src={url} alt="" className="w-full max-h-80 object-cover bg-secondary" />
+                    )
+                  ))}
+                </div>
+              )}
+
               {/* Caption */}
               {post.caption && (
                 <p className="px-4 pb-3 text-sm text-foreground leading-relaxed">{post.caption}</p>
               )}
-
-              {/* Actions */}
               <div className="flex items-center gap-4 px-4 py-3 border-t border-border">
                 <button
                   onClick={() => toggleLike(post.id)}
