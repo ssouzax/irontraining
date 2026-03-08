@@ -16,12 +16,13 @@ import { MobileExerciseLeaderboard } from './MobileExerciseLeaderboard';
 import { MobileLiveGym } from './MobileLiveGym';
 import { MobileWrappedCards } from './MobileWrappedCards';
 import { MobileGymMap } from './MobileGymMap';
+import { MobileExercise3D } from './MobileExercise3D';
 import { NotificationBell } from '../NotificationBell';
 import { StreakFireIcon } from '../StreakFireIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 
-type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym' | 'gymmap' | 'rivals' | 'powerscore' | 'predictor' | 'explore' | 'heatmap' | 'gympoints' | 'exerciserankings' | 'livegym' | 'wrapped';
+type Tab = 'home' | 'workout' | 'post' | 'rankings' | 'profile' | 'gym' | 'gymmap' | 'rivals' | 'powerscore' | 'predictor' | 'explore' | 'heatmap' | 'gympoints' | 'exerciserankings' | 'livegym' | 'wrapped' | 'exercise3d';
 
 const bottomTabs: { key: Tab; icon: typeof Home; label: string }[] = [
   { key: 'home', icon: Home, label: 'Home' },
@@ -46,6 +47,7 @@ const menuItems = [
   { key: 'powerscore' as Tab, icon: Zap, label: 'Power Score' },
   { key: 'predictor' as Tab, icon: Brain, label: 'Preditor IA' },
   { key: 'wrapped' as Tab, icon: Sparkles, label: 'Wrapped Cards' },
+  { key: 'exercise3d' as Tab, icon: Dumbbell, label: 'Modelo 3D' },
   { key: 'profile' as Tab, icon: User, label: 'Perfil' },
 ];
 
@@ -69,7 +71,7 @@ interface MobileLayoutProps {
   workoutContent: ReactNode;
 }
 
-const tabOrder: Tab[] = ['home', 'workout', 'post', 'rankings', 'profile', 'gym', 'gymmap', 'rivals', 'powerscore', 'predictor', 'explore', 'heatmap', 'gympoints', 'exerciserankings', 'livegym', 'wrapped'];
+const tabOrder: Tab[] = ['home', 'workout', 'post', 'rankings', 'profile', 'gym', 'gymmap', 'rivals', 'powerscore', 'predictor', 'explore', 'heatmap', 'gympoints', 'exerciserankings', 'livegym', 'wrapped', 'exercise3d'];
 
 export function MobileLayout({ workoutContent }: MobileLayoutProps) {
   // Detect if we're on a routed page (not home)
@@ -235,6 +237,7 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
             {activeTab === 'exerciserankings' && <MobileExerciseLeaderboard />}
             {activeTab === 'livegym' && <MobileLiveGym />}
             {activeTab === 'wrapped' && <MobileWrappedCards />}
+            {activeTab === 'exercise3d' && <MobileExercise3D />}
           </motion.div>
         </AnimatePresence>
       </main>

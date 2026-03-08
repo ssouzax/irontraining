@@ -8,6 +8,9 @@ import { ptBR } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { MobileStreakCard } from './MobileStreakCard';
+import { MobileDailyGoals } from './MobileDailyGoals';
+import { MobileDailyChallenges } from './MobileDailyChallenges';
+import { MobileSeasonalEvents } from './MobileSeasonalEvents';
 import { useTraining } from '@/contexts/TrainingContext';
 import { calculate1RM } from '@/data/defaultProfile';
 import { usePlayerLevel } from '@/hooks/usePlayerLevel';
@@ -191,6 +194,9 @@ export function MobileHomeFeed() {
       </div>
 
       <MobileStreakCard />
+      <MobileSeasonalEvents />
+      <MobileDailyGoals />
+      <MobileDailyChallenges />
 
       {/* Feed */}
       <div className="divide-y divide-border mt-3">
