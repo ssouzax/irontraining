@@ -233,7 +233,7 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
             return (
               <button
                 key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
+                onClick={() => changeTab(tab.key)}
                 className={cn(
                   "flex flex-col items-center gap-0.5 py-1 px-3 transition-colors",
                   isPost && "relative -mt-4"
