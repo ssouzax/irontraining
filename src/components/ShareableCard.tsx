@@ -6,26 +6,29 @@ import { cn } from '@/lib/utils';
 interface ShareableCardProps {
   open: boolean;
   onClose: () => void;
-  type: 'achievement' | 'pr';
+  type: 'achievement' | 'pr' | 'streak';
   title: string;
   subtitle: string;
   stat?: string;
   statLabel?: string;
   icon?: string;
   username?: string;
+  streakDays?: number;
 }
 
-const GRADIENTS = [
-  'from-violet-600 via-purple-600 to-indigo-700',
-  'from-amber-500 via-orange-600 to-red-600',
-  'from-emerald-500 via-teal-600 to-cyan-700',
-  'from-rose-500 via-pink-600 to-fuchsia-700',
-];
+const GRADIENTS: Record<string, string> = {
+  achievement: 'from-violet-600 via-purple-600 to-indigo-700',
+  pr: 'from-amber-500 via-orange-600 to-red-600',
+  streak: 'from-orange-500 via-red-600 to-rose-700',
+  streak_hot: 'from-red-600 via-orange-500 to-yellow-500',
+};
 
-export default function ShareableCard({ open, onClose, type, title, subtitle, stat, statLabel, icon, username }: ShareableCardProps) {
+export default function ShareableCard({ open, onClose, type, title, subtitle, stat, statLabel, icon, username, streakDays }: ShareableCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
-  const gradient = GRADIENTS[Math.abs(title.length) % GRADIENTS.length];
+  const gradient = type === 'streak' 
+    ? ((streakDays || 0) >= 30 ? GRADIENTS.streak_hot : GRADIENTS.streak)
+    : (GRADIENTS[type] || GRADIENTS.achievement);
 
   const downloadCard = async () => {
     if (!cardRef.current) return;
@@ -91,25 +94,47 @@ export default function ShareableCard({ open, onClose, type, title, subtitle, st
                 <div className="absolute top-8 left-8 w-32 h-32 border-2 border-white rounded-full" />
                 <div className="absolute bottom-12 right-8 w-48 h-48 border border-white rounded-full" />
                 <div className="absolute top-1/3 right-12 w-20 h-20 border border-white rotate-45" />
+                {type === 'streak' && (
+                  <>
+                    <div className="absolute top-16 right-16 text-6xl opacity-30">🔥</div>
+                    <div className="absolute bottom-24 left-12 text-5xl opacity-20">🔥</div>
+                    <div className="absolute top-1/2 right-8 text-4xl opacity-15">🔥</div>
+                  </>
+                )}
               </div>
 
               {/* Content */}
               <div className="relative z-10 text-center space-y-6">
-                <span className="text-7xl block">{icon || (type === 'pr' ? '🏆' : '🎖️')}</span>
-                
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] opacity-70 mb-2">
-                    {type === 'pr' ? 'NOVO RECORDE PESSOAL' : 'CONQUISTA DESBLOQUEADA'}
-                  </p>
-                  <h2 className="text-2xl font-bold leading-tight">{title}</h2>
-                  <p className="text-sm opacity-80 mt-2">{subtitle}</p>
-                </div>
-
-                {stat && (
-                  <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-8 py-5">
-                    <p className="text-4xl font-extrabold tracking-tight">{stat}</p>
-                    {statLabel && <p className="text-xs uppercase tracking-wider opacity-70 mt-1">{statLabel}</p>}
-                  </div>
+                {type === 'streak' ? (
+                  <>
+                    <span className="text-8xl block drop-shadow-lg">🔥</span>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.3em] opacity-70 mb-2">TRAINING STREAK</p>
+                      <p className="text-7xl font-black tracking-tight leading-none">{streakDays || 0}</p>
+                      <p className="text-lg font-bold opacity-90 mt-1">DIAS CONSECUTIVOS</p>
+                    </div>
+                    <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-6 py-4 space-y-2">
+                      <p className="text-sm font-semibold">{title}</p>
+                      <p className="text-xs opacity-80">{subtitle}</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-7xl block">{icon || (type === 'pr' ? '🏆' : '🎖️')}</span>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.3em] opacity-70 mb-2">
+                        {type === 'pr' ? 'NOVO RECORDE PESSOAL' : 'CONQUISTA DESBLOQUEADA'}
+                      </p>
+                      <h2 className="text-2xl font-bold leading-tight">{title}</h2>
+                      <p className="text-sm opacity-80 mt-2">{subtitle}</p>
+                    </div>
+                    {stat && (
+                      <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-8 py-5">
+                        <p className="text-4xl font-extrabold tracking-tight">{stat}</p>
+                        {statLabel && <p className="text-xs uppercase tracking-wider opacity-70 mt-1">{statLabel}</p>}
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {username && (
