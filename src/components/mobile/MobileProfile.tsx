@@ -65,11 +65,7 @@ export function MobileProfile() {
   const avatarRef = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
 
-  const squat1RM = calculate1RM(trainingProfile.currentLifts.squat.weight, trainingProfile.currentLifts.squat.reps);
-  const bench1RM = calculate1RM(trainingProfile.currentLifts.bench.weight, trainingProfile.currentLifts.bench.reps);
-  const deadlift1RM = calculate1RM(trainingProfile.currentLifts.deadlift.weight, trainingProfile.currentLifts.deadlift.reps);
-  const total = squat1RM + bench1RM + deadlift1RM;
-  const hasLiftsData = total > 0;
+  // Removed hardcoded lift calculations - PRs are now in PRConfigSection
 
   useEffect(() => { if (user) loadAll(); }, [user]);
 
