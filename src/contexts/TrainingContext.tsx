@@ -61,8 +61,10 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
   }, [user?.email, isOwner]);
 
   useEffect(() => {
-    localStorage.setItem('pb_profile', JSON.stringify(profile));
-  }, [profile]);
+    if (user?.email) {
+      localStorage.setItem('pb_profile', JSON.stringify({ ...profile, email: user.email }));
+    }
+  }, [profile, user?.email]);
 
   useEffect(() => {
     localStorage.setItem('pb_logs', JSON.stringify(workoutLogs));
