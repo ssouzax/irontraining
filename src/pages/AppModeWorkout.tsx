@@ -179,14 +179,20 @@ export default function AppModeWorkout() {
   const { user } = useAuth();
   const { addXP } = usePlayerLevel();
 
+  const [logData, setLogData] = useState<Record<string, LoggedSet[]>>({});
+  const [restTimes, setRestTimes] = useState<Record<string, number>>({});
+  const [restTimer, setRestTimer] = useState<{ active: boolean; seconds: number; key: string }>({ active: false, seconds: 0, key: '' });
+  const [saving, setSaving] = useState(false);
+  const lastCompletionTime = useRef<number | null>(null);
+
   const currentBlock = program.blocks.find(b =>
     b.weeks.some(w => w.weekNumber === currentWeek)
   ) || program.blocks[0];
-  
+
   if (!currentBlock || !currentBlock.weeks || currentBlock.weeks.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4 text-center px-4">
-        <Dumbbell className="w-12 h-12 text-muted-foreground/40" />
+        <Timer className="w-12 h-12 text-muted-foreground/40" />
         <h2 className="text-lg font-semibold text-foreground">Nenhum programa ativo</h2>
         <p className="text-sm text-muted-foreground max-w-xs">
           Crie ou importe um programa de treino para começar a usar o Modo App.
@@ -194,15 +200,9 @@ export default function AppModeWorkout() {
       </div>
     );
   }
-  
+
   const weekData = currentBlock.weeks.find(w => w.weekNumber === currentWeek) || currentBlock.weeks[0];
   const dayData = weekData?.days?.[currentDay];
-
-  const [logData, setLogData] = useState<Record<string, LoggedSet[]>>({});
-  const [restTimes, setRestTimes] = useState<Record<string, number>>({});
-  const [restTimer, setRestTimer] = useState<{ active: boolean; seconds: number; key: string }>({ active: false, seconds: 0, key: '' });
-  const [saving, setSaving] = useState(false);
-  const lastCompletionTime = useRef<number | null>(null);
 
   const getSetKey = (exerciseId: string, setId: string) => `${exerciseId}__${setId}`;
   const getSetRestKey = (exerciseId: string, setId: string, idx: number) => `${exerciseId}__${setId}__${idx}`;
