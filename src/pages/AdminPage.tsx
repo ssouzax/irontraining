@@ -848,10 +848,12 @@ export default function AdminPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
+                    <TableHead>Código Ref.</TableHead>
                     <TableHead>Instagram</TableHead>
-                    <TableHead>Seguidores</TableHead>
-                    <TableHead>WhatsApp</TableHead>
-                    <TableHead>Deal</TableHead>
+                    <TableHead>Referências</TableHead>
+                    <TableHead>Receita</TableHead>
+                    <TableHead>Comissão</TableHead>
+                    <TableHead>Verificado</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Ações</TableHead>
                   </TableRow>
@@ -859,17 +861,34 @@ export default function AdminPage() {
                 <TableBody>
                   {influencers.map((inf) => (
                     <TableRow key={inf.id}>
-                      <TableCell className="font-medium">{inf.name}</TableCell>
-                      <TableCell>{inf.instagram_handle || '-'}</TableCell>
-                      <TableCell>{inf.followers_count?.toLocaleString() || '-'}</TableCell>
-                      <TableCell>
-                        {inf.whatsapp && (
-                          <a href={`https://wa.me/${inf.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-green-600 hover:underline">
-                            <Phone className="w-3 h-3" /> {inf.whatsapp}
-                          </a>
-                        )}
+                      <TableCell className="font-medium">
+                        <div>
+                          {inf.name}
+                          {inf.user_id && <span className="text-xs text-muted-foreground ml-1">(Self)</span>}
+                        </div>
                       </TableCell>
-                      <TableCell><Badge variant="outline">{inf.deal_type}</Badge></TableCell>
+                      <TableCell>
+                        {inf.referral_code ? (
+                          <code className="text-xs bg-secondary px-1.5 py-0.5 rounded">{inf.referral_code}</code>
+                        ) : '-'}
+                      </TableCell>
+                      <TableCell>{inf.instagram_handle || '-'}</TableCell>
+                      <TableCell className="font-medium">{inf.total_referrals || 0}</TableCell>
+                      <TableCell>R$ {((inf.total_revenue_cents || 0) / 100).toFixed(2)}</TableCell>
+                      <TableCell>{inf.commission_rate || 10}%</TableCell>
+                      <TableCell>
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          className={inf.is_verified ? 'text-primary' : 'text-muted-foreground'}
+                          onClick={async () => {
+                            await supabase.from('influencers').update({ is_verified: !inf.is_verified }).eq('id', inf.id);
+                            loadAllData();
+                          }}
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
                       <TableCell><Badge variant={inf.status === 'active' ? 'default' : 'secondary'}>{inf.status}</Badge></TableCell>
                       <TableCell>
                         <div className="flex gap-1">
