@@ -1,4 +1,5 @@
-import { UserProfile } from '@/types/training';
+import { UserProfile, TrainingProgram } from '@/types/training';
+import { defaultProgram } from '@/data/program';
 
 // Empty profile for new users
 export const defaultProfile: UserProfile = {
@@ -39,6 +40,23 @@ export function getProfileForUser(email: string | undefined): UserProfile {
     return ownerProfile;
   }
   return defaultProfile;
+}
+
+// Empty program for new users
+export const emptyProgram: TrainingProgram = {
+  id: 'empty',
+  name: 'Sem Programa',
+  description: 'Nenhum programa carregado. Importe ou crie um programa.',
+  durationWeeks: 0,
+  daysPerWeek: 0,
+  blocks: [],
+};
+
+export function getProgramForUser(email: string | undefined): TrainingProgram {
+  if (email?.toLowerCase() === 'samuelsouzapon@gmail.com') {
+    return defaultProgram;
+  }
+  return emptyProgram;
 }
 
 // Estimated 1RM using Epley formula: weight * (1 + reps/30)

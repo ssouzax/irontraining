@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { TrainingProgram, UserProfile, WorkoutLog, LoggedSet } from '@/types/training';
-import { defaultProgram } from '@/data/program';
-import { defaultProfile, getProfileForUser } from '@/data/defaultProfile';
+import { defaultProfile, getProfileForUser, emptyProgram, getProgramForUser } from '@/data/defaultProfile';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface TrainingState {
@@ -25,13 +24,11 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
     const saved = localStorage.getItem('pb_profile');
     if (saved) {
       const parsed = JSON.parse(saved);
-      // If saved profile has data, use it
       if (parsed.bodyWeight > 0) return parsed;
     }
-    // Otherwise use default based on user email
     return defaultProfile;
   });
-  const [program] = useState<TrainingProgram>(defaultProgram);
+  const [program, setProgram] = useState<TrainingProgram>(emptyProgram);
   const [currentWeek, setCurrentWeek] = useState(1);
   const [currentDay, setCurrentDay] = useState(0);
   const [workoutLogs, setWorkoutLogs] = useState<WorkoutLog[]>(() => {
@@ -39,14 +36,14 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Initialize profile based on user email when user logs in
+  // Initialize profile and program based on user email
   useEffect(() => {
     if (user?.email) {
       const saved = localStorage.getItem('pb_profile');
       if (!saved || JSON.parse(saved).bodyWeight === 0) {
-        const userProfile = getProfileForUser(user.email);
-        setProfile(userProfile);
+        setProfile(getProfileForUser(user.email));
       }
+      setProgram(getProgramForUser(user.email));
     }
   }, [user?.email]);
 

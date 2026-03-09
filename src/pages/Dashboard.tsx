@@ -56,11 +56,12 @@ export default function Dashboard() {
     ? getOverallLevel(squat1RM, bench1RM, deadlift1RM, profile.bodyWeight)
     : null;
 
-  const currentBlock = program.blocks.find(b => b.weeks.some(w => w.weekNumber === currentWeek)) || program.blocks[0];
-  const currentWeekData = currentBlock.weeks.find(w => w.weekNumber === currentWeek) || currentBlock.weeks[0];
+  const hasProgram = program.blocks.length > 0;
+  const currentBlock = hasProgram ? (program.blocks.find(b => b.weeks.some(w => w.weekNumber === currentWeek)) || program.blocks[0]) : null;
+  const currentWeekData = currentBlock ? (currentBlock.weeks.find(w => w.weekNumber === currentWeek) || currentBlock.weeks[0]) : null;
   const todayIndex = new Date().getDay();
   const dayMap: Record<number, number> = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 };
-  const todayWorkout = currentWeekData.days[dayMap[todayIndex] ?? 0];
+  const todayWorkout = currentWeekData ? currentWeekData.days[dayMap[todayIndex] ?? 0] : null;
 
   useEffect(() => {
     if (!user) return;
@@ -152,7 +153,7 @@ export default function Dashboard() {
     <div className="space-y-6 sm:space-y-8">
       <motion.div {...fadeIn}>
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">Painel</h1>
-        <p className="text-muted-foreground mt-1">Semana {currentWeek} · {currentBlock.name}</p>
+        <p className="text-muted-foreground mt-1">{hasProgram ? `Semana ${currentWeek} · ${currentBlock?.name}` : 'Bem-vindo ao Iron Training'}</p>
       </motion.div>
 
       {/* Empty State - Configure PRs */}
@@ -347,19 +348,21 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      {/* Block Overview */}
-      <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
-        <h3 className="text-sm font-semibold text-foreground mb-4">Blocos do Programa</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {program.blocks.map(block => (
-            <div key={block.id} className={`p-3 sm:p-4 rounded-lg border transition-all ${block === currentBlock ? 'border-primary bg-primary/5' : 'border-border bg-secondary/30'}`}>
-              <p className="text-xs text-muted-foreground">{block.weekRange}</p>
-              <p className="text-xs sm:text-sm font-medium text-foreground mt-1">{block.name}</p>
-              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{block.goal}</p>
-            </div>
-          ))}
-        </div>
-      </motion.div>
+      {/* Block Overview - Only show if has program */}
+      {hasProgram && (
+        <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
+          <h3 className="text-sm font-semibold text-foreground mb-4">Blocos do Programa</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {program.blocks.map(block => (
+              <div key={block.id} className={`p-3 sm:p-4 rounded-lg border transition-all ${block === currentBlock ? 'border-primary bg-primary/5' : 'border-border bg-secondary/30'}`}>
+                <p className="text-xs text-muted-foreground">{block.weekRange}</p>
+                <p className="text-xs sm:text-sm font-medium text-foreground mt-1">{block.name}</p>
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{block.goal}</p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }
