@@ -182,8 +182,21 @@ export default function AppModeWorkout() {
   const currentBlock = program.blocks.find(b =>
     b.weeks.some(w => w.weekNumber === currentWeek)
   ) || program.blocks[0];
+  
+  if (!currentBlock || !currentBlock.weeks || currentBlock.weeks.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 gap-4 text-center px-4">
+        <Dumbbell className="w-12 h-12 text-muted-foreground/40" />
+        <h2 className="text-lg font-semibold text-foreground">Nenhum programa ativo</h2>
+        <p className="text-sm text-muted-foreground max-w-xs">
+          Crie ou importe um programa de treino para começar a usar o Modo App.
+        </p>
+      </div>
+    );
+  }
+  
   const weekData = currentBlock.weeks.find(w => w.weekNumber === currentWeek) || currentBlock.weeks[0];
-  const dayData = weekData.days[currentDay];
+  const dayData = weekData?.days?.[currentDay];
 
   const [logData, setLogData] = useState<Record<string, LoggedSet[]>>({});
   const [restTimes, setRestTimes] = useState<Record<string, number>>({});
