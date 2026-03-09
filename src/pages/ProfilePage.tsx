@@ -143,6 +143,7 @@ export default function ProfilePage() {
       youtube_url: profile.youtube_url || null,
       tiktok_url: profile.tiktok_url || null,
       website_url: profile.website_url || null,
+      whatsapp: profile.whatsapp || null,
       body_weight: profile.body_weight,
       profile_public: profile.profile_public,
       show_bodyweight: profile.show_bodyweight,
