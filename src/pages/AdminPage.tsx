@@ -163,19 +163,93 @@ export default function AdminPage() {
   }
 
   async function loadAllData() {
-    const [infRes, brandRes, gymRes, specRes, profRes] = await Promise.all([
+    const [infRes, brandRes, gymRes, specRes, profRes, subsRes, plansRes] = await Promise.all([
       supabase.from('influencers').select('*').order('created_at', { ascending: false }),
       supabase.from('brands').select('*').order('created_at', { ascending: false }),
       supabase.from('gym_promo_plans').select('*').order('created_at', { ascending: false }),
       supabase.from('specialist_plans').select('*').order('created_at', { ascending: false }),
-      supabase.from('profiles').select('id, user_id, display_name, email, whatsapp, created_at').order('created_at', { ascending: false }).limit(100),
+      supabase.from('profiles').select('id, user_id, display_name, email, whatsapp, created_at').order('created_at', { ascending: false }).limit(200),
+      supabase.from('user_subscriptions').select('*').order('created_at', { ascending: false }),
+      supabase.from('subscription_plans').select('*').order('price_cents', { ascending: true }),
     ]);
 
     if (infRes.data) setInfluencers(infRes.data);
     if (brandRes.data) setBrands(brandRes.data);
     if (gymRes.data) setGymPromos(gymRes.data);
     if (specRes.data) setSpecialistPlans(specRes.data as SpecialistPlan[]);
-    if (profRes.data) setProfiles(profRes.data);
+    
+    const plans = (plansRes.data || []) as SubPlan[];
+    setSubPlans(plans);
+
+    const profs = profRes.data || [];
+    setProfiles(profs);
+
+    const subs = (subsRes.data || []) as UserSubscription[];
+    
+    // Build users with subscription info
+    const usersMap: UserWithSub[] = profs.map((p: Profile) => {
+      const activeSub = subs.find(s => s.user_id === p.user_id && s.status === 'active');
+      const plan = activeSub ? plans.find(pl => pl.id === activeSub.plan_id) : null;
+      return {
+        profile: p,
+        subscription: activeSub || null,
+        planName: plan?.name || 'Gratuito',
+        planTier: plan?.tier || 'free',
+      };
+    });
+    setUsersWithSubs(usersMap);
+  }
+
+  // Assign/change plan for user
+  async function assignPlan(userId: string, planId: string, isTrial: boolean, days: number) {
+    // Cancel existing active subs
+    await supabase.from('user_subscriptions')
+      .update({ status: 'replaced' })
+      .eq('user_id', userId)
+      .eq('status', 'active');
+
+    const now = new Date();
+    const expiresAt = new Date(now);
+    
+    if (isTrial) {
+      expiresAt.setDate(expiresAt.getDate() + days);
+    } else {
+      // 30 days for monthly
+      const plan = subPlans.find(p => p.id === planId);
+      if (plan?.interval === 'yearly') {
+        expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+      } else {
+        expiresAt.setMonth(expiresAt.getMonth() + 1);
+      }
+    }
+
+    const { error } = await supabase.from('user_subscriptions').insert({
+      user_id: userId,
+      plan_id: planId,
+      status: 'active',
+      started_at: now.toISOString(),
+      expires_at: expiresAt.toISOString(),
+    });
+
+    if (error) {
+      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: isTrial ? 'Teste grátis ativado!' : 'Plano atribuído com sucesso!' });
+    }
+    setDialogOpen(null);
+    setManagingUser(null);
+    loadAllData();
+  }
+
+  // Remove plan
+  async function removePlan(userId: string) {
+    await supabase.from('user_subscriptions')
+      .update({ status: 'canceled', canceled_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .eq('status', 'active');
+    
+    toast({ title: 'Plano removido!' });
+    loadAllData();
   }
 
   // Influencer CRUD
