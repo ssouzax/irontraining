@@ -411,8 +411,11 @@ export default function AdminPage() {
         <h1 className="text-2xl font-bold text-foreground">Painel Administrativo</h1>
       </div>
 
-      <Tabs defaultValue="specialist" className="w-full">
-        <TabsList className="grid grid-cols-5 w-full max-w-2xl">
+      <Tabs defaultValue="plans" className="w-full">
+        <TabsList className="grid grid-cols-6 w-full max-w-3xl">
+          <TabsTrigger value="plans" className="flex items-center gap-1">
+            <Crown className="w-4 h-4" /> Planos
+          </TabsTrigger>
           <TabsTrigger value="specialist" className="flex items-center gap-1">
             <Star className="w-4 h-4" /> Especialistas
           </TabsTrigger>
@@ -429,6 +432,133 @@ export default function AdminPage() {
             <Tag className="w-4 h-4" /> Marcas
           </TabsTrigger>
         </TabsList>
+
+        {/* PLAN MANAGEMENT TAB */}
+        <TabsContent value="plans" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Crown className="w-5 h-5 text-amber-500" />
+                Gerenciar Planos dos Usuários
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Usuário</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>WhatsApp</TableHead>
+                    <TableHead>Plano Atual</TableHead>
+                    <TableHead>Expira em</TableHead>
+                    <TableHead>Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {usersWithSubs.map((u) => (
+                    <TableRow key={u.profile.id}>
+                      <TableCell className="font-medium">{u.profile.display_name || '-'}</TableCell>
+                      <TableCell className="text-sm">{u.profile.email}</TableCell>
+                      <TableCell>
+                        {u.profile.whatsapp ? (
+                          <a href={`https://wa.me/${u.profile.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-green-600 hover:underline text-sm">
+                            <Phone className="w-3 h-3" /> {u.profile.whatsapp}
+                          </a>
+                        ) : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={u.planTier === 'premium' ? 'default' : u.planTier === 'free' ? 'secondary' : 'outline'}>
+                          {TIER_LABELS[u.planTier] || u.planName}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {u.subscription?.expires_at
+                          ? new Date(u.subscription.expires_at).toLocaleDateString('pt-BR')
+                          : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Dialog open={dialogOpen === `plan-${u.profile.user_id}`} onOpenChange={(o) => {
+                            setDialogOpen(o ? `plan-${u.profile.user_id}` : null);
+                            if (o) { setManagingUser(u); setSelectedPlan(u.subscription?.plan_id || ''); }
+                            else setManagingUser(null);
+                          }}>
+                            <DialogTrigger asChild>
+                              <Button size="sm" variant="outline" className="gap-1">
+                                <ArrowUpDown className="w-3 h-3" /> Plano
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Gerenciar Plano - {u.profile.display_name || u.profile.email}</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div>
+                                  <p className="text-sm text-muted-foreground mb-2">
+                                    Plano atual: <Badge variant="outline">{TIER_LABELS[u.planTier] || 'Gratuito'}</Badge>
+                                  </p>
+                                </div>
+
+                                <div>
+                                  <Label>Selecionar Plano</Label>
+                                  <Select value={selectedPlan} onValueChange={setSelectedPlan}>
+                                    <SelectTrigger><SelectValue placeholder="Escolha um plano" /></SelectTrigger>
+                                    <SelectContent>
+                                      {subPlans.map(p => (
+                                        <SelectItem key={p.id} value={p.id}>
+                                          {p.name} — R${(p.price_cents / 100).toFixed(2)} ({TIER_LABELS[p.tier]})
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                <div className="flex gap-2">
+                                  <Button 
+                                    className="flex-1" 
+                                    disabled={!selectedPlan}
+                                    onClick={() => selectedPlan && assignPlan(u.profile.user_id, selectedPlan, false, 0)}
+                                  >
+                                    <Crown className="w-4 h-4 mr-1" /> Atribuir Plano
+                                  </Button>
+                                </div>
+
+                                <div className="border-t pt-4">
+                                  <p className="text-sm font-medium mb-2">Teste Grátis</p>
+                                  <div className="flex gap-2 items-end">
+                                    <div className="flex-1">
+                                      <Label>Dias de teste</Label>
+                                      <Input type="number" min={1} max={90} value={trialDays} onChange={e => setTrialDays(parseInt(e.target.value) || 7)} />
+                                    </div>
+                                    <Button 
+                                      variant="outline"
+                                      disabled={!selectedPlan}
+                                      onClick={() => selectedPlan && assignPlan(u.profile.user_id, selectedPlan, true, trialDays)}
+                                    >
+                                      <Gift className="w-4 h-4 mr-1" /> Dar Teste
+                                    </Button>
+                                  </div>
+                                </div>
+
+                                {u.subscription?.status === 'active' && (
+                                  <div className="border-t pt-4">
+                                    <Button variant="destructive" className="w-full" onClick={() => { removePlan(u.profile.user_id); setDialogOpen(null); }}>
+                                      <Trash2 className="w-4 h-4 mr-1" /> Remover Plano (Voltar ao Gratuito)
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* SPECIALIST PLANS TAB */}
         <TabsContent value="specialist" className="mt-6">
