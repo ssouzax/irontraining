@@ -40,10 +40,10 @@ export default function AuthPage() {
         className="w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
-            <Dumbbell className="w-8 h-8 text-primary-foreground" />
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <img src={logoImg} alt="Iron Training" className="w-12 h-12 object-contain" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">PowerBuild</h1>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Iron Training</h1>
           <p className="text-muted-foreground mt-1">Treino de Força & Hipertrofia</p>
         </div>
 
