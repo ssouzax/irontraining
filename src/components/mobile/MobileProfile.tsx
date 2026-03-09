@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useGroups } from '@/hooks/useGroups';
 import { User, Camera, MapPin, Save, Instagram, Youtube, Edit3, Trophy, Shield, Loader2, X, Award, Dumbbell, Globe, LogOut } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
