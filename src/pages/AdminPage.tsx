@@ -855,6 +855,11 @@ export default function AdminPage() {
                       </Select>
                     </div>
                     <div>
+                      <Label>Código de Referência</Label>
+                      <Input name="referral_code" defaultValue={editingInfluencer?.referral_code || ''} placeholder="Ex: IRONJOAO123" />
+                      <p className="text-xs text-muted-foreground mt-1">O admin define o código. Deixe vazio para gerar automaticamente (somente ao criar).</p>
+                    </div>
+                    <div>
                       <Label>Taxa de Comissão (%)</Label>
                       <Input name="commission_rate" type="number" min={5} max={50} defaultValue={editingInfluencer?.commission_rate || 10} />
                     </div>
