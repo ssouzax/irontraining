@@ -56,7 +56,7 @@ export function MobileWrappedCards() {
       const { default: html2canvas } = await import('html2canvas');
       const canvas = await html2canvas(cardRef.current, { backgroundColor: null, scale: 2 });
       const link = document.createElement('a');
-      link.download = `powerbuild-${activeCard}.png`;
+      link.download = `iron-training-${activeCard}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
       toast.success('Card exportado!');
