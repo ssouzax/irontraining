@@ -71,7 +71,10 @@ export default function AuthPage() {
             influencerId = coupon.influencer_id;
             couponId = coupon.id;
             // Increment coupon usage
-            await supabase.rpc('increment_coupon_usage', { coupon_id: coupon.id }).catch(() => {});
+            await supabase
+              .from('influencer_coupons')
+              .update({ times_used: (coupon as any).times_used + 1 })
+              .eq('id', coupon.id);
           } else {
             // Check referral code
             const { data: inf } = await supabase
@@ -97,8 +100,19 @@ export default function AuthPage() {
               status: 'pending',
             });
 
-            // Increment influencer stats
-            await supabase.rpc('increment_influencer_referrals', { inf_id: influencerId }).catch(() => {});
+            // Increment influencer total_referrals
+            const { data: infData } = await supabase
+              .from('influencers')
+              .select('total_referrals')
+              .eq('id', influencerId)
+              .single();
+            
+            if (infData) {
+              await supabase
+                .from('influencers')
+                .update({ total_referrals: (infData.total_referrals || 0) + 1 })
+                .eq('id', influencerId);
+            }
           }
         }
 
