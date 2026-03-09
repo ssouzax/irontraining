@@ -49,6 +49,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    // Clear local training data on logout so next user starts fresh
+    localStorage.removeItem('pb_profile');
+    localStorage.removeItem('pb_logs');
     await supabase.auth.signOut();
   };
 
