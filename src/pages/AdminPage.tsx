@@ -277,6 +277,8 @@ export default function AdminPage() {
       notes: form.get('notes') as string || null,
       commission_rate: parseInt(form.get('commission_rate') as string) || 10,
       referral_code: referralCode,
+      total_referrals: parseInt(form.get('total_referrals') as string) || 0,
+      total_revenue_cents: parseInt(form.get('total_revenue_cents') as string) || 0,
     };
 
     if (editingInfluencer) {
