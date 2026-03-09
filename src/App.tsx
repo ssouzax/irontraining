@@ -46,6 +46,7 @@ import PremiumContentPage from "./pages/PremiumContentPage";
 import AdminPage from "./pages/AdminPage";
 import DietPage from "./pages/DietPage";
 import InfluencerPage from "./pages/InfluencerPage";
+import GroupsPage from "./pages/GroupsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -103,6 +104,7 @@ function ProtectedRoutes() {
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/diet" element={<DietPage />} />
           <Route path="/influencer" element={<InfluencerPage />} />
+          <Route path="/groups" element={<GroupsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

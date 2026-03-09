@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { User, Camera, MapPin, Save, Instagram, Youtube, Edit3, Trophy, Shield, Loader2, X, Award, Dumbbell, Globe, LogOut } from 'lucide-react';
+import { useGroups } from '@/hooks/useGroups';
+import { User, Camera, MapPin, Save, Instagram, Youtube, Edit3, Trophy, Shield, Loader2, X, Award, Dumbbell, Globe, LogOut, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlayerLevel } from '@/hooks/usePlayerLevel';
@@ -42,11 +43,12 @@ interface Post {
   created_at: string;
 }
 
-type Tab = 'posts' | 'prs' | 'achievements' | 'workouts';
+type Tab = 'posts' | 'prs' | 'achievements' | 'workouts' | 'groups';
 
 export function MobileProfile() {
   const { user, signOut } = useAuth();
   const { playerLevel } = usePlayerLevel();
+  const { myGroups } = useGroups();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -250,24 +252,48 @@ export function MobileProfile() {
       </AnimatePresence>
 
       {/* Content Tabs */}
-      <div className="flex border-b border-border mt-4">
+      <div className="flex border-b border-border mt-4 overflow-x-auto">
         {([
           { key: 'posts' as Tab, label: 'Posts', icon: Dumbbell },
           { key: 'prs' as Tab, label: 'PRs', icon: Trophy },
+          { key: 'groups' as Tab, label: 'Grupos', icon: Users },
           { key: 'achievements' as Tab, label: 'Conquistas', icon: Award },
         ]).map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className={cn("flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors border-b-2",
+            className={cn("flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors border-b-2 whitespace-nowrap min-w-0",
               tab === t.key ? "border-primary text-primary" : "border-transparent text-muted-foreground"
             )}>
-            <t.icon className="w-4 h-4" />
+            <t.icon className="w-4 h-4 shrink-0" />
             {t.label}
           </button>
         ))}
       </div>
 
+      {/* Groups */}
+      {tab === 'groups' && (
+        <div className="px-4 mt-4 space-y-3">
+          {myGroups.length === 0 ? (
+            <div className="text-center py-12">
+              <Users className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Nenhum grupo ainda</p>
+            </div>
+          ) : myGroups.map(g => (
+            <div key={g.id} className="bg-card rounded-xl border border-border p-3 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Users className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">{g.name}</p>
+                <p className="text-xs text-muted-foreground">{g.member_count} membros</p>
+              </div>
+              {g.is_private && <span className="text-[10px] bg-warning/10 text-warning px-2 py-0.5 rounded-full">Privado</span>}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Posts Grid */}
-      <div className="px-4 mt-4 space-y-3">
+      {tab !== 'groups' && <div className="px-4 mt-4 space-y-3">
         {displayPosts.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-sm text-muted-foreground">Nenhum {tab === 'prs' ? 'PR' : 'post'} ainda</p>
@@ -295,7 +321,7 @@ export function MobileProfile() {
             )}
           </div>
         ))}
-      </div>
+      </div>}
     </div>
   );
 }

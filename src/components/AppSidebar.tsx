@@ -41,6 +41,7 @@ const navItems = [
   { to: '/diet', icon: Utensils, label: 'Perfil de Dieta' },
   { to: '/influencer', icon: Megaphone, label: 'Influenciadores' },
   { to: '/admin', icon: Shield, label: 'Painel Admin' },
+  { to: '/groups', icon: Users, label: 'Grupos' },
   { to: '/profile', icon: User, label: 'Perfil' },
   { to: '/install', icon: Download, label: 'Instalar App' },
 ];

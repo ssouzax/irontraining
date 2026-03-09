@@ -85,6 +85,7 @@ const extraMenuItems = [
   { icon: ShoppingBag, label: 'Loja', route: '/shop' },
   { icon: Star, label: 'Conteúdo Premium', route: '/premium-content' },
   { icon: Download, label: 'Instalar App', route: '/install' },
+  { icon: Users, label: 'Grupos', route: '/groups' },
 ];
 
 interface MobileLayoutProps {
