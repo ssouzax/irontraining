@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Sparkles, Download, Share2, Trophy, Flame, Zap, Dumbbell, Crown, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import logoImg from '@/assets/iron-training-logo.png';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTraining } from '@/contexts/TrainingContext';

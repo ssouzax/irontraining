@@ -1,6 +1,7 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
 import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin, Swords, Brain, Flame, Radio, Star, Map, Scale, Activity, HeartHandshake, Gauge, Heart, RotateCw as Replay, CheckCircle, ShoppingBag, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import logoImg from '@/assets/iron-training-logo.png';
 import { MobileHomeFeed } from './MobileHomeFeed';
 import { MobileCreatePost } from './MobileCreatePost';
 import { MobileRankings } from './MobileRankings';
