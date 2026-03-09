@@ -1,4 +1,5 @@
-import { UserProfile } from '@/types/training';
+import { UserProfile, TrainingProgram } from '@/types/training';
+import { defaultProgram } from '@/data/program';
 
 // Empty profile for new users
 export const defaultProfile: UserProfile = {
