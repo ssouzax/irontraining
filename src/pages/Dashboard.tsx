@@ -180,7 +180,6 @@ export default function Dashboard() {
           <StatCard icon={Activity} label="Peso Corporal" value={hasBodyWeight ? `${profile.bodyWeight} kg` : '—'} sub="Atual" />
         </div>
       )}
-      </div>
 
       {/* Strength Standards - Only show if has data */}
       {strengthData && (
