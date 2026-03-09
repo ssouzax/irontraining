@@ -46,7 +46,6 @@ type Tab = 'posts' | 'prs' | 'achievements' | 'workouts';
 
 export function MobileProfile() {
   const { user, signOut } = useAuth();
-  const { profile: trainingProfile } = useTraining();
   const { playerLevel } = usePlayerLevel();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
