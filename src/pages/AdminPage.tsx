@@ -838,6 +838,10 @@ export default function AdminPage() {
                       </Select>
                     </div>
                     <div>
+                      <Label>Taxa de Comissão (%)</Label>
+                      <Input name="commission_rate" type="number" min={5} max={50} defaultValue={editingInfluencer?.commission_rate || 10} />
+                    </div>
+                    <div>
                       <Label>Notas</Label>
                       <Textarea name="notes" defaultValue={editingInfluencer?.notes || ''} />
                     </div>
