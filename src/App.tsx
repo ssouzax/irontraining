@@ -43,6 +43,8 @@ import ExecutionGradingPage from "./pages/ExecutionGradingPage";
 import SubscribePage from "./pages/SubscribePage";
 import ShopPage from "./pages/ShopPage";
 import PremiumContentPage from "./pages/PremiumContentPage";
+import AdminPage from "./pages/AdminPage";
+import DietPage from "./pages/DietPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -97,6 +99,8 @@ function ProtectedRoutes() {
           <Route path="/subscribe" element={<SubscribePage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/premium-content" element={<PremiumContentPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/diet" element={<DietPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

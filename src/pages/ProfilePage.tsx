@@ -24,6 +24,7 @@ interface ProfileData {
   youtube_url: string;
   tiktok_url: string;
   website_url: string;
+  whatsapp: string;
   body_weight: number | null;
   profile_public: boolean;
   show_bodyweight: boolean;
@@ -70,7 +71,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileData>({
     display_name: '', username: '', bio: '', location: '',
     avatar_url: '', cover_url: '', instagram_url: '', youtube_url: '',
-    tiktok_url: '', website_url: '', body_weight: null,
+    tiktok_url: '', website_url: '', whatsapp: '', body_weight: null,
     profile_public: true, show_bodyweight: true, show_prs: true,
     gym_class: null, coach_personality: 'motivational',
   });
@@ -114,6 +115,7 @@ export default function ProfilePage() {
         youtube_url: p.youtube_url || '',
         tiktok_url: p.tiktok_url || '',
         website_url: p.website_url || '',
+        whatsapp: p.whatsapp || '',
         body_weight: p.body_weight,
         profile_public: p.profile_public ?? true,
         show_bodyweight: p.show_bodyweight ?? true,
@@ -142,6 +144,7 @@ export default function ProfilePage() {
       youtube_url: profile.youtube_url || null,
       tiktok_url: profile.tiktok_url || null,
       website_url: profile.website_url || null,
+      whatsapp: profile.whatsapp || null,
       body_weight: profile.body_weight,
       profile_public: profile.profile_public,
       show_bodyweight: profile.show_bodyweight,
@@ -318,6 +321,8 @@ export default function ProfilePage() {
                 className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground" placeholder="https://youtube.com/..." />
               <input value={profile.tiktok_url} onChange={e => setProfile(p => ({ ...p, tiktok_url: e.target.value }))}
                 className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground" placeholder="https://tiktok.com/..." />
+              <input value={profile.whatsapp} onChange={e => setProfile(p => ({ ...p, whatsapp: e.target.value }))}
+                className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground" placeholder="WhatsApp: +55 11 99999-9999" />
               <input value={profile.website_url} onChange={e => setProfile(p => ({ ...p, website_url: e.target.value }))}
                 className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground" placeholder="https://seusite.com" />
             </div>
