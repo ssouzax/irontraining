@@ -4,9 +4,11 @@ import { User, Camera, MapPin, Dumbbell, Target, Save, Instagram, Globe, Youtube
 import SubscriptionManager from '@/components/SubscriptionManager';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTraining } from '@/contexts/TrainingContext';
-import { calculate1RM } from '@/data/defaultProfile';
 import { usePlayerLevel } from '@/hooks/usePlayerLevel';
+import { useUserPRs } from '@/hooks/useUserPRs';
+import { usePremium } from '@/hooks/usePremium';
+import { PremiumGate, PremiumBadge } from '@/components/PremiumGate';
+import { PRConfigSection } from '@/components/mobile/PRConfigSection';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -61,8 +63,9 @@ const GYM_CLASS_ICONS: Record<string, string> = {
 
 export default function ProfilePage() {
   const { user } = useAuth();
-  const { profile: trainingProfile } = useTraining();
   const { playerLevel } = usePlayerLevel();
+  const { prs, total } = useUserPRs();
+  const { hasAccess, isPremium } = usePremium();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -80,14 +83,9 @@ export default function ProfilePage() {
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [achievementsCount, setAchievementsCount] = useState(0);
-  const [tab, setTab] = useState<'posts' | 'prs' | 'stats' | 'plan'>('posts');
+  const [tab, setTab] = useState<'prs' | 'posts' | 'stats' | 'plan'>('prs');
   const avatarRef = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
-
-  const squat1RM = calculate1RM(trainingProfile.currentLifts.squat.weight, trainingProfile.currentLifts.squat.reps);
-  const bench1RM = calculate1RM(trainingProfile.currentLifts.bench.weight, trainingProfile.currentLifts.bench.reps);
-  const deadlift1RM = calculate1RM(trainingProfile.currentLifts.deadlift.weight, trainingProfile.currentLifts.deadlift.reps);
-  const total = squat1RM + bench1RM + deadlift1RM;
 
   useEffect(() => { if (user) loadAll(); }, [user]);
 
@@ -105,22 +103,14 @@ export default function ProfilePage() {
     if (profileRes.data) {
       const p = profileRes.data as any;
       setProfile({
-        display_name: p.display_name || '',
-        username: p.username || '',
-        bio: p.bio || '',
-        location: p.location || '',
-        avatar_url: p.avatar_url || '',
-        cover_url: p.cover_url || '',
-        instagram_url: p.instagram_url || '',
-        youtube_url: p.youtube_url || '',
-        tiktok_url: p.tiktok_url || '',
-        website_url: p.website_url || '',
-        whatsapp: p.whatsapp || '',
-        body_weight: p.body_weight,
-        profile_public: p.profile_public ?? true,
-        show_bodyweight: p.show_bodyweight ?? true,
-        show_prs: p.show_prs ?? true,
-        gym_class: p.gym_class || null,
+        display_name: p.display_name || '', username: p.username || '',
+        bio: p.bio || '', location: p.location || '',
+        avatar_url: p.avatar_url || '', cover_url: p.cover_url || '',
+        instagram_url: p.instagram_url || '', youtube_url: p.youtube_url || '',
+        tiktok_url: p.tiktok_url || '', website_url: p.website_url || '',
+        whatsapp: p.whatsapp || '', body_weight: p.body_weight,
+        profile_public: p.profile_public ?? true, show_bodyweight: p.show_bodyweight ?? true,
+        show_prs: p.show_prs ?? true, gym_class: p.gym_class || null,
         coach_personality: p.coach_personality || 'motivational',
       });
     }
@@ -136,23 +126,15 @@ export default function ProfilePage() {
     if (!user) return;
     setSaving(true);
     const { error } = await supabase.from('profiles').update({
-      display_name: profile.display_name || null,
-      username: profile.username || null,
-      bio: profile.bio || null,
-      location: profile.location || null,
-      instagram_url: profile.instagram_url || null,
-      youtube_url: profile.youtube_url || null,
-      tiktok_url: profile.tiktok_url || null,
-      website_url: profile.website_url || null,
-      whatsapp: profile.whatsapp || null,
-      body_weight: profile.body_weight,
-      profile_public: profile.profile_public,
-      show_bodyweight: profile.show_bodyweight,
-      show_prs: profile.show_prs,
-      gym_class: profile.gym_class,
+      display_name: profile.display_name || null, username: profile.username || null,
+      bio: profile.bio || null, location: profile.location || null,
+      instagram_url: profile.instagram_url || null, youtube_url: profile.youtube_url || null,
+      tiktok_url: profile.tiktok_url || null, website_url: profile.website_url || null,
+      whatsapp: profile.whatsapp || null, body_weight: profile.body_weight,
+      profile_public: profile.profile_public, show_bodyweight: profile.show_bodyweight,
+      show_prs: profile.show_prs, gym_class: profile.gym_class,
       coach_personality: profile.coach_personality,
     }).eq('user_id', user.id);
-
     setSaving(false);
     if (error) toast.error('Erro ao salvar perfil');
     else { toast.success('Perfil salvo!'); setEditing(false); }
@@ -175,7 +157,7 @@ export default function ProfilePage() {
 
   const name = profile.display_name || profile.username || user?.email?.split('@')[0] || 'Atleta';
   const prPosts = posts.filter(p => p.is_pr);
-  const displayPosts = tab === 'prs' ? prPosts : posts;
+  const displayPosts = tab === 'posts' ? posts : prPosts;
 
   if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
 
@@ -198,14 +180,9 @@ export default function ProfilePage() {
 
         <div className="px-5 pb-5">
           <div className="flex items-end gap-4 -mt-10">
-            {/* Avatar */}
             <div className="relative group cursor-pointer shrink-0" onClick={() => avatarRef.current?.click()}>
               <div className="w-20 h-20 rounded-full bg-primary/10 border-4 border-card flex items-center justify-center overflow-hidden">
-                {profile.avatar_url ? (
-                  <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <User className="w-10 h-10 text-primary" />
-                )}
+                {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : <User className="w-10 h-10 text-primary" />}
               </div>
               <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                 <Camera className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -218,8 +195,7 @@ export default function ProfilePage() {
               {profile.username && <p className="text-xs text-muted-foreground">@{profile.username}</p>}
             </div>
 
-            <button onClick={() => editing ? handleSave() : setEditing(true)}
-              disabled={saving}
+            <button onClick={() => editing ? handleSave() : setEditing(true)} disabled={saving}
               className={cn("px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors shrink-0",
                 editing ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
               )}>
@@ -228,7 +204,6 @@ export default function ProfilePage() {
             </button>
           </div>
 
-          {/* Gym Class Badge */}
           {profile.gym_class && (
             <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
               <span>{GYM_CLASS_ICONS[profile.gym_class] || '🏋️'}</span>
@@ -236,7 +211,6 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* Player Level */}
           {playerLevel && (
             <div className="mt-2 flex items-center gap-2">
               <Shield className="w-3.5 h-3.5 text-primary" />
@@ -247,12 +221,9 @@ export default function ProfilePage() {
 
           {profile.bio && !editing && <p className="text-sm text-muted-foreground mt-3">{profile.bio}</p>}
           {profile.location && !editing && (
-            <span className="flex items-center gap-1 text-xs text-muted-foreground mt-2">
-              <MapPin className="w-3 h-3" /> {profile.location}
-            </span>
+            <span className="flex items-center gap-1 text-xs text-muted-foreground mt-2"><MapPin className="w-3 h-3" /> {profile.location}</span>
           )}
 
-          {/* Stats row */}
           <div className="flex gap-6 mt-3">
             <div><span className="font-bold text-foreground text-sm">{followersCount}</span> <span className="text-xs text-muted-foreground">seguidores</span></div>
             <div><span className="font-bold text-foreground text-sm">{followingCount}</span> <span className="text-xs text-muted-foreground">seguindo</span></div>
@@ -260,7 +231,6 @@ export default function ProfilePage() {
             <div><span className="font-bold text-foreground text-sm">{achievementsCount}</span> <span className="text-xs text-muted-foreground">conquistas</span></div>
           </div>
 
-          {/* Social Links */}
           {!editing && (
             <div className="flex gap-2 mt-3">
               {profile.instagram_url && <a href={profile.instagram_url} target="_blank" rel="noreferrer" className="p-1.5 rounded-lg bg-secondary text-muted-foreground hover:text-foreground"><Instagram className="w-4 h-4" /></a>}
@@ -279,7 +249,6 @@ export default function ProfilePage() {
             <h3 className="text-sm font-bold text-foreground">Editar Perfil</h3>
             <button onClick={() => setEditing(false)} className="p-1 text-muted-foreground hover:text-foreground"><X className="w-4 h-4" /></button>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Nome</label>
@@ -292,13 +261,11 @@ export default function ProfilePage() {
                 className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground" placeholder="@username" />
             </div>
           </div>
-
           <div>
             <label className="text-xs text-muted-foreground mb-1 block">Bio</label>
             <textarea value={profile.bio} onChange={e => setProfile(p => ({ ...p, bio: e.target.value }))} rows={3}
               className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground resize-none" placeholder="Conte sobre você..." />
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Localização</label>
@@ -311,7 +278,6 @@ export default function ProfilePage() {
                 className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground" />
             </div>
           </div>
-
           <div className="space-y-2">
             <p className="text-xs font-medium text-foreground">Redes Sociais</p>
             <div className="grid grid-cols-1 gap-2">
@@ -327,7 +293,6 @@ export default function ProfilePage() {
                 className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground" placeholder="https://seusite.com" />
             </div>
           </div>
-
           {/* Gym Class Selector */}
           <div>
             <p className="text-xs font-medium text-foreground mb-2">Classe de Treino</p>
@@ -344,7 +309,6 @@ export default function ProfilePage() {
               ))}
             </div>
           </div>
-
           {/* Privacy */}
           <div className="space-y-2">
             <p className="text-xs font-medium text-foreground">Privacidade</p>
@@ -364,26 +328,27 @@ export default function ProfilePage() {
         </motion.div>
       )}
 
-      {/* Strength Stats */}
-      <div className="grid grid-cols-4 gap-2">
-        {[
-          { label: 'Agachamento', val: squat1RM },
-          { label: 'Supino', val: bench1RM },
-          { label: 'Terra', val: deadlift1RM },
-          { label: 'Total', val: total },
-        ].map(s => (
-          <div key={s.label} className="bg-card rounded-xl border border-border p-3 text-center card-elevated">
-            <p className="text-[10px] text-muted-foreground">{s.label}</p>
-            <p className="text-lg font-bold text-foreground">{s.val}<span className="text-xs text-muted-foreground">kg</span></p>
+      {/* PRs Summary Cards - from DB */}
+      {prs.length > 0 && prs.some(p => p.estimated_1rm > 0) && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {prs.filter(p => p.estimated_1rm > 0).slice(0, 3).map(pr => (
+            <div key={pr.id} className="bg-card rounded-xl border border-border p-3 text-center card-elevated">
+              <p className="text-[10px] text-muted-foreground truncate">{pr.exercise_name}</p>
+              <p className="text-lg font-bold text-foreground">{pr.estimated_1rm}<span className="text-xs text-muted-foreground">kg</span></p>
+            </div>
+          ))}
+          <div className="bg-primary/10 rounded-xl border border-primary/20 p-3 text-center">
+            <p className="text-[10px] text-muted-foreground">Total</p>
+            <p className="text-lg font-bold text-primary">{Math.round(total)}<span className="text-xs">kg</span></p>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1 bg-secondary/50 rounded-xl p-1">
         {([
+          { key: 'prs' as const, label: '🏆 Meus PRs' },
           { key: 'posts' as const, label: `Posts (${posts.length})` },
-          { key: 'prs' as const, label: `PRs (${prPosts.length})` },
           { key: 'stats' as const, label: 'Dados' },
           { key: 'plan' as const, label: '👑 Plano' },
         ]).map(t => (
@@ -397,26 +362,23 @@ export default function ProfilePage() {
       </div>
 
       {/* Content */}
-      {tab === 'plan' ? (
+      {tab === 'prs' ? (
+        <PRConfigSection />
+      ) : tab === 'plan' ? (
         <SubscriptionManager />
       ) : tab === 'stats' ? (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-card rounded-xl border border-border p-5 card-elevated space-y-4">
-          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <Target className="w-4 h-4 text-primary" /> Objetivos
-          </h3>
-          <p className="text-sm text-muted-foreground">{trainingProfile.goals}</p>
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Agachamento → {trainingProfile.targetProgression.squat}</p>
-            <p className="text-xs text-muted-foreground">Terra → {trainingProfile.targetProgression.deadlift}</p>
-            <p className="text-xs text-muted-foreground">Supino → {trainingProfile.targetProgression.bench}</p>
-          </div>
-        </motion.div>
+        <PremiumGate requiredTier="basic" feature="Dados Avançados">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-card rounded-xl border border-border p-5 card-elevated space-y-4">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Target className="w-4 h-4 text-primary" /> Dados do Perfil
+            </h3>
+            <p className="text-sm text-muted-foreground">Análises avançadas dos seus treinos e progressão.</p>
+          </motion.div>
+        </PremiumGate>
       ) : (
         <div className="space-y-3">
           {displayPosts.length === 0 ? (
-            <p className="text-center text-sm text-muted-foreground py-8">
-              {tab === 'prs' ? 'Nenhum PR postado ainda' : 'Nenhum post ainda'}
-            </p>
+            <p className="text-center text-sm text-muted-foreground py-8">Nenhum post ainda</p>
           ) : displayPosts.map(post => (
             <motion.div key={post.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
               className="bg-card rounded-xl border border-border card-elevated p-4">
@@ -437,9 +399,7 @@ export default function ProfilePage() {
               )}
               {post.media_urls && post.media_urls.length > 0 && (
                 <div className="flex gap-2 mb-2 overflow-x-auto">
-                  {post.media_urls.map((url, i) => (
-                    <img key={i} src={url} alt="" className="h-32 rounded-lg object-cover" />
-                  ))}
+                  {post.media_urls.map((url, i) => <img key={i} src={url} alt="" className="h-32 rounded-lg object-cover" />)}
                 </div>
               )}
               {post.caption && <p className="text-sm text-foreground">{post.caption}</p>}
