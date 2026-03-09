@@ -121,8 +121,8 @@ export function MobileWrappedCards() {
             <div className="w-full h-full bg-gradient-to-br from-primary via-primary/80 to-accent p-6 flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <Dumbbell className="w-5 h-5 text-primary-foreground/80" />
-                  <span className="text-xs font-bold text-primary-foreground/80 uppercase tracking-widest">PowerBuild</span>
+                  <img src={logoImg} alt="Iron Training" className="w-5 h-5 object-contain" />
+                  <span className="text-xs font-bold text-primary-foreground/80 uppercase tracking-widest">Iron Training</span>
                 </div>
                 <h3 className="text-2xl font-extrabold text-primary-foreground mt-6">{displayName}</h3>
                 <p className="text-sm text-primary-foreground/70">Resumo de Força</p>
