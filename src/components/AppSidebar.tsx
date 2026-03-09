@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import logoImg from '@/assets/iron-training-logo.png';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Painel' },
