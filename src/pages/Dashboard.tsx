@@ -290,35 +290,37 @@ export default function Dashboard() {
         )}
       </motion.div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
-          <h3 className="text-sm font-semibold text-foreground mb-4">Progressão E1RM</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={progressData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Line type="monotone" dataKey="squat" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ r: 3 }} name="Agachamento" />
-              <Line type="monotone" dataKey="deadlift" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ r: 3 }} name="Terra" />
-              <Line type="monotone" dataKey="bench" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={{ r: 3 }} name="Supino" />
-            </LineChart>
-          </ResponsiveContainer>
-        </motion.div>
-        <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
-          <h3 className="text-sm font-semibold text-foreground mb-4">Volume Semanal (Séries)</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={volumeData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Area type="monotone" dataKey="sets" stroke="hsl(var(--chart-4))" fill="hsl(var(--chart-4) / 0.2)" strokeWidth={2} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </motion.div>
-      </div>
+      {/* Charts - Only show if has data */}
+      {hasLiftsData && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
+            <h3 className="text-sm font-semibold text-foreground mb-4">Progressão E1RM</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={progressData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Line type="monotone" dataKey="squat" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ r: 3 }} name="Agachamento" />
+                <Line type="monotone" dataKey="deadlift" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ r: 3 }} name="Terra" />
+                <Line type="monotone" dataKey="bench" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={{ r: 3 }} name="Supino" />
+              </LineChart>
+            </ResponsiveContainer>
+          </motion.div>
+          <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
+            <h3 className="text-sm font-semibold text-foreground mb-4">Volume Semanal (Séries)</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={volumeData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Area type="monotone" dataKey="sets" stroke="hsl(var(--chart-4))" fill="hsl(var(--chart-4) / 0.2)" strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </motion.div>
+        </div>
+      )}
 
       {/* Today's Workout */}
       {todayWorkout && (
