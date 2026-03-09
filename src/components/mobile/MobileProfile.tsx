@@ -252,17 +252,18 @@ export function MobileProfile() {
       </AnimatePresence>
 
       {/* Content Tabs */}
-      <div className="flex border-b border-border mt-4">
+      <div className="flex border-b border-border mt-4 overflow-x-auto">
         {([
           { key: 'posts' as Tab, label: 'Posts', icon: Dumbbell },
           { key: 'prs' as Tab, label: 'PRs', icon: Trophy },
+          { key: 'groups' as Tab, label: 'Grupos', icon: Users },
           { key: 'achievements' as Tab, label: 'Conquistas', icon: Award },
         ]).map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className={cn("flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors border-b-2",
+            className={cn("flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors border-b-2 whitespace-nowrap min-w-0",
               tab === t.key ? "border-primary text-primary" : "border-transparent text-muted-foreground"
             )}>
-            <t.icon className="w-4 h-4" />
+            <t.icon className="w-4 h-4 shrink-0" />
             {t.label}
           </button>
         ))}
