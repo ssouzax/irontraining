@@ -220,8 +220,8 @@ export function MobileWrappedCards() {
                 <p className="text-sm text-white/60">Total: {total}kg · {prCount} PRs</p>
               </div>
               <div className="flex items-center gap-2 mt-auto">
-                <Dumbbell className="w-4 h-4 text-white/40" />
-                <span className="text-[10px] text-white/40 uppercase tracking-widest">PowerBuild</span>
+                <img src={logoImg} alt="Iron Training" className="w-4 h-4 object-contain opacity-40" />
+                <span className="text-[10px] text-white/40 uppercase tracking-widest">Iron Training</span>
               </div>
             </div>
           )}
