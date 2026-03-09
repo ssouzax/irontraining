@@ -320,6 +320,8 @@ export default function ProfilePage() {
                 className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground" placeholder="https://youtube.com/..." />
               <input value={profile.tiktok_url} onChange={e => setProfile(p => ({ ...p, tiktok_url: e.target.value }))}
                 className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground" placeholder="https://tiktok.com/..." />
+              <input value={profile.whatsapp} onChange={e => setProfile(p => ({ ...p, whatsapp: e.target.value }))}
+                className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground" placeholder="WhatsApp: +55 11 99999-9999" />
               <input value={profile.website_url} onChange={e => setProfile(p => ({ ...p, website_url: e.target.value }))}
                 className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground" placeholder="https://seusite.com" />
             </div>
