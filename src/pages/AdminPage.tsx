@@ -277,6 +277,8 @@ export default function AdminPage() {
       notes: form.get('notes') as string || null,
       commission_rate: parseInt(form.get('commission_rate') as string) || 10,
       referral_code: referralCode,
+      total_referrals: parseInt(form.get('total_referrals') as string) || 0,
+      total_revenue_cents: parseInt(form.get('total_revenue_cents') as string) || 0,
     };
 
     if (editingInfluencer) {
@@ -859,9 +861,20 @@ export default function AdminPage() {
                       <Input name="referral_code" defaultValue={editingInfluencer?.referral_code || ''} placeholder="Ex: IRONJOAO123" />
                       <p className="text-xs text-muted-foreground mt-1">O admin define o código. Deixe vazio para gerar automaticamente (somente ao criar).</p>
                     </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Taxa de Comissão (%)</Label>
+                        <Input name="commission_rate" type="number" min={0} max={50} defaultValue={editingInfluencer?.commission_rate || 10} />
+                      </div>
+                      <div>
+                        <Label>Total Referências</Label>
+                        <Input name="total_referrals" type="number" min={0} defaultValue={editingInfluencer?.total_referrals || 0} />
+                      </div>
+                    </div>
                     <div>
-                      <Label>Taxa de Comissão (%)</Label>
-                      <Input name="commission_rate" type="number" min={5} max={50} defaultValue={editingInfluencer?.commission_rate || 10} />
+                      <Label>Receita Total (centavos)</Label>
+                      <Input name="total_revenue_cents" type="number" min={0} defaultValue={editingInfluencer?.total_revenue_cents || 0} />
+                      <p className="text-xs text-muted-foreground mt-1">Em centavos. Ex: R$150,00 = 15000</p>
                     </div>
                     <div>
                       <Label>Notas</Label>
