@@ -104,6 +104,7 @@ function ProtectedRoutes() {
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/diet" element={<DietPage />} />
           <Route path="/influencer" element={<InfluencerPage />} />
+          <Route path="/groups" element={<GroupsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
