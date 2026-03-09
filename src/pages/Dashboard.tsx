@@ -182,48 +182,50 @@ export default function Dashboard() {
       )}
       </div>
 
-      {/* Strength Standards */}
-      <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
-        <div className="flex items-center gap-2 mb-4">
-          <Shield className="w-5 h-5 text-primary" />
-          <h3 className="text-sm font-semibold text-foreground">Nível de Força</h3>
-          <span className={cn("text-xs font-bold px-2 py-0.5 rounded", strengthData.overall.bgColor, strengthData.overall.color)}>
-            {strengthData.overall.label}
-          </span>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[
-            { name: 'Agachamento', data: strengthData.squat, e1rm: squat1RM },
-            { name: 'Supino', data: strengthData.bench, e1rm: bench1RM },
-            { name: 'Terra', data: strengthData.deadlift, e1rm: deadlift1RM },
-          ].map(lift => (
-            <div key={lift.name} className="p-3 rounded-lg bg-secondary/40">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-muted-foreground">{lift.name}</span>
-                <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded", lift.data.level.bgColor, lift.data.level.color)}>
-                  {lift.data.level.label}
-                </span>
-              </div>
-              <p className="text-lg font-bold text-foreground">{lift.e1rm}kg <span className="text-xs text-muted-foreground font-normal">({lift.data.ratio}× PC)</span></p>
-              {lift.data.nextLevel && (
-                <div className="mt-2">
-                  <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-primary rounded-full transition-all"
-                      style={{ width: `${Math.min(100, ((lift.e1rm) / (lift.e1rm + lift.data.kgToNext)) * 100)}%` }}
-                    />
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-1">{lift.data.kgToNext}kg para {lift.data.nextLevel.label}</p>
+      {/* Strength Standards - Only show if has data */}
+      {strengthData && (
+        <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="w-5 h-5 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Nível de Força</h3>
+            <span className={cn("text-xs font-bold px-2 py-0.5 rounded", strengthData.overall.bgColor, strengthData.overall.color)}>
+              {strengthData.overall.label}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { name: 'Agachamento', data: strengthData.squat, e1rm: squat1RM },
+              { name: 'Supino', data: strengthData.bench, e1rm: bench1RM },
+              { name: 'Terra', data: strengthData.deadlift, e1rm: deadlift1RM },
+            ].map(lift => (
+              <div key={lift.name} className="p-3 rounded-lg bg-secondary/40">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-muted-foreground">{lift.name}</span>
+                  <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded", lift.data.level.bgColor, lift.data.level.color)}>
+                    {lift.data.level.label}
+                  </span>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-        <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">Total: <span className="font-bold text-foreground">{strengthData.total}kg</span></span>
-          <Link to="/rankings" className="text-xs text-primary hover:underline">Ver Ranking →</Link>
-        </div>
-      </motion.div>
+                <p className="text-lg font-bold text-foreground">{lift.e1rm}kg <span className="text-xs text-muted-foreground font-normal">({lift.data.ratio}× PC)</span></p>
+                {lift.data.nextLevel && (
+                  <div className="mt-2">
+                    <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-primary rounded-full transition-all"
+                        style={{ width: `${Math.min(100, ((lift.e1rm) / (lift.e1rm + lift.data.kgToNext)) * 100)}%` }}
+                      />
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1">{lift.data.kgToNext}kg para {lift.data.nextLevel.label}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">Total: <span className="font-bold text-foreground">{strengthData.total}kg</span></span>
+            <Link to="/rankings" className="text-xs text-primary hover:underline">Ver Ranking →</Link>
+          </div>
+        </motion.div>
+      )}
 
       {/* Performance Insights */}
       {insights.length > 0 && (
