@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function ProgramPage() {
   const { program, currentWeek, setCurrentWeek, setCurrentDay } = useTraining();
-  const [expandedBlock, setExpandedBlock] = useState<string | null>(program.blocks[0].id);
+  const [expandedBlock, setExpandedBlock] = useState<string | null>(program.blocks[0]?.id ?? null);
   const [expandedWeek, setExpandedWeek] = useState<string | null>(null);
   const navigate = useNavigate();
 
