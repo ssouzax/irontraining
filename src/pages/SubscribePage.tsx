@@ -78,6 +78,15 @@ function PlanCard({ plan, isPopular, isCurrent, delay }: { plan: Plan; isPopular
         ))}
       </ul>
 
+      {!isCurrent && plan.kiwify_product_id && (
+        <div className="mb-4 p-3 rounded-lg border border-amber-500/30 bg-amber-500/5 text-xs">
+          <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+            <Mail className="w-3.5 h-3.5 shrink-0" />
+            <strong>Lembre-se:</strong> Use o email cadastrado no app
+          </div>
+        </div>
+      )}
+
       <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
         <Button
           onClick={handleSubscribe}
