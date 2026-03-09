@@ -250,6 +250,60 @@ export type Database = {
         }
         Relationships: []
       }
+      brands: {
+        Row: {
+          category: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_whatsapp: string | null
+          created_at: string
+          deal_description: string | null
+          deal_type: string | null
+          deal_value_cents: number | null
+          id: string
+          logo_url: string | null
+          name: string
+          notes: string | null
+          status: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          category?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_whatsapp?: string | null
+          created_at?: string
+          deal_description?: string | null
+          deal_type?: string | null
+          deal_value_cents?: number | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          notes?: string | null
+          status?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          category?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_whatsapp?: string | null
+          created_at?: string
+          deal_description?: string | null
+          deal_type?: string | null
+          deal_value_cents?: number | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          notes?: string | null
+          status?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       challenge_entries: {
         Row: {
           challenge_id: string
@@ -489,6 +543,81 @@ export type Database = {
           target_value?: number
           user_id?: string
           xp_reward?: number
+        }
+        Relationships: []
+      }
+      diet_profiles: {
+        Row: {
+          activity_level: string | null
+          age: number | null
+          arm_cm: number | null
+          chest_cm: number | null
+          created_at: string
+          diet_restrictions: string | null
+          foods_at_home: string | null
+          foods_easy_to_buy: string | null
+          goal: string | null
+          health_conditions: string | null
+          height_cm: number | null
+          hip_cm: number | null
+          id: string
+          meals_per_day: number | null
+          supplement_notes: string | null
+          thigh_cm: number | null
+          updated_at: string
+          user_id: string
+          uses_supplements: boolean | null
+          waist_cm: number | null
+          water_liters_per_day: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          activity_level?: string | null
+          age?: number | null
+          arm_cm?: number | null
+          chest_cm?: number | null
+          created_at?: string
+          diet_restrictions?: string | null
+          foods_at_home?: string | null
+          foods_easy_to_buy?: string | null
+          goal?: string | null
+          health_conditions?: string | null
+          height_cm?: number | null
+          hip_cm?: number | null
+          id?: string
+          meals_per_day?: number | null
+          supplement_notes?: string | null
+          thigh_cm?: number | null
+          updated_at?: string
+          user_id: string
+          uses_supplements?: boolean | null
+          waist_cm?: number | null
+          water_liters_per_day?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          activity_level?: string | null
+          age?: number | null
+          arm_cm?: number | null
+          chest_cm?: number | null
+          created_at?: string
+          diet_restrictions?: string | null
+          foods_at_home?: string | null
+          foods_easy_to_buy?: string | null
+          goal?: string | null
+          health_conditions?: string | null
+          height_cm?: number | null
+          hip_cm?: number | null
+          id?: string
+          meals_per_day?: number | null
+          supplement_notes?: string | null
+          thigh_cm?: number | null
+          updated_at?: string
+          user_id?: string
+          uses_supplements?: boolean | null
+          waist_cm?: number | null
+          water_liters_per_day?: number | null
+          weight_kg?: number | null
         }
         Relationships: []
       }
@@ -979,6 +1108,62 @@ export type Database = {
           },
         ]
       }
+      gym_promo_plans: {
+        Row: {
+          contact_email: string | null
+          contact_name: string | null
+          contact_whatsapp: string | null
+          created_at: string
+          description: string | null
+          gym_id: string | null
+          gym_name: string
+          id: string
+          monthly_value_cents: number | null
+          notes: string | null
+          plan_type: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_whatsapp?: string | null
+          created_at?: string
+          description?: string | null
+          gym_id?: string | null
+          gym_name: string
+          id?: string
+          monthly_value_cents?: number | null
+          notes?: string | null
+          plan_type?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_whatsapp?: string | null
+          created_at?: string
+          description?: string | null
+          gym_id?: string | null
+          gym_name?: string
+          id?: string
+          monthly_value_cents?: number | null
+          notes?: string | null
+          plan_type?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_promo_plans_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gym_subscriptions: {
         Row: {
           created_at: string
@@ -1107,6 +1292,60 @@ export type Database = {
           tier?: string
           total_points?: number
           verified?: boolean
+        }
+        Relationships: []
+      }
+      influencers: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          deal_type: string | null
+          email: string | null
+          followers_count: number | null
+          id: string
+          instagram_handle: string | null
+          name: string
+          niche: string | null
+          notes: string | null
+          status: string | null
+          tiktok_handle: string | null
+          updated_at: string
+          whatsapp: string | null
+          youtube_handle: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          deal_type?: string | null
+          email?: string | null
+          followers_count?: number | null
+          id?: string
+          instagram_handle?: string | null
+          name: string
+          niche?: string | null
+          notes?: string | null
+          status?: string | null
+          tiktok_handle?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+          youtube_handle?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          deal_type?: string | null
+          email?: string | null
+          followers_count?: number | null
+          id?: string
+          instagram_handle?: string | null
+          name?: string
+          niche?: string | null
+          notes?: string | null
+          status?: string | null
+          tiktok_handle?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+          youtube_handle?: string | null
         }
         Relationships: []
       }
@@ -1619,6 +1858,7 @@ export type Database = {
           user_id: string
           username: string | null
           website_url: string | null
+          whatsapp: string | null
           youtube_url: string | null
         }
         Insert: {
@@ -1648,6 +1888,7 @@ export type Database = {
           user_id: string
           username?: string | null
           website_url?: string | null
+          whatsapp?: string | null
           youtube_url?: string | null
         }
         Update: {
@@ -1677,6 +1918,7 @@ export type Database = {
           user_id?: string
           username?: string | null
           website_url?: string | null
+          whatsapp?: string | null
           youtube_url?: string | null
         }
         Relationships: [
@@ -2056,6 +2298,57 @@ export type Database = {
           },
         ]
       }
+      specialist_plans: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          price_cents: number
+          specialist_avatar_url: string | null
+          specialist_bio: string | null
+          specialist_name: string
+          title: string
+          updated_at: string
+          whatsapp_contact: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          price_cents?: number
+          specialist_avatar_url?: string | null
+          specialist_bio?: string | null
+          specialist_name: string
+          title: string
+          updated_at?: string
+          whatsapp_contact?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          price_cents?: number
+          specialist_avatar_url?: string | null
+          specialist_bio?: string | null
+          specialist_name?: string
+          title?: string
+          updated_at?: string
+          whatsapp_contact?: string | null
+        }
+        Relationships: []
+      }
       subscription_plans: {
         Row: {
           created_at: string
@@ -2359,6 +2652,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
       }
       user_subscriptions: {
         Row: {
@@ -2755,9 +3069,10 @@ export type Database = {
           weight: number
         }[]
       }
+      is_admin: { Args: { _user_id?: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2884,6 +3199,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
