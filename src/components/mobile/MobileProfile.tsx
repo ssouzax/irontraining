@@ -2,9 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { User, Camera, MapPin, Save, Instagram, Youtube, Edit3, Trophy, Shield, Loader2, X, Award, Dumbbell, Globe, LogOut } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTraining } from '@/contexts/TrainingContext';
-import { calculate1RM } from '@/data/defaultProfile';
 import { usePlayerLevel } from '@/hooks/usePlayerLevel';
+import { PRConfigSection } from './PRConfigSection';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -47,7 +46,6 @@ type Tab = 'posts' | 'prs' | 'achievements' | 'workouts';
 
 export function MobileProfile() {
   const { user, signOut } = useAuth();
-  const { profile: trainingProfile } = useTraining();
   const { playerLevel } = usePlayerLevel();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -67,11 +65,7 @@ export function MobileProfile() {
   const avatarRef = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
 
-  const squat1RM = calculate1RM(trainingProfile.currentLifts.squat.weight, trainingProfile.currentLifts.squat.reps);
-  const bench1RM = calculate1RM(trainingProfile.currentLifts.bench.weight, trainingProfile.currentLifts.bench.reps);
-  const deadlift1RM = calculate1RM(trainingProfile.currentLifts.deadlift.weight, trainingProfile.currentLifts.deadlift.reps);
-  const total = squat1RM + bench1RM + deadlift1RM;
-  const hasLiftsData = total > 0;
+  // Removed hardcoded lift calculations - PRs are now in PRConfigSection
 
   useEffect(() => { if (user) loadAll(); }, [user]);
 
@@ -227,22 +221,8 @@ export function MobileProfile() {
         </div>
       </div>
 
-      {/* Lifts Summary - Only show if has data */}
-      {hasLiftsData && (
-        <div className="grid grid-cols-4 gap-2 px-4 mt-4">
-          {[
-            { label: 'SQT', val: squat1RM },
-            { label: 'BNC', val: bench1RM },
-            { label: 'DL', val: deadlift1RM },
-            { label: 'Total', val: total },
-          ].map(l => (
-            <div key={l.label} className="text-center p-2 rounded-xl bg-card border border-border">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{l.label}</p>
-              <p className="text-lg font-extrabold text-foreground">{l.val}</p>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Customizable PRs Section */}
+      <PRConfigSection />
 
       {/* Edit Form */}
       <AnimatePresence>

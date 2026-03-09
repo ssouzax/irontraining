@@ -1,14 +1,13 @@
 import { motion } from 'framer-motion';
 import { useTraining } from '@/contexts/TrainingContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { calculate1RM } from '@/data/defaultProfile';
+import { useUserPRs } from '@/hooks/useUserPRs';
 import { TrendingUp, Target, Dumbbell, Activity, Zap, CheckCircle, XCircle, Sparkles, AlertTriangle, Trophy, Shield, ArrowUpRight } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { getOverallLevel, STRENGTH_LEVELS } from '@/lib/strengthStandards';
 import { cn } from '@/lib/utils';
 
 const fadeIn = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.4 } };
@@ -40,21 +39,13 @@ interface Recommendation {
 }
 
 export default function Dashboard() {
-  const { profile, program, currentWeek } = useTraining();
+  const { program, currentWeek } = useTraining();
   const { user } = useAuth();
+  const { prs, total, loading: prsLoading } = useUserPRs();
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
 
-  const squat1RM = calculate1RM(profile.currentLifts.squat.weight, profile.currentLifts.squat.reps);
-  const deadlift1RM = calculate1RM(profile.currentLifts.deadlift.weight, profile.currentLifts.deadlift.reps);
-  const bench1RM = calculate1RM(profile.currentLifts.bench.weight, profile.currentLifts.bench.reps);
-
-  const hasLiftsData = squat1RM > 0 || bench1RM > 0 || deadlift1RM > 0;
-  const hasBodyWeight = profile.bodyWeight > 0;
-
-  const strengthData = hasLiftsData && hasBodyWeight 
-    ? getOverallLevel(squat1RM, bench1RM, deadlift1RM, profile.bodyWeight)
-    : null;
+  const hasPRs = prs.length > 0 && prs.some(p => p.estimated_1rm > 0);
 
   const hasProgram = program.blocks.length > 0;
   const currentBlock = hasProgram ? (program.blocks.find(b => b.weeks.some(w => w.weekNumber === currentWeek)) || program.blocks[0]) : null;
@@ -108,13 +99,6 @@ export default function Dashboard() {
     }
   };
 
-  const progressData = hasLiftsData ? Array.from({ length: Math.min(currentWeek, 12) }, (_, i) => ({
-    week: `S${i + 1}`,
-    squat: Math.round(squat1RM + i * 2.5 + Math.random() * 2),
-    deadlift: Math.round(deadlift1RM + i * 2 + Math.random() * 1.5),
-    bench: Math.round(bench1RM + i * 1.2 + Math.random() * 1),
-  })) : [];
-
   const volumeData = [
     { day: 'Seg', sets: 22 }, { day: 'Ter', sets: 19 }, { day: 'Qua', sets: 20 },
     { day: 'Qui', sets: 20 }, { day: 'Sex', sets: 16 },
@@ -124,31 +108,6 @@ export default function Dashboard() {
     background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))',
   };
 
-  // Generate insight cards only if we have data
-  const insights: { icon: any; title: string; description: string; type: 'info' | 'warning' | 'success' }[] = [];
-  
-  if (strengthData) {
-    const lifts = [
-      { name: 'Agachamento', data: strengthData.squat },
-      { name: 'Supino', data: strengthData.bench },
-      { name: 'Terra', data: strengthData.deadlift },
-    ];
-    for (const lift of lifts) {
-      if (lift.data.nextLevel && lift.data.kgToNext <= 10) {
-        insights.push({
-          icon: ArrowUpRight,
-          title: `${lift.name} próximo do nível ${lift.data.nextLevel.label}`,
-          description: `Faltam apenas ${lift.data.kgToNext}kg para alcançar o nível ${lift.data.nextLevel.label}!`,
-          type: 'info',
-        });
-      }
-    }
-
-    if (strengthData.total >= 400 && strengthData.total < 410) {
-      insights.push({ icon: Trophy, title: '🏆 Total 400kg!', description: 'Você alcançou um total combinado de 400kg. Excelente progresso!', type: 'success' });
-    }
-  }
-
   return (
     <div className="space-y-6 sm:space-y-8">
       <motion.div {...fadeIn}>
@@ -157,99 +116,29 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Empty State - Configure PRs */}
-      {!hasLiftsData && (
+      {!prsLoading && !hasPRs && (
         <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-6 sm:p-8 card-elevated text-center">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <Dumbbell className="w-8 h-8 text-primary" />
           </div>
           <h3 className="text-lg font-semibold text-foreground mb-2">Configure seus PRs</h3>
           <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
-            Registre seus recordes pessoais (Agachamento, Supino, Terra) e peso corporal para desbloquear análises de força, rankings e recomendações personalizadas.
+            Vá ao perfil e adicione seus exercícios de PR personalizados para desbloquear análises de força e rankings.
           </p>
           <Link to="/profile" className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium">
-            <Target className="w-4 h-4" /> Cadastrar PRs
+            <Target className="w-4 h-4" /> Configurar PRs
           </Link>
         </motion.div>
       )}
 
-      {/* Stats - Only show if has data */}
-      {hasLiftsData && (
+      {/* PR Stats from DB */}
+      {hasPRs && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <StatCard icon={TrendingUp} label="Agachamento E1RM" value={squat1RM > 0 ? `${squat1RM} kg` : '—'} sub={profile.targetProgression.squat || 'Defina uma meta'} />
-          <StatCard icon={Target} label="Terra E1RM" value={deadlift1RM > 0 ? `${deadlift1RM} kg` : '—'} sub={profile.targetProgression.deadlift || 'Defina uma meta'} />
-          <StatCard icon={Dumbbell} label="Supino E1RM" value={bench1RM > 0 ? `${bench1RM} kg` : '—'} sub={profile.targetProgression.bench || 'Defina uma meta'} />
-          <StatCard icon={Activity} label="Peso Corporal" value={hasBodyWeight ? `${profile.bodyWeight} kg` : '—'} sub="Atual" />
-        </div>
-      )}
-
-      {/* Strength Standards - Only show if has data */}
-      {strengthData && (
-        <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
-          <div className="flex items-center gap-2 mb-4">
-            <Shield className="w-5 h-5 text-primary" />
-            <h3 className="text-sm font-semibold text-foreground">Nível de Força</h3>
-            <span className={cn("text-xs font-bold px-2 py-0.5 rounded", strengthData.overall.bgColor, strengthData.overall.color)}>
-              {strengthData.overall.label}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[
-              { name: 'Agachamento', data: strengthData.squat, e1rm: squat1RM },
-              { name: 'Supino', data: strengthData.bench, e1rm: bench1RM },
-              { name: 'Terra', data: strengthData.deadlift, e1rm: deadlift1RM },
-            ].map(lift => (
-              <div key={lift.name} className="p-3 rounded-lg bg-secondary/40">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-muted-foreground">{lift.name}</span>
-                  <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded", lift.data.level.bgColor, lift.data.level.color)}>
-                    {lift.data.level.label}
-                  </span>
-                </div>
-                <p className="text-lg font-bold text-foreground">{lift.e1rm}kg <span className="text-xs text-muted-foreground font-normal">({lift.data.ratio}× PC)</span></p>
-                {lift.data.nextLevel && (
-                  <div className="mt-2">
-                    <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-primary rounded-full transition-all"
-                        style={{ width: `${Math.min(100, ((lift.e1rm) / (lift.e1rm + lift.data.kgToNext)) * 100)}%` }}
-                      />
-                    </div>
-                    <p className="text-[10px] text-muted-foreground mt-1">{lift.data.kgToNext}kg para {lift.data.nextLevel.label}</p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Total: <span className="font-bold text-foreground">{strengthData.total}kg</span></span>
-            <Link to="/rankings" className="text-xs text-primary hover:underline">Ver Ranking →</Link>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Performance Insights */}
-      {insights.length > 0 && (
-        <motion.div {...fadeIn} className="space-y-2">
-          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-primary" /> Insights de Performance
-          </h3>
-          {insights.map((insight, i) => (
-            <div key={i} className={cn(
-              "flex items-start gap-3 p-3 rounded-lg border",
-              insight.type === 'warning' ? 'bg-warning/5 border-warning/20' :
-              insight.type === 'success' ? 'bg-success/5 border-success/20' :
-              'bg-primary/5 border-primary/20'
-            )}>
-              <insight.icon className={cn("w-4 h-4 mt-0.5 shrink-0",
-                insight.type === 'warning' ? 'text-warning' : insight.type === 'success' ? 'text-success' : 'text-primary'
-              )} />
-              <div>
-                <p className="text-sm font-medium text-foreground">{insight.title}</p>
-                <p className="text-xs text-muted-foreground">{insight.description}</p>
-              </div>
-            </div>
+          {prs.filter(p => p.estimated_1rm > 0).slice(0, 3).map(pr => (
+            <StatCard key={pr.id} icon={TrendingUp} label={pr.exercise_name} value={`${pr.estimated_1rm} kg`} sub={`${pr.weight}kg × ${pr.reps}`} />
           ))}
-        </motion.div>
+          <StatCard icon={Trophy} label="Total E1RM" value={`${Math.round(total)} kg`} sub={`${prs.filter(p => p.estimated_1rm > 0).length} exercícios`} />
+        </div>
       )}
 
       {/* AI Recommendations */}
@@ -289,38 +178,6 @@ export default function Dashboard() {
           </div>
         )}
       </motion.div>
-
-      {/* Charts - Only show if has data */}
-      {hasLiftsData && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-          <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
-            <h3 className="text-sm font-semibold text-foreground mb-4">Progressão E1RM</h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={progressData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Line type="monotone" dataKey="squat" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ r: 3 }} name="Agachamento" />
-                <Line type="monotone" dataKey="deadlift" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ r: 3 }} name="Terra" />
-                <Line type="monotone" dataKey="bench" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={{ r: 3 }} name="Supino" />
-              </LineChart>
-            </ResponsiveContainer>
-          </motion.div>
-          <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
-            <h3 className="text-sm font-semibold text-foreground mb-4">Volume Semanal (Séries)</h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={volumeData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Area type="monotone" dataKey="sets" stroke="hsl(var(--chart-4))" fill="hsl(var(--chart-4) / 0.2)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </motion.div>
-        </div>
-      )}
 
       {/* Today's Workout */}
       {todayWorkout && (

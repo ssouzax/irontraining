@@ -2820,6 +2820,42 @@ export type Database = {
           },
         ]
       }
+      user_prs: {
+        Row: {
+          created_at: string
+          display_order: number
+          estimated_1rm: number
+          exercise_name: string
+          id: string
+          reps: number
+          updated_at: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          estimated_1rm?: number
+          exercise_name: string
+          id?: string
+          reps?: number
+          updated_at?: string
+          user_id: string
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          estimated_1rm?: number
+          exercise_name?: string
+          id?: string
+          reps?: number
+          updated_at?: string
+          user_id?: string
+          weight?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
