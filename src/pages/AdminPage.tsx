@@ -62,16 +62,15 @@ interface GymPromo {
 
 interface SpecialistPlan {
   id: string;
-  plan_name: string;
-  plan_type: string;
+  title: string;
+  category: string;
   specialist_name: string | null;
+  specialist_bio: string | null;
   description: string | null;
   price_cents: number;
-  lead_name: string | null;
-  lead_email: string | null;
-  lead_whatsapp: string | null;
-  status: string;
-  notes: string | null;
+  whatsapp_contact: string | null;
+  is_active: boolean;
+  is_featured: boolean;
   created_at: string;
 }
 
@@ -132,7 +131,7 @@ export default function AdminPage() {
     if (infRes.data) setInfluencers(infRes.data);
     if (brandRes.data) setBrands(brandRes.data);
     if (gymRes.data) setGymPromos(gymRes.data);
-    if (specRes.data) setSpecialistPlans(specRes.data);
+    if (specRes.data) setSpecialistPlans(specRes.data as SpecialistPlan[]);
     if (profRes.data) setProfiles(profRes.data);
   }
 
@@ -247,16 +246,15 @@ export default function AdminPage() {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const data = {
-      plan_name: form.get('plan_name') as string,
-      plan_type: form.get('plan_type') as string || 'diet',
+      title: form.get('title') as string,
+      category: form.get('category') as string || 'diet',
       specialist_name: form.get('specialist_name') as string || null,
+      specialist_bio: form.get('specialist_bio') as string || null,
       description: form.get('description') as string || null,
       price_cents: parseInt(form.get('price_cents') as string) * 100 || 0,
-      lead_name: form.get('lead_name') as string || null,
-      lead_email: form.get('lead_email') as string || null,
-      lead_whatsapp: form.get('lead_whatsapp') as string || null,
-      status: form.get('status') as string || 'lead',
-      notes: form.get('notes') as string || null,
+      whatsapp_contact: form.get('whatsapp_contact') as string || null,
+      is_active: form.get('is_active') === 'true',
+      is_featured: form.get('is_featured') === 'true',
     };
 
     if (editingSpecialistPlan) {
@@ -325,21 +323,21 @@ export default function AdminPage() {
               </CardTitle>
               <Dialog open={dialogOpen === 'specialist'} onOpenChange={(o) => { setDialogOpen(o ? 'specialist' : null); if (!o) setEditingSpecialistPlan(null); }}>
                 <DialogTrigger asChild>
-                  <Button size="sm"><Plus className="w-4 h-4 mr-1" /> Adicionar Lead</Button>
+                  <Button size="sm"><Plus className="w-4 h-4 mr-1" /> Adicionar Plano</Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>{editingSpecialistPlan ? 'Editar' : 'Novo'} Lead Especialista</DialogTitle>
+                    <DialogTitle>{editingSpecialistPlan ? 'Editar' : 'Novo'} Plano Especialista</DialogTitle>
                   </DialogHeader>
                   <form onSubmit={saveSpecialistPlan} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label>Nome do Plano *</Label>
-                        <Input name="plan_name" defaultValue={editingSpecialistPlan?.plan_name || ''} required />
+                        <Label>Título do Plano *</Label>
+                        <Input name="title" defaultValue={editingSpecialistPlan?.title || ''} required />
                       </div>
                       <div>
-                        <Label>Tipo</Label>
-                        <Select name="plan_type" defaultValue={editingSpecialistPlan?.plan_type || 'diet'}>
+                        <Label>Categoria</Label>
+                        <Select name="category" defaultValue={editingSpecialistPlan?.category || 'diet'}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="diet">Dieta</SelectItem>
@@ -352,7 +350,7 @@ export default function AdminPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label>Especialista</Label>
+                        <Label>Nome do Especialista</Label>
                         <Input name="specialist_name" defaultValue={editingSpecialistPlan?.specialist_name || ''} />
                       </div>
                       <div>
@@ -361,44 +359,38 @@ export default function AdminPage() {
                       </div>
                     </div>
                     <div>
-                      <Label>Descrição</Label>
+                      <Label>Bio do Especialista</Label>
+                      <Textarea name="specialist_bio" defaultValue={editingSpecialistPlan?.specialist_bio || ''} />
+                    </div>
+                    <div>
+                      <Label>Descrição do Plano</Label>
                       <Textarea name="description" defaultValue={editingSpecialistPlan?.description || ''} />
                     </div>
-                    <div className="border-t pt-4">
-                      <p className="text-sm font-medium mb-2 text-muted-foreground">Dados do Lead</p>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label>Nome do Lead</Label>
-                          <Input name="lead_name" defaultValue={editingSpecialistPlan?.lead_name || ''} />
-                        </div>
-                        <div>
-                          <Label>WhatsApp</Label>
-                          <Input name="lead_whatsapp" defaultValue={editingSpecialistPlan?.lead_whatsapp || ''} placeholder="+55 11 99999-9999" />
-                        </div>
-                      </div>
-                      <div className="mt-2">
-                        <Label>Email</Label>
-                        <Input name="lead_email" type="email" defaultValue={editingSpecialistPlan?.lead_email || ''} />
-                      </div>
+                    <div>
+                      <Label>WhatsApp para Contato</Label>
+                      <Input name="whatsapp_contact" defaultValue={editingSpecialistPlan?.whatsapp_contact || ''} placeholder="+55 11 99999-9999" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label>Status</Label>
-                        <Select name="status" defaultValue={editingSpecialistPlan?.status || 'lead'}>
+                        <Label>Ativo</Label>
+                        <Select name="is_active" defaultValue={editingSpecialistPlan?.is_active ? 'true' : 'false'}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="lead">Lead</SelectItem>
-                            <SelectItem value="contacted">Contatado</SelectItem>
-                            <SelectItem value="negotiating">Negociando</SelectItem>
-                            <SelectItem value="converted">Convertido</SelectItem>
-                            <SelectItem value="lost">Perdido</SelectItem>
+                            <SelectItem value="true">Sim</SelectItem>
+                            <SelectItem value="false">Não</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
-                    </div>
-                    <div>
-                      <Label>Notas</Label>
-                      <Textarea name="notes" defaultValue={editingSpecialistPlan?.notes || ''} />
+                      <div>
+                        <Label>Destaque</Label>
+                        <Select name="is_featured" defaultValue={editingSpecialistPlan?.is_featured ? 'true' : 'false'}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Sim</SelectItem>
+                            <SelectItem value="false">Não</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     <Button type="submit" className="w-full">Salvar</Button>
                   </form>
@@ -409,9 +401,9 @@ export default function AdminPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Plano</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Lead</TableHead>
+                    <TableHead>Título</TableHead>
+                    <TableHead>Categoria</TableHead>
+                    <TableHead>Especialista</TableHead>
                     <TableHead>WhatsApp</TableHead>
                     <TableHead>Preço</TableHead>
                     <TableHead>Status</TableHead>
@@ -421,25 +413,26 @@ export default function AdminPage() {
                 <TableBody>
                   {specialistPlans.map((plan) => (
                     <TableRow key={plan.id}>
-                      <TableCell className="font-medium">{plan.plan_name}</TableCell>
+                      <TableCell className="font-medium">{plan.title}</TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {plan.plan_type === 'diet' ? 'Dieta' : plan.plan_type === 'training' ? 'Treino' : plan.plan_type}
+                          {plan.category === 'diet' ? 'Dieta' : plan.category === 'training' ? 'Treino' : plan.category}
                         </Badge>
                       </TableCell>
-                      <TableCell>{plan.lead_name || '-'}</TableCell>
+                      <TableCell>{plan.specialist_name || '-'}</TableCell>
                       <TableCell>
-                        {plan.lead_whatsapp && (
-                          <a href={`https://wa.me/${plan.lead_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-green-600 hover:underline">
-                            <Phone className="w-3 h-3" /> {plan.lead_whatsapp}
+                        {plan.whatsapp_contact && (
+                          <a href={`https://wa.me/${plan.whatsapp_contact.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-green-600 hover:underline">
+                            <Phone className="w-3 h-3" /> {plan.whatsapp_contact}
                           </a>
                         )}
                       </TableCell>
                       <TableCell>R$ {((plan.price_cents || 0) / 100).toFixed(2)}</TableCell>
                       <TableCell>
-                        <Badge variant={plan.status === 'converted' ? 'default' : plan.status === 'lost' ? 'destructive' : 'secondary'}>
-                          {plan.status}
+                        <Badge variant={plan.is_active ? 'default' : 'secondary'}>
+                          {plan.is_active ? 'Ativo' : 'Inativo'}
                         </Badge>
+                        {plan.is_featured && <Badge className="ml-1" variant="outline">⭐</Badge>}
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
