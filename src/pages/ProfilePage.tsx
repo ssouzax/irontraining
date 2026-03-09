@@ -71,7 +71,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileData>({
     display_name: '', username: '', bio: '', location: '',
     avatar_url: '', cover_url: '', instagram_url: '', youtube_url: '',
-    tiktok_url: '', website_url: '', body_weight: null,
+    tiktok_url: '', website_url: '', whatsapp: '', body_weight: null,
     profile_public: true, show_bodyweight: true, show_prs: true,
     gym_class: null, coach_personality: 'motivational',
   });
