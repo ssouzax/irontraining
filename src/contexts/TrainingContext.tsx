@@ -19,33 +19,46 @@ const TrainingContext = createContext<TrainingState | null>(null);
 
 export function TrainingProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const isOwner = user?.email?.toLowerCase() === 'samuelsouzapon@gmail.com';
   
-  const [profile, setProfile] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('pb_profile');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.bodyWeight > 0) return parsed;
-    }
-    return defaultProfile;
-  });
+  const [profile, setProfile] = useState<UserProfile>(defaultProfile);
   const [program, setProgram] = useState<TrainingProgram>(emptyProgram);
   const [currentWeek, setCurrentWeek] = useState(1);
   const [currentDay, setCurrentDay] = useState(0);
-  const [workoutLogs, setWorkoutLogs] = useState<WorkoutLog[]>(() => {
-    const saved = localStorage.getItem('pb_logs');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [workoutLogs, setWorkoutLogs] = useState<WorkoutLog[]>([]);
 
-  // Initialize profile and program based on user email
+  // Load data based on user - only owner gets pre-filled data, everyone else starts clean
   useEffect(() => {
-    if (user?.email) {
-      const saved = localStorage.getItem('pb_profile');
-      if (!saved || JSON.parse(saved).bodyWeight === 0) {
-        setProfile(getProfileForUser(user.email));
-      }
+    if (!user?.email) return;
+    
+    if (isOwner) {
+      // Owner: load saved data or defaults
+      const savedProfile = localStorage.getItem('pb_profile');
+      const savedLogs = localStorage.getItem('pb_logs');
+      setProfile(savedProfile ? JSON.parse(savedProfile) : getProfileForUser(user.email));
       setProgram(getProgramForUser(user.email));
+      setWorkoutLogs(savedLogs ? JSON.parse(savedLogs) : []);
+    } else {
+      // Everyone else: completely clean - ignore any localStorage remnants
+      const savedProfile = localStorage.getItem('pb_profile');
+      const savedLogs = localStorage.getItem('pb_logs');
+      // Only use saved data if user previously saved their own data (bodyWeight > 0 means they configured it)
+      if (savedProfile) {
+        const parsed = JSON.parse(savedProfile);
+        if (parsed.bodyWeight > 0 && parsed.email === user.email) {
+          setProfile(parsed);
+        } else {
+          setProfile(defaultProfile);
+          localStorage.removeItem('pb_profile');
+        }
+      }
+      if (savedLogs) {
+        // Keep user's own logs if they have any
+        setWorkoutLogs(JSON.parse(savedLogs));
+      }
+      setProgram(emptyProgram);
     }
-  }, [user?.email]);
+  }, [user?.email, isOwner]);
 
   useEffect(() => {
     localStorage.setItem('pb_profile', JSON.stringify(profile));
