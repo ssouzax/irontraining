@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { Users, Building2, Megaphone, Tag, Star, Plus, Pencil, Trash2, Shield, Phone, Crown, Gift, ArrowUpDown, DollarSign, Link2, CheckCircle } from 'lucide-react';
+import { Users, Building2, Megaphone, Tag, Star, Plus, Pencil, Trash2, Shield, Phone, Crown, Gift, ArrowUpDown, DollarSign, Link2, CheckCircle, X } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
 interface Influencer {
