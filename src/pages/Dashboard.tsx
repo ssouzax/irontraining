@@ -49,7 +49,12 @@ export default function Dashboard() {
   const deadlift1RM = calculate1RM(profile.currentLifts.deadlift.weight, profile.currentLifts.deadlift.reps);
   const bench1RM = calculate1RM(profile.currentLifts.bench.weight, profile.currentLifts.bench.reps);
 
-  const strengthData = getOverallLevel(squat1RM, bench1RM, deadlift1RM, profile.bodyWeight);
+  const hasLiftsData = squat1RM > 0 || bench1RM > 0 || deadlift1RM > 0;
+  const hasBodyWeight = profile.bodyWeight > 0;
+
+  const strengthData = hasLiftsData && hasBodyWeight 
+    ? getOverallLevel(squat1RM, bench1RM, deadlift1RM, profile.bodyWeight)
+    : null;
 
   const currentBlock = program.blocks.find(b => b.weeks.some(w => w.weekNumber === currentWeek)) || program.blocks[0];
   const currentWeekData = currentBlock.weeks.find(w => w.weekNumber === currentWeek) || currentBlock.weeks[0];
@@ -102,12 +107,12 @@ export default function Dashboard() {
     }
   };
 
-  const progressData = Array.from({ length: Math.min(currentWeek, 12) }, (_, i) => ({
+  const progressData = hasLiftsData ? Array.from({ length: Math.min(currentWeek, 12) }, (_, i) => ({
     week: `S${i + 1}`,
     squat: Math.round(squat1RM + i * 2.5 + Math.random() * 2),
     deadlift: Math.round(deadlift1RM + i * 2 + Math.random() * 1.5),
     bench: Math.round(bench1RM + i * 1.2 + Math.random() * 1),
-  }));
+  })) : [];
 
   const volumeData = [
     { day: 'Seg', sets: 22 }, { day: 'Ter', sets: 19 }, { day: 'Qua', sets: 20 },
@@ -118,29 +123,29 @@ export default function Dashboard() {
     background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))',
   };
 
-  // Generate insight cards
+  // Generate insight cards only if we have data
   const insights: { icon: any; title: string; description: string; type: 'info' | 'warning' | 'success' }[] = [];
   
-  // Strength level insights
-  const lifts = [
-    { name: 'Agachamento', data: strengthData.squat },
-    { name: 'Supino', data: strengthData.bench },
-    { name: 'Terra', data: strengthData.deadlift },
-  ];
-  for (const lift of lifts) {
-    if (lift.data.nextLevel && lift.data.kgToNext <= 10) {
-      insights.push({
-        icon: ArrowUpRight,
-        title: `${lift.name} próximo do nível ${lift.data.nextLevel.label}`,
-        description: `Faltam apenas ${lift.data.kgToNext}kg para alcançar o nível ${lift.data.nextLevel.label}!`,
-        type: 'info',
-      });
+  if (strengthData) {
+    const lifts = [
+      { name: 'Agachamento', data: strengthData.squat },
+      { name: 'Supino', data: strengthData.bench },
+      { name: 'Terra', data: strengthData.deadlift },
+    ];
+    for (const lift of lifts) {
+      if (lift.data.nextLevel && lift.data.kgToNext <= 10) {
+        insights.push({
+          icon: ArrowUpRight,
+          title: `${lift.name} próximo do nível ${lift.data.nextLevel.label}`,
+          description: `Faltam apenas ${lift.data.kgToNext}kg para alcançar o nível ${lift.data.nextLevel.label}!`,
+          type: 'info',
+        });
+      }
     }
-  }
 
-  // Total milestone
-  if (strengthData.total >= 400 && strengthData.total < 410) {
-    insights.push({ icon: Trophy, title: '🏆 Total 400kg!', description: 'Você alcançou um total combinado de 400kg. Excelente progresso!', type: 'success' });
+    if (strengthData.total >= 400 && strengthData.total < 410) {
+      insights.push({ icon: Trophy, title: '🏆 Total 400kg!', description: 'Você alcançou um total combinado de 400kg. Excelente progresso!', type: 'success' });
+    }
   }
 
   return (
@@ -150,12 +155,31 @@ export default function Dashboard() {
         <p className="text-muted-foreground mt-1">Semana {currentWeek} · {currentBlock.name}</p>
       </motion.div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <StatCard icon={TrendingUp} label="Agachamento E1RM" value={`${squat1RM} kg`} sub={`Meta: ${profile.targetProgression.squat}`} />
-        <StatCard icon={Target} label="Terra E1RM" value={`${deadlift1RM} kg`} sub={`Meta: ${profile.targetProgression.deadlift}`} />
-        <StatCard icon={Dumbbell} label="Supino E1RM" value={`${bench1RM} kg`} sub={`Meta: ${profile.targetProgression.bench}`} />
-        <StatCard icon={Activity} label="Peso Corporal" value={`${profile.bodyWeight} kg`} sub="Atual" />
+      {/* Empty State - Configure PRs */}
+      {!hasLiftsData && (
+        <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-6 sm:p-8 card-elevated text-center">
+          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <Dumbbell className="w-8 h-8 text-primary" />
+          </div>
+          <h3 className="text-lg font-semibold text-foreground mb-2">Configure seus PRs</h3>
+          <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
+            Registre seus recordes pessoais (Agachamento, Supino, Terra) e peso corporal para desbloquear análises de força, rankings e recomendações personalizadas.
+          </p>
+          <Link to="/profile" className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium">
+            <Target className="w-4 h-4" /> Cadastrar PRs
+          </Link>
+        </motion.div>
+      )}
+
+      {/* Stats - Only show if has data */}
+      {hasLiftsData && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <StatCard icon={TrendingUp} label="Agachamento E1RM" value={squat1RM > 0 ? `${squat1RM} kg` : '—'} sub={profile.targetProgression.squat || 'Defina uma meta'} />
+          <StatCard icon={Target} label="Terra E1RM" value={deadlift1RM > 0 ? `${deadlift1RM} kg` : '—'} sub={profile.targetProgression.deadlift || 'Defina uma meta'} />
+          <StatCard icon={Dumbbell} label="Supino E1RM" value={bench1RM > 0 ? `${bench1RM} kg` : '—'} sub={profile.targetProgression.bench || 'Defina uma meta'} />
+          <StatCard icon={Activity} label="Peso Corporal" value={hasBodyWeight ? `${profile.bodyWeight} kg` : '—'} sub="Atual" />
+        </div>
+      )}
       </div>
 
       {/* Strength Standards */}
