@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { Users, Building2, Megaphone, Tag, Star, Plus, Pencil, Trash2, Shield, Phone, Crown, Gift, ArrowUpDown, DollarSign, Link2, CheckCircle } from 'lucide-react';
+import { Users, Building2, Megaphone, Tag, Star, Plus, Pencil, Trash2, Shield, Phone, Crown, Gift, ArrowUpDown, DollarSign, Link2, CheckCircle, X } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
 interface Influencer {
@@ -262,6 +262,7 @@ export default function AdminPage() {
   async function saveInfluencer(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
+    const referralCode = (form.get('referral_code') as string)?.trim() || null;
     const data = {
       name: form.get('name') as string,
       instagram_handle: form.get('instagram_handle') as string || null,
@@ -275,19 +276,35 @@ export default function AdminPage() {
       status: form.get('status') as string || 'active',
       notes: form.get('notes') as string || null,
       commission_rate: parseInt(form.get('commission_rate') as string) || 10,
+      referral_code: referralCode,
     };
 
     if (editingInfluencer) {
       await supabase.from('influencers').update(data).eq('id', editingInfluencer.id);
       toast({ title: 'Influenciador atualizado!' });
     } else {
-      // Generate referral code for manually added influencers
-      const refCode = `IRON${data.name.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6)}${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
-      await supabase.from('influencers').insert({ ...data, referral_code: refCode });
+      if (!referralCode) {
+        const refCode = `IRON${data.name.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6)}${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+        data.referral_code = refCode;
+      }
+      await supabase.from('influencers').insert(data);
       toast({ title: 'Influenciador adicionado!' });
     }
     setDialogOpen(null);
     setEditingInfluencer(null);
+    loadAllData();
+  }
+
+  async function approveInfluencer(inf: Influencer) {
+    const refCode = `IRON${inf.name.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6)}${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+    await supabase.from('influencers').update({ status: 'active', referral_code: refCode }).eq('id', inf.id);
+    toast({ title: 'Influenciador aprovado!', description: `Código: ${refCode}` });
+    loadAllData();
+  }
+
+  async function rejectInfluencer(inf: Influencer) {
+    await supabase.from('influencers').update({ status: 'rejected' }).eq('id', inf.id);
+    toast({ title: 'Influenciador rejeitado.' });
     loadAllData();
   }
 
@@ -838,6 +855,11 @@ export default function AdminPage() {
                       </Select>
                     </div>
                     <div>
+                      <Label>Código de Referência</Label>
+                      <Input name="referral_code" defaultValue={editingInfluencer?.referral_code || ''} placeholder="Ex: IRONJOAO123" />
+                      <p className="text-xs text-muted-foreground mt-1">O admin define o código. Deixe vazio para gerar automaticamente (somente ao criar).</p>
+                    </div>
+                    <div>
                       <Label>Taxa de Comissão (%)</Label>
                       <Input name="commission_rate" type="number" min={5} max={50} defaultValue={editingInfluencer?.commission_rate || 10} />
                     </div>
@@ -850,7 +872,44 @@ export default function AdminPage() {
                 </DialogContent>
               </Dialog>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-6">
+              {/* Pending approvals */}
+              {influencers.filter(i => i.status === 'pending').length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                    ⏳ Aguardando Aprovação ({influencers.filter(i => i.status === 'pending').length})
+                  </h3>
+                  <div className="space-y-2">
+                    {influencers.filter(i => i.status === 'pending').map(inf => (
+                      <div key={inf.id} className="flex items-center justify-between p-4 rounded-xl border border-amber-500/30 bg-amber-500/5">
+                        <div className="space-y-1">
+                          <p className="font-medium text-foreground">{inf.name}</p>
+                          <div className="flex gap-3 text-xs text-muted-foreground">
+                            {inf.instagram_handle && <span>📸 {inf.instagram_handle}</span>}
+                            {inf.tiktok_handle && <span>🎵 {inf.tiktok_handle}</span>}
+                            {inf.youtube_handle && <span>▶️ {inf.youtube_handle}</span>}
+                            {inf.email && <span>✉️ {inf.email}</span>}
+                            {inf.whatsapp && <span>📱 {inf.whatsapp}</span>}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="default" className="gap-1" onClick={() => approveInfluencer(inf)}>
+                            <CheckCircle className="w-3.5 h-3.5" /> Aprovar
+                          </Button>
+                          <Button size="sm" variant="outline" className="gap-1 text-destructive" onClick={() => rejectInfluencer(inf)}>
+                            <X className="w-3.5 h-3.5" /> Rejeitar
+                          </Button>
+                          <Button size="icon" variant="ghost" onClick={() => { setEditingInfluencer(inf); setDialogOpen('influencer'); }}>
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* All influencers table */}
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -867,7 +926,7 @@ export default function AdminPage() {
                 </TableHeader>
                 <TableBody>
                   {influencers.map((inf) => (
-                    <TableRow key={inf.id}>
+                    <TableRow key={inf.id} className={inf.status === 'pending' ? 'opacity-50' : ''}>
                       <TableCell className="font-medium">
                         <div>
                           {inf.name}
@@ -877,7 +936,7 @@ export default function AdminPage() {
                       <TableCell>
                         {inf.referral_code ? (
                           <code className="text-xs bg-secondary px-1.5 py-0.5 rounded">{inf.referral_code}</code>
-                        ) : '-'}
+                        ) : <span className="text-xs text-muted-foreground">Sem código</span>}
                       </TableCell>
                       <TableCell>{inf.instagram_handle || '-'}</TableCell>
                       <TableCell className="font-medium">{inf.total_referrals || 0}</TableCell>
@@ -896,7 +955,15 @@ export default function AdminPage() {
                           <CheckCircle className="w-4 h-4" />
                         </Button>
                       </TableCell>
-                      <TableCell><Badge variant={inf.status === 'active' ? 'default' : 'secondary'}>{inf.status}</Badge></TableCell>
+                      <TableCell>
+                        <Badge variant={
+                          inf.status === 'active' ? 'default' : 
+                          inf.status === 'pending' ? 'outline' : 
+                          'secondary'
+                        }>
+                          {inf.status === 'pending' ? '⏳ Pendente' : inf.status === 'rejected' ? '❌ Rejeitado' : inf.status}
+                        </Badge>
+                      </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
                           <Button size="icon" variant="ghost" onClick={() => { setEditingInfluencer(inf); setDialogOpen('influencer'); }}>

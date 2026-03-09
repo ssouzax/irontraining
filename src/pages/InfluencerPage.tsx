@@ -142,7 +142,6 @@ export default function InfluencerPage() {
     }
     setSigningUp(true);
     try {
-      const refCode = generateReferralCode(signupName);
       const { data, error } = await supabase
         .from('influencers')
         .insert({
@@ -153,14 +152,14 @@ export default function InfluencerPage() {
           tiktok_handle: signupTiktok || null,
           youtube_handle: signupYoutube || null,
           whatsapp: signupWhatsapp || null,
-          referral_code: refCode,
-          status: 'active',
+          referral_code: null,
+          status: 'pending',
         })
         .select()
         .single();
 
       if (error) throw error;
-      toast.success('Cadastro realizado! Bem-vindo ao programa de influenciadores!');
+      toast.success('Solicitação enviada! Aguarde a aprovação do administrador.');
       loadData();
     } catch (err: any) {
       toast.error(err.message || 'Erro ao cadastrar');
@@ -268,10 +267,44 @@ export default function InfluencerPage() {
             </ul>
           </div>
 
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-sm text-amber-600 dark:text-amber-400">
+            ⏳ Após o cadastro, sua solicitação será analisada pelo administrador. Você receberá seu código de referência após a aprovação.
+          </div>
+
           <Button onClick={handleSignup} disabled={signingUp} className="w-full gap-2">
             {signingUp ? <Loader2 className="w-4 h-4 animate-spin" /> : <Megaphone className="w-4 h-4" />}
-            Tornar-se Influenciador
+            Solicitar Cadastro
           </Button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Pending approval state
+  if (influencer.status === 'pending') {
+    return (
+      <div className="max-w-lg mx-auto space-y-6">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/20 flex items-center justify-center mx-auto mb-4">
+            <Loader2 className="w-8 h-8 text-amber-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground">Aguardando Aprovação</h1>
+          <p className="text-muted-foreground mt-2">Sua solicitação para o programa de influenciadores foi enviada e está sendo analisada.</p>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          className="bg-card rounded-xl border border-border p-6 space-y-3">
+          <h3 className="font-semibold text-foreground">Dados enviados</h3>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p><strong className="text-foreground">Nome:</strong> {influencer.name}</p>
+            {influencer.instagram_handle && <p><strong className="text-foreground">Instagram:</strong> {influencer.instagram_handle}</p>}
+            {influencer.tiktok_handle && <p><strong className="text-foreground">TikTok:</strong> {influencer.tiktok_handle}</p>}
+            {influencer.youtube_handle && <p><strong className="text-foreground">YouTube:</strong> {influencer.youtube_handle}</p>}
+            {influencer.whatsapp && <p><strong className="text-foreground">WhatsApp:</strong> {influencer.whatsapp}</p>}
+          </div>
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-sm text-amber-600 dark:text-amber-400 mt-4">
+            ⏳ O administrador irá revisar sua solicitação e atribuir seu código de referência. Volte em breve!
+          </div>
         </motion.div>
       </div>
     );
