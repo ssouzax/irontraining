@@ -321,7 +321,7 @@ export function MobileProfile() {
             )}
           </div>
         ))}
-      </div>
+      </div>}
     </div>
   );
 }
