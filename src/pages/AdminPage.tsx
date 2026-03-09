@@ -274,13 +274,16 @@ export default function AdminPage() {
       deal_type: form.get('deal_type') as string || 'free',
       status: form.get('status') as string || 'active',
       notes: form.get('notes') as string || null,
+      commission_rate: parseInt(form.get('commission_rate') as string) || 10,
     };
 
     if (editingInfluencer) {
       await supabase.from('influencers').update(data).eq('id', editingInfluencer.id);
       toast({ title: 'Influenciador atualizado!' });
     } else {
-      await supabase.from('influencers').insert(data);
+      // Generate referral code for manually added influencers
+      const refCode = `IRON${data.name.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6)}${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+      await supabase.from('influencers').insert({ ...data, referral_code: refCode });
       toast({ title: 'Influenciador adicionado!' });
     }
     setDialogOpen(null);
