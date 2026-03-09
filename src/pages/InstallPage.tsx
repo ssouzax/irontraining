@@ -128,7 +128,7 @@ export default function InstallPage() {
           <ArrowDown className="w-4 h-4 text-muted-foreground mx-auto" />
           <Step num={3} icon={<Plus className="w-5 h-5" />} title='"Adicionar à Tela de Início"' desc='Role para baixo e toque em "Adicionar à Tela de Início". Confirme tocando em "Adicionar".' />
           <ArrowDown className="w-4 h-4 text-muted-foreground mx-auto" />
-          <Step num={4} icon={<CheckCircle2 className="w-5 h-5 text-green-400" />} title="Pronto!" desc="O PowerBuild aparecerá como um app na sua tela inicial." />
+          <Step num={4} icon={<CheckCircle2 className="w-5 h-5 text-green-400" />} title="Pronto!" desc="O Iron Training aparecerá como um app na sua tela inicial." />
         </motion.div>
       )}
 

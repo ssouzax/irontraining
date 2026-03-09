@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Sparkles, Download, Share2, Trophy, Flame, Zap, Dumbbell, Crown, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import logoImg from '@/assets/iron-training-logo.png';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTraining } from '@/contexts/TrainingContext';
@@ -56,7 +57,7 @@ export function MobileWrappedCards() {
       const { default: html2canvas } = await import('html2canvas');
       const canvas = await html2canvas(cardRef.current, { backgroundColor: null, scale: 2 });
       const link = document.createElement('a');
-      link.download = `powerbuild-${activeCard}.png`;
+      link.download = `iron-training-${activeCard}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
       toast.success('Card exportado!');
@@ -74,8 +75,8 @@ export function MobileWrappedCards() {
       const canvas = await html2canvas(cardRef.current, { backgroundColor: null, scale: 2 });
       canvas.toBlob(async (blob) => {
         if (blob && navigator.share) {
-          const file = new File([blob], 'powerbuild-stats.png', { type: 'image/png' });
-          await navigator.share({ files: [file], title: 'PowerBuild Stats' });
+          const file = new File([blob], 'iron-training-stats.png', { type: 'image/png' });
+          await navigator.share({ files: [file], title: 'Iron Training Stats' });
         } else {
           exportCard();
         }
@@ -121,8 +122,8 @@ export function MobileWrappedCards() {
             <div className="w-full h-full bg-gradient-to-br from-primary via-primary/80 to-accent p-6 flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <Dumbbell className="w-5 h-5 text-primary-foreground/80" />
-                  <span className="text-xs font-bold text-primary-foreground/80 uppercase tracking-widest">PowerBuild</span>
+                  <img src={logoImg} alt="Iron Training" className="w-5 h-5 object-contain" />
+                  <span className="text-xs font-bold text-primary-foreground/80 uppercase tracking-widest">Iron Training</span>
                 </div>
                 <h3 className="text-2xl font-extrabold text-primary-foreground mt-6">{displayName}</h3>
                 <p className="text-sm text-primary-foreground/70">Resumo de Força</p>
@@ -156,7 +157,7 @@ export function MobileWrappedCards() {
                   </div>
                 </div>
               </div>
-              <p className="text-[10px] text-primary-foreground/40 text-center">powerbuild.app</p>
+              <p className="text-[10px] text-primary-foreground/40 text-center">irontraining.app</p>
             </div>
           )}
 
@@ -185,7 +186,7 @@ export function MobileWrappedCards() {
                   <p className="text-5xl font-extrabold text-white">{total}<span className="text-xl">kg</span></p>
                 </div>
               </div>
-              <p className="text-[10px] text-white/40 text-center">powerbuild.app</p>
+              <p className="text-[10px] text-white/40 text-center">irontraining.app</p>
             </div>
           )}
 
@@ -201,8 +202,8 @@ export function MobileWrappedCards() {
                 <p className="text-sm text-white/60">{totalWorkouts} treinos completados</p>
               </div>
               <div className="flex items-center gap-2 mt-auto">
-                <Dumbbell className="w-4 h-4 text-white/40" />
-                <span className="text-[10px] text-white/40 uppercase tracking-widest">PowerBuild</span>
+                <img src={logoImg} alt="Iron Training" className="w-4 h-4 object-contain opacity-40" />
+                <span className="text-[10px] text-white/40 uppercase tracking-widest">Iron Training</span>
               </div>
             </div>
           )}
@@ -220,8 +221,8 @@ export function MobileWrappedCards() {
                 <p className="text-sm text-white/60">Total: {total}kg · {prCount} PRs</p>
               </div>
               <div className="flex items-center gap-2 mt-auto">
-                <Dumbbell className="w-4 h-4 text-white/40" />
-                <span className="text-[10px] text-white/40 uppercase tracking-widest">PowerBuild</span>
+                <img src={logoImg} alt="Iron Training" className="w-4 h-4 object-contain opacity-40" />
+                <span className="text-[10px] text-white/40 uppercase tracking-widest">Iron Training</span>
               </div>
             </div>
           )}

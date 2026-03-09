@@ -1,6 +1,7 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
 import { Home, Dumbbell, PlusCircle, Trophy, User, Menu, X, LayoutDashboard, Calendar, Sparkles, Zap, BarChart3, Crown, Award, Users, Compass, BookOpen, Calculator, Bot, FolderOpen, Download, MapPin, Swords, Brain, Flame, Radio, Star, Map, Scale, Activity, HeartHandshake, Gauge, Heart, RotateCw as Replay, CheckCircle, ShoppingBag, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import logoImg from '@/assets/iron-training-logo.png';
 import { MobileHomeFeed } from './MobileHomeFeed';
 import { MobileCreatePost } from './MobileCreatePost';
 import { MobileRankings } from './MobileRankings';
@@ -136,10 +137,8 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-              <Dumbbell className="w-3.5 h-3.5 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-foreground text-base tracking-tight">PowerBuild</span>
+            <img src={logoImg} alt="Iron Training" className="w-7 h-7 object-contain" />
+            <span className="font-bold text-foreground text-base tracking-tight">Iron Training</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -168,10 +167,8 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
             >
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                    <Dumbbell className="w-4 h-4 text-primary-foreground" />
-                  </div>
-                  <span className="font-bold text-foreground">PowerBuild</span>
+                  <img src={logoImg} alt="Iron Training" className="w-8 h-8 object-contain" />
+                  <span className="font-bold text-foreground">Iron Training</span>
                 </div>
                 <button onClick={() => setMenuOpen(false)} className="p-1.5 text-muted-foreground hover:text-foreground">
                   <X className="w-5 h-5" />
