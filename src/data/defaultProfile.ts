@@ -42,6 +42,23 @@ export function getProfileForUser(email: string | undefined): UserProfile {
   return defaultProfile;
 }
 
+// Empty program for new users
+export const emptyProgram: TrainingProgram = {
+  id: 'empty',
+  name: 'Sem Programa',
+  description: 'Nenhum programa carregado. Importe ou crie um programa.',
+  durationWeeks: 0,
+  daysPerWeek: 0,
+  blocks: [],
+};
+
+export function getProgramForUser(email: string | undefined): TrainingProgram {
+  if (email?.toLowerCase() === 'samuelsouzapon@gmail.com') {
+    return defaultProgram;
+  }
+  return emptyProgram;
+}
+
 // Estimated 1RM using Epley formula: weight * (1 + reps/30)
 export function calculate1RM(weight: number, reps: number): number {
   if (reps === 1) return weight;
