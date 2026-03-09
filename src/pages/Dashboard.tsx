@@ -348,19 +348,21 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      {/* Block Overview */}
-      <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
-        <h3 className="text-sm font-semibold text-foreground mb-4">Blocos do Programa</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {program.blocks.map(block => (
-            <div key={block.id} className={`p-3 sm:p-4 rounded-lg border transition-all ${block === currentBlock ? 'border-primary bg-primary/5' : 'border-border bg-secondary/30'}`}>
-              <p className="text-xs text-muted-foreground">{block.weekRange}</p>
-              <p className="text-xs sm:text-sm font-medium text-foreground mt-1">{block.name}</p>
-              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{block.goal}</p>
-            </div>
-          ))}
-        </div>
-      </motion.div>
+      {/* Block Overview - Only show if has program */}
+      {hasProgram && (
+        <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
+          <h3 className="text-sm font-semibold text-foreground mb-4">Blocos do Programa</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {program.blocks.map(block => (
+              <div key={block.id} className={`p-3 sm:p-4 rounded-lg border transition-all ${block === currentBlock ? 'border-primary bg-primary/5' : 'border-border bg-secondary/30'}`}>
+                <p className="text-xs text-muted-foreground">{block.weekRange}</p>
+                <p className="text-xs sm:text-sm font-medium text-foreground mt-1">{block.name}</p>
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{block.goal}</p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }
