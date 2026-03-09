@@ -24,6 +24,7 @@ interface ProfileData {
   youtube_url: string;
   tiktok_url: string;
   website_url: string;
+  whatsapp: string;
   body_weight: number | null;
   profile_public: boolean;
   show_bodyweight: boolean;
