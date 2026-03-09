@@ -48,6 +48,7 @@ type Tab = 'posts' | 'prs' | 'achievements' | 'workouts' | 'groups';
 export function MobileProfile() {
   const { user, signOut } = useAuth();
   const { playerLevel } = usePlayerLevel();
+  const { myGroups } = useGroups();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
