@@ -153,7 +153,7 @@ export default function Dashboard() {
     <div className="space-y-6 sm:space-y-8">
       <motion.div {...fadeIn}>
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">Painel</h1>
-        <p className="text-muted-foreground mt-1">Semana {currentWeek} · {currentBlock.name}</p>
+        <p className="text-muted-foreground mt-1">{hasProgram ? `Semana ${currentWeek} · ${currentBlock?.name}` : 'Bem-vindo ao Iron Training'}</p>
       </motion.div>
 
       {/* Empty State - Configure PRs */}
