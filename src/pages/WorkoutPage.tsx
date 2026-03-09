@@ -14,8 +14,8 @@ export default function WorkoutPage() {
     b.weeks.some(w => w.weekNumber === currentWeek)
   ) || program.blocks[0];
 
-  const weekData = currentBlock.weeks.find(w => w.weekNumber === currentWeek) || currentBlock.weeks[0];
-  const dayData = weekData.days[currentDay];
+  const weekData = currentBlock?.weeks?.find(w => w.weekNumber === currentWeek) || currentBlock?.weeks?.[0];
+  const dayData = weekData?.days?.[currentDay];
 
   const [logData, setLogData] = useState<Record<string, Record<string, LoggedSet[]>>>({});
 
