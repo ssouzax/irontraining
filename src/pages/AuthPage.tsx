@@ -73,7 +73,7 @@ export default function AuthPage() {
             // Increment coupon usage
             await supabase
               .from('influencer_coupons')
-              .update({ times_used: (coupon as any).times_used + 1 })
+              .update({ times_used: (coupon.times_used || 0) + 1 })
               .eq('id', coupon.id);
           } else {
             // Check referral code
