@@ -34,8 +34,8 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       manifest: {
-        name: "PowerBuild — Treino de Força",
-        short_name: "PowerBuild",
+        name: "Iron Training — Treino de Força",
+        short_name: "Iron Training",
         description: "Plataforma de powerbuilding com programas periodizados, registro de treinos e coaching IA.",
         theme_color: "#09090b",
         background_color: "#09090b",

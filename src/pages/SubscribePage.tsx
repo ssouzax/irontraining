@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Check, Crown, Zap, Star, ArrowRight, Shield, Sparkles, Brain, Dumbbell, Users, MapPin, Gift, Flame } from 'lucide-react';
+import { Check, Crown, Zap, Star, ArrowRight, Shield, Sparkles, Brain, Dumbbell, Users, MapPin, Gift, Flame, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { usePremium } from '@/hooks/usePremium';
@@ -78,6 +78,15 @@ function PlanCard({ plan, isPopular, isCurrent, delay }: { plan: Plan; isPopular
         ))}
       </ul>
 
+      {!isCurrent && plan.kiwify_product_id && (
+        <div className="mb-4 p-3 rounded-lg border border-amber-500/30 bg-amber-500/5 text-xs">
+          <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+            <Mail className="w-3.5 h-3.5 shrink-0" />
+            <strong>Lembre-se:</strong> Use o email cadastrado no app
+          </div>
+        </div>
+      )}
+
       <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
         <Button
           onClick={handleSubscribe}
@@ -124,9 +133,10 @@ export default function SubscribePage() {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', stiffness: 200 }}
-          className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4"
+          className="flex items-center justify-center gap-3 mb-4"
         >
-          <Crown className="w-8 h-8 text-primary" />
+          <img src={logoImg} alt="Iron Training" className="w-12 h-12 object-contain" />
+          <Crown className="w-10 h-10 text-primary" />
         </motion.div>
         <h1 className="text-4xl font-extrabold mb-3">
           Escolha seu <span className="text-gradient">plano</span>
@@ -140,15 +150,22 @@ export default function SubscribePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mt-6 p-4 rounded-xl border border-amber-500/50 bg-amber-500/10 max-w-2xl mx-auto"
+          className="mt-6 p-6 rounded-2xl border-2 border-amber-500 bg-amber-500/15 max-w-2xl mx-auto shadow-lg"
         >
-          <p className="text-sm font-semibold text-amber-600 dark:text-amber-400 flex items-center justify-center gap-2">
-            <Shield className="w-4 h-4" />
-            IMPORTANTE: Use o mesmo email cadastrado no app ao fazer a compra
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Seu plano será ativado automaticamente quando os emails coincidirem
-          </p>
+          <div className="flex items-start gap-4">
+            <Shield className="w-6 h-6 text-amber-600 dark:text-amber-400 shrink-0 mt-1" />
+            <div>
+              <p className="text-base font-bold text-amber-600 dark:text-amber-400 mb-2">
+                ⚠️ ATENÇÃO: Email deve ser o mesmo do cadastro
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Para que seu plano seja ativado automaticamente, você DEVE usar o <strong>mesmo email</strong> que está cadastrado no aplicativo ao realizar a compra na plataforma Kiwify.
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Exemplo: Se você se cadastrou com <code className="bg-background/50 px-1 rounded">joao@email.com</code>, use este mesmo email na compra.
+              </p>
+            </div>
+          </div>
         </motion.div>
 
         {/* Interval toggle */}

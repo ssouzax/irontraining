@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import logoImg from '@/assets/iron-training-logo.png';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Painel' },
@@ -52,10 +53,8 @@ export function AppSidebar() {
     <>
       <div className="flex items-center justify-between p-4 h-16">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <Dumbbell className="w-4 h-4 text-primary-foreground" />
-          </div>
-          <span className="font-semibold text-foreground text-sm tracking-tight">PowerBuild</span>
+          <img src={logoImg} alt="Iron Training" className="w-8 h-8 object-contain" />
+          <span className="font-semibold text-foreground text-sm tracking-tight">Iron Training</span>
         </div>
         <button onClick={() => setMobileOpen(false)} className="lg:hidden p-1 text-muted-foreground hover:text-foreground">
           <X className="w-5 h-5" />
