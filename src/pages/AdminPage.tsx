@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { Users, Building2, Megaphone, Tag, Star, Plus, Pencil, Trash2, Shield, Phone } from 'lucide-react';
+import { Users, Building2, Megaphone, Tag, Star, Plus, Pencil, Trash2, Shield, Phone, Crown, Gift, ArrowUpDown } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
 interface Influencer {
@@ -83,6 +83,44 @@ interface Profile {
   created_at: string;
 }
 
+interface UserSubscription {
+  id: string;
+  user_id: string;
+  plan_id: string;
+  status: string;
+  started_at: string;
+  expires_at: string | null;
+}
+
+interface SubPlan {
+  id: string;
+  name: string;
+  tier: string;
+  price_cents: number;
+  interval: string;
+}
+
+interface UserWithSub {
+  profile: Profile;
+  subscription: UserSubscription | null;
+  planName: string;
+  planTier: string;
+}
+
+const TIER_LABELS: Record<string, string> = {
+  free: 'Gratuito',
+  basic: 'Básico',
+  standard: 'Padrão',
+  premium: 'Premium',
+};
+
+const TIER_COLORS: Record<string, string> = {
+  free: 'secondary',
+  basic: 'outline',
+  standard: 'default',
+  premium: 'default',
+};
+
 export default function AdminPage() {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
@@ -93,11 +131,16 @@ export default function AdminPage() {
   const [gymPromos, setGymPromos] = useState<GymPromo[]>([]);
   const [specialistPlans, setSpecialistPlans] = useState<SpecialistPlan[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [usersWithSubs, setUsersWithSubs] = useState<UserWithSub[]>([]);
+  const [subPlans, setSubPlans] = useState<SubPlan[]>([]);
 
   const [editingInfluencer, setEditingInfluencer] = useState<Influencer | null>(null);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
   const [editingGymPromo, setEditingGymPromo] = useState<GymPromo | null>(null);
   const [editingSpecialistPlan, setEditingSpecialistPlan] = useState<SpecialistPlan | null>(null);
+  const [managingUser, setManagingUser] = useState<UserWithSub | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<string>('');
+  const [trialDays, setTrialDays] = useState<number>(7);
 
   const [dialogOpen, setDialogOpen] = useState<string | null>(null);
 
@@ -120,19 +163,93 @@ export default function AdminPage() {
   }
 
   async function loadAllData() {
-    const [infRes, brandRes, gymRes, specRes, profRes] = await Promise.all([
+    const [infRes, brandRes, gymRes, specRes, profRes, subsRes, plansRes] = await Promise.all([
       supabase.from('influencers').select('*').order('created_at', { ascending: false }),
       supabase.from('brands').select('*').order('created_at', { ascending: false }),
       supabase.from('gym_promo_plans').select('*').order('created_at', { ascending: false }),
       supabase.from('specialist_plans').select('*').order('created_at', { ascending: false }),
-      supabase.from('profiles').select('id, user_id, display_name, email, whatsapp, created_at').order('created_at', { ascending: false }).limit(100),
+      supabase.from('profiles').select('id, user_id, display_name, email, whatsapp, created_at').order('created_at', { ascending: false }).limit(200),
+      supabase.from('user_subscriptions').select('*').order('created_at', { ascending: false }),
+      supabase.from('subscription_plans').select('*').order('price_cents', { ascending: true }),
     ]);
 
     if (infRes.data) setInfluencers(infRes.data);
     if (brandRes.data) setBrands(brandRes.data);
     if (gymRes.data) setGymPromos(gymRes.data);
     if (specRes.data) setSpecialistPlans(specRes.data as SpecialistPlan[]);
-    if (profRes.data) setProfiles(profRes.data);
+    
+    const plans = (plansRes.data || []) as SubPlan[];
+    setSubPlans(plans);
+
+    const profs = profRes.data || [];
+    setProfiles(profs);
+
+    const subs = (subsRes.data || []) as UserSubscription[];
+    
+    // Build users with subscription info
+    const usersMap: UserWithSub[] = profs.map((p: Profile) => {
+      const activeSub = subs.find(s => s.user_id === p.user_id && s.status === 'active');
+      const plan = activeSub ? plans.find(pl => pl.id === activeSub.plan_id) : null;
+      return {
+        profile: p,
+        subscription: activeSub || null,
+        planName: plan?.name || 'Gratuito',
+        planTier: plan?.tier || 'free',
+      };
+    });
+    setUsersWithSubs(usersMap);
+  }
+
+  // Assign/change plan for user
+  async function assignPlan(userId: string, planId: string, isTrial: boolean, days: number) {
+    // Cancel existing active subs
+    await supabase.from('user_subscriptions')
+      .update({ status: 'replaced' })
+      .eq('user_id', userId)
+      .eq('status', 'active');
+
+    const now = new Date();
+    const expiresAt = new Date(now);
+    
+    if (isTrial) {
+      expiresAt.setDate(expiresAt.getDate() + days);
+    } else {
+      // 30 days for monthly
+      const plan = subPlans.find(p => p.id === planId);
+      if (plan?.interval === 'yearly') {
+        expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+      } else {
+        expiresAt.setMonth(expiresAt.getMonth() + 1);
+      }
+    }
+
+    const { error } = await supabase.from('user_subscriptions').insert({
+      user_id: userId,
+      plan_id: planId,
+      status: 'active',
+      started_at: now.toISOString(),
+      expires_at: expiresAt.toISOString(),
+    });
+
+    if (error) {
+      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: isTrial ? 'Teste grátis ativado!' : 'Plano atribuído com sucesso!' });
+    }
+    setDialogOpen(null);
+    setManagingUser(null);
+    loadAllData();
+  }
+
+  // Remove plan
+  async function removePlan(userId: string) {
+    await supabase.from('user_subscriptions')
+      .update({ status: 'canceled', canceled_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .eq('status', 'active');
+    
+    toast({ title: 'Plano removido!' });
+    loadAllData();
   }
 
   // Influencer CRUD
@@ -294,8 +411,11 @@ export default function AdminPage() {
         <h1 className="text-2xl font-bold text-foreground">Painel Administrativo</h1>
       </div>
 
-      <Tabs defaultValue="specialist" className="w-full">
-        <TabsList className="grid grid-cols-5 w-full max-w-2xl">
+      <Tabs defaultValue="plans" className="w-full">
+        <TabsList className="grid grid-cols-6 w-full max-w-3xl">
+          <TabsTrigger value="plans" className="flex items-center gap-1">
+            <Crown className="w-4 h-4" /> Planos
+          </TabsTrigger>
           <TabsTrigger value="specialist" className="flex items-center gap-1">
             <Star className="w-4 h-4" /> Especialistas
           </TabsTrigger>
@@ -312,6 +432,133 @@ export default function AdminPage() {
             <Tag className="w-4 h-4" /> Marcas
           </TabsTrigger>
         </TabsList>
+
+        {/* PLAN MANAGEMENT TAB */}
+        <TabsContent value="plans" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Crown className="w-5 h-5 text-amber-500" />
+                Gerenciar Planos dos Usuários
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Usuário</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>WhatsApp</TableHead>
+                    <TableHead>Plano Atual</TableHead>
+                    <TableHead>Expira em</TableHead>
+                    <TableHead>Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {usersWithSubs.map((u) => (
+                    <TableRow key={u.profile.id}>
+                      <TableCell className="font-medium">{u.profile.display_name || '-'}</TableCell>
+                      <TableCell className="text-sm">{u.profile.email}</TableCell>
+                      <TableCell>
+                        {u.profile.whatsapp ? (
+                          <a href={`https://wa.me/${u.profile.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-green-600 hover:underline text-sm">
+                            <Phone className="w-3 h-3" /> {u.profile.whatsapp}
+                          </a>
+                        ) : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={u.planTier === 'premium' ? 'default' : u.planTier === 'free' ? 'secondary' : 'outline'}>
+                          {TIER_LABELS[u.planTier] || u.planName}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {u.subscription?.expires_at
+                          ? new Date(u.subscription.expires_at).toLocaleDateString('pt-BR')
+                          : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Dialog open={dialogOpen === `plan-${u.profile.user_id}`} onOpenChange={(o) => {
+                            setDialogOpen(o ? `plan-${u.profile.user_id}` : null);
+                            if (o) { setManagingUser(u); setSelectedPlan(u.subscription?.plan_id || ''); }
+                            else setManagingUser(null);
+                          }}>
+                            <DialogTrigger asChild>
+                              <Button size="sm" variant="outline" className="gap-1">
+                                <ArrowUpDown className="w-3 h-3" /> Plano
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Gerenciar Plano - {u.profile.display_name || u.profile.email}</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div>
+                                  <p className="text-sm text-muted-foreground mb-2">
+                                    Plano atual: <Badge variant="outline">{TIER_LABELS[u.planTier] || 'Gratuito'}</Badge>
+                                  </p>
+                                </div>
+
+                                <div>
+                                  <Label>Selecionar Plano</Label>
+                                  <Select value={selectedPlan} onValueChange={setSelectedPlan}>
+                                    <SelectTrigger><SelectValue placeholder="Escolha um plano" /></SelectTrigger>
+                                    <SelectContent>
+                                      {subPlans.map(p => (
+                                        <SelectItem key={p.id} value={p.id}>
+                                          {p.name} — R${(p.price_cents / 100).toFixed(2)} ({TIER_LABELS[p.tier]})
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                <div className="flex gap-2">
+                                  <Button 
+                                    className="flex-1" 
+                                    disabled={!selectedPlan}
+                                    onClick={() => selectedPlan && assignPlan(u.profile.user_id, selectedPlan, false, 0)}
+                                  >
+                                    <Crown className="w-4 h-4 mr-1" /> Atribuir Plano
+                                  </Button>
+                                </div>
+
+                                <div className="border-t pt-4">
+                                  <p className="text-sm font-medium mb-2">Teste Grátis</p>
+                                  <div className="flex gap-2 items-end">
+                                    <div className="flex-1">
+                                      <Label>Dias de teste</Label>
+                                      <Input type="number" min={1} max={90} value={trialDays} onChange={e => setTrialDays(parseInt(e.target.value) || 7)} />
+                                    </div>
+                                    <Button 
+                                      variant="outline"
+                                      disabled={!selectedPlan}
+                                      onClick={() => selectedPlan && assignPlan(u.profile.user_id, selectedPlan, true, trialDays)}
+                                    >
+                                      <Gift className="w-4 h-4 mr-1" /> Dar Teste
+                                    </Button>
+                                  </div>
+                                </div>
+
+                                {u.subscription?.status === 'active' && (
+                                  <div className="border-t pt-4">
+                                    <Button variant="destructive" className="w-full" onClick={() => { removePlan(u.profile.user_id); setDialogOpen(null); }}>
+                                      <Trash2 className="w-4 h-4 mr-1" /> Remover Plano (Voltar ao Gratuito)
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* SPECIALIST PLANS TAB */}
         <TabsContent value="specialist" className="mt-6">
