@@ -269,8 +269,31 @@ export function MobileProfile() {
         ))}
       </div>
 
+      {/* Groups */}
+      {tab === 'groups' && (
+        <div className="px-4 mt-4 space-y-3">
+          {myGroups.length === 0 ? (
+            <div className="text-center py-12">
+              <Users className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Nenhum grupo ainda</p>
+            </div>
+          ) : myGroups.map(g => (
+            <div key={g.id} className="bg-card rounded-xl border border-border p-3 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Users className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">{g.name}</p>
+                <p className="text-xs text-muted-foreground">{g.member_count} membros</p>
+              </div>
+              {g.is_private && <span className="text-[10px] bg-warning/10 text-warning px-2 py-0.5 rounded-full">Privado</span>}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Posts Grid */}
-      <div className="px-4 mt-4 space-y-3">
+      {tab !== 'groups' && <div className="px-4 mt-4 space-y-3">
         {displayPosts.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-sm text-muted-foreground">Nenhum {tab === 'prs' ? 'PR' : 'post'} ainda</p>
