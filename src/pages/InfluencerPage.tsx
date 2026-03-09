@@ -142,7 +142,6 @@ export default function InfluencerPage() {
     }
     setSigningUp(true);
     try {
-      const refCode = generateReferralCode(signupName);
       const { data, error } = await supabase
         .from('influencers')
         .insert({
@@ -153,14 +152,14 @@ export default function InfluencerPage() {
           tiktok_handle: signupTiktok || null,
           youtube_handle: signupYoutube || null,
           whatsapp: signupWhatsapp || null,
-          referral_code: refCode,
-          status: 'active',
+          referral_code: null,
+          status: 'pending',
         })
         .select()
         .single();
 
       if (error) throw error;
-      toast.success('Cadastro realizado! Bem-vindo ao programa de influenciadores!');
+      toast.success('Solicitação enviada! Aguarde a aprovação do administrador.');
       loadData();
     } catch (err: any) {
       toast.error(err.message || 'Erro ao cadastrar');
