@@ -62,7 +62,7 @@ export default function AuthPage() {
           // First check coupons
           const { data: coupon } = await supabase
             .from('influencer_coupons')
-            .select('id, influencer_id')
+            .select('id, influencer_id, times_used')
             .eq('code', codeToUse)
             .eq('is_active', true)
             .single();
