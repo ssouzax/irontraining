@@ -38,6 +38,7 @@ const navItems = [
   { to: '/subscribe', icon: Crown, label: 'Planos Premium' },
   { to: '/shop', icon: ShoppingBag, label: 'Loja' },
   { to: '/premium-content', icon: Star, label: 'Conteúdo Premium' },
+  { to: '/diet', icon: Utensils, label: 'Perfil de Dieta' },
   { to: '/admin', icon: Shield, label: 'Painel Admin' },
   { to: '/profile', icon: User, label: 'Perfil' },
   { to: '/install', icon: Download, label: 'Instalar App' },

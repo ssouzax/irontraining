@@ -100,6 +100,7 @@ function ProtectedRoutes() {
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/premium-content" element={<PremiumContentPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/diet" element={<DietPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
