@@ -133,9 +133,10 @@ export default function SubscribePage() {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', stiffness: 200 }}
-          className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4"
+          className="flex items-center justify-center gap-3 mb-4"
         >
-          <Crown className="w-8 h-8 text-primary" />
+          <img src={logoImg} alt="Iron Training" className="w-12 h-12 object-contain" />
+          <Crown className="w-10 h-10 text-primary" />
         </motion.div>
         <h1 className="text-4xl font-extrabold mb-3">
           Escolha seu <span className="text-gradient">plano</span>
