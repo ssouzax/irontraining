@@ -71,6 +71,7 @@ export function MobileProfile() {
   const bench1RM = calculate1RM(trainingProfile.currentLifts.bench.weight, trainingProfile.currentLifts.bench.reps);
   const deadlift1RM = calculate1RM(trainingProfile.currentLifts.deadlift.weight, trainingProfile.currentLifts.deadlift.reps);
   const total = squat1RM + bench1RM + deadlift1RM;
+  const hasLiftsData = total > 0;
 
   useEffect(() => { if (user) loadAll(); }, [user]);
 
