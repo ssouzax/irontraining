@@ -74,8 +74,8 @@ export function MobileWrappedCards() {
       const canvas = await html2canvas(cardRef.current, { backgroundColor: null, scale: 2 });
       canvas.toBlob(async (blob) => {
         if (blob && navigator.share) {
-          const file = new File([blob], 'powerbuild-stats.png', { type: 'image/png' });
-          await navigator.share({ files: [file], title: 'PowerBuild Stats' });
+          const file = new File([blob], 'iron-training-stats.png', { type: 'image/png' });
+          await navigator.share({ files: [file], title: 'Iron Training Stats' });
         } else {
           exportCard();
         }
