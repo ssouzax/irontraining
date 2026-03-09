@@ -83,6 +83,44 @@ interface Profile {
   created_at: string;
 }
 
+interface UserSubscription {
+  id: string;
+  user_id: string;
+  plan_id: string;
+  status: string;
+  started_at: string;
+  expires_at: string | null;
+}
+
+interface SubPlan {
+  id: string;
+  name: string;
+  tier: string;
+  price_cents: number;
+  interval: string;
+}
+
+interface UserWithSub {
+  profile: Profile;
+  subscription: UserSubscription | null;
+  planName: string;
+  planTier: string;
+}
+
+const TIER_LABELS: Record<string, string> = {
+  free: 'Gratuito',
+  basic: 'Básico',
+  standard: 'Padrão',
+  premium: 'Premium',
+};
+
+const TIER_COLORS: Record<string, string> = {
+  free: 'secondary',
+  basic: 'outline',
+  standard: 'default',
+  premium: 'default',
+};
+
 export default function AdminPage() {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
@@ -93,11 +131,16 @@ export default function AdminPage() {
   const [gymPromos, setGymPromos] = useState<GymPromo[]>([]);
   const [specialistPlans, setSpecialistPlans] = useState<SpecialistPlan[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [usersWithSubs, setUsersWithSubs] = useState<UserWithSub[]>([]);
+  const [subPlans, setSubPlans] = useState<SubPlan[]>([]);
 
   const [editingInfluencer, setEditingInfluencer] = useState<Influencer | null>(null);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
   const [editingGymPromo, setEditingGymPromo] = useState<GymPromo | null>(null);
   const [editingSpecialistPlan, setEditingSpecialistPlan] = useState<SpecialistPlan | null>(null);
+  const [managingUser, setManagingUser] = useState<UserWithSub | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<string>('');
+  const [trialDays, setTrialDays] = useState<number>(7);
 
   const [dialogOpen, setDialogOpen] = useState<string | null>(null);
 
