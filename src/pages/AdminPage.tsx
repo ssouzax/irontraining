@@ -262,6 +262,7 @@ export default function AdminPage() {
   async function saveInfluencer(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
+    const referralCode = (form.get('referral_code') as string)?.trim() || null;
     const data = {
       name: form.get('name') as string,
       instagram_handle: form.get('instagram_handle') as string || null,
@@ -275,19 +276,35 @@ export default function AdminPage() {
       status: form.get('status') as string || 'active',
       notes: form.get('notes') as string || null,
       commission_rate: parseInt(form.get('commission_rate') as string) || 10,
+      referral_code: referralCode,
     };
 
     if (editingInfluencer) {
       await supabase.from('influencers').update(data).eq('id', editingInfluencer.id);
       toast({ title: 'Influenciador atualizado!' });
     } else {
-      // Generate referral code for manually added influencers
-      const refCode = `IRON${data.name.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6)}${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
-      await supabase.from('influencers').insert({ ...data, referral_code: refCode });
+      if (!referralCode) {
+        const refCode = `IRON${data.name.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6)}${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+        data.referral_code = refCode;
+      }
+      await supabase.from('influencers').insert(data);
       toast({ title: 'Influenciador adicionado!' });
     }
     setDialogOpen(null);
     setEditingInfluencer(null);
+    loadAllData();
+  }
+
+  async function approveInfluencer(inf: Influencer) {
+    const refCode = `IRON${inf.name.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6)}${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+    await supabase.from('influencers').update({ status: 'active', referral_code: refCode }).eq('id', inf.id);
+    toast({ title: 'Influenciador aprovado!', description: `Código: ${refCode}` });
+    loadAllData();
+  }
+
+  async function rejectInfluencer(inf: Influencer) {
+    await supabase.from('influencers').update({ status: 'rejected' }).eq('id', inf.id);
+    toast({ title: 'Influenciador rejeitado.' });
     loadAllData();
   }
 
