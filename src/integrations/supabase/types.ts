@@ -1295,55 +1295,209 @@ export type Database = {
         }
         Relationships: []
       }
+      influencer_coupons: {
+        Row: {
+          code: string
+          created_at: string | null
+          discount_percent: number | null
+          expires_at: string | null
+          id: string
+          influencer_id: string
+          is_active: boolean | null
+          max_uses: number | null
+          times_used: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          discount_percent?: number | null
+          expires_at?: string | null
+          id?: string
+          influencer_id: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          times_used?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          discount_percent?: number | null
+          expires_at?: string | null
+          id?: string
+          influencer_id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          times_used?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "influencer_coupons_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "influencers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      influencer_payouts: {
+        Row: {
+          amount_cents: number
+          created_at: string | null
+          id: string
+          influencer_id: string
+          paid_at: string | null
+          period_end: string
+          period_start: string
+          status: string | null
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string | null
+          id?: string
+          influencer_id: string
+          paid_at?: string | null
+          period_end: string
+          period_start: string
+          status?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string | null
+          id?: string
+          influencer_id?: string
+          paid_at?: string | null
+          period_end?: string
+          period_start?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "influencer_payouts_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "influencers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      influencer_referrals: {
+        Row: {
+          commission_cents: number | null
+          commission_paid: boolean | null
+          coupon_id: string | null
+          created_at: string | null
+          id: string
+          influencer_id: string
+          referred_user_id: string
+          status: string | null
+        }
+        Insert: {
+          commission_cents?: number | null
+          commission_paid?: boolean | null
+          coupon_id?: string | null
+          created_at?: string | null
+          id?: string
+          influencer_id: string
+          referred_user_id: string
+          status?: string | null
+        }
+        Update: {
+          commission_cents?: number | null
+          commission_paid?: boolean | null
+          coupon_id?: string | null
+          created_at?: string | null
+          id?: string
+          influencer_id?: string
+          referred_user_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "influencer_referrals_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "influencer_coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "influencer_referrals_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "influencers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       influencers: {
         Row: {
           avatar_url: string | null
+          commission_rate: number | null
           created_at: string
           deal_type: string | null
           email: string | null
           followers_count: number | null
           id: string
           instagram_handle: string | null
+          is_verified: boolean | null
+          kiwify_affiliate_id: string | null
           name: string
           niche: string | null
           notes: string | null
+          referral_code: string | null
           status: string | null
           tiktok_handle: string | null
+          total_referrals: number | null
+          total_revenue_cents: number | null
           updated_at: string
+          user_id: string | null
           whatsapp: string | null
           youtube_handle: string | null
         }
         Insert: {
           avatar_url?: string | null
+          commission_rate?: number | null
           created_at?: string
           deal_type?: string | null
           email?: string | null
           followers_count?: number | null
           id?: string
           instagram_handle?: string | null
+          is_verified?: boolean | null
+          kiwify_affiliate_id?: string | null
           name: string
           niche?: string | null
           notes?: string | null
+          referral_code?: string | null
           status?: string | null
           tiktok_handle?: string | null
+          total_referrals?: number | null
+          total_revenue_cents?: number | null
           updated_at?: string
+          user_id?: string | null
           whatsapp?: string | null
           youtube_handle?: string | null
         }
         Update: {
           avatar_url?: string | null
+          commission_rate?: number | null
           created_at?: string
           deal_type?: string | null
           email?: string | null
           followers_count?: number | null
           id?: string
           instagram_handle?: string | null
+          is_verified?: boolean | null
+          kiwify_affiliate_id?: string | null
           name?: string
           niche?: string | null
           notes?: string | null
+          referral_code?: string | null
           status?: string | null
           tiktok_handle?: string | null
+          total_referrals?: number | null
+          total_revenue_cents?: number | null
           updated_at?: string
+          user_id?: string | null
           whatsapp?: string | null
           youtube_handle?: string | null
         }
@@ -1848,6 +2002,8 @@ export type Database = {
           instagram_url: string | null
           location: string | null
           profile_public: boolean | null
+          referral_coupon_used: string | null
+          referred_by_influencer_id: string | null
           show_bodyweight: boolean | null
           show_prs: boolean | null
           target_bench: string | null
@@ -1878,6 +2034,8 @@ export type Database = {
           instagram_url?: string | null
           location?: string | null
           profile_public?: boolean | null
+          referral_coupon_used?: string | null
+          referred_by_influencer_id?: string | null
           show_bodyweight?: boolean | null
           show_prs?: boolean | null
           target_bench?: string | null
@@ -1908,6 +2066,8 @@ export type Database = {
           instagram_url?: string | null
           location?: string | null
           profile_public?: boolean | null
+          referral_coupon_used?: string | null
+          referred_by_influencer_id?: string | null
           show_bodyweight?: boolean | null
           show_prs?: boolean | null
           target_bench?: string | null
@@ -1927,6 +2087,13 @@ export type Database = {
             columns: ["gym_id"]
             isOneToOne: false
             referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_referred_by_influencer_id_fkey"
+            columns: ["referred_by_influencer_id"]
+            isOneToOne: false
+            referencedRelation: "influencers"
             referencedColumns: ["id"]
           },
         ]

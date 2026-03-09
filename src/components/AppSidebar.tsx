@@ -1,5 +1,5 @@
 import { NavLink as RouterNavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Dumbbell, Calendar, BarChart3, Bot, User, Zap, LogOut, Menu, X, Calculator, Sparkles, Trophy, BookOpen, Award, Users, FolderOpen, Crown, Compass, Download, MapPin, Swords, Brain, Scale, Activity, HeartHandshake, Gauge, Heart, RotateCw, CheckCircle, ShoppingBag, CreditCard, Star, Shield, Utensils } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, Calendar, BarChart3, Bot, User, Zap, LogOut, Menu, X, Calculator, Sparkles, Trophy, BookOpen, Award, Users, FolderOpen, Crown, Compass, Download, MapPin, Swords, Brain, Scale, Activity, HeartHandshake, Gauge, Heart, RotateCw, CheckCircle, ShoppingBag, CreditCard, Star, Shield, Utensils, Megaphone } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -39,6 +39,7 @@ const navItems = [
   { to: '/shop', icon: ShoppingBag, label: 'Loja' },
   { to: '/premium-content', icon: Star, label: 'Conteúdo Premium' },
   { to: '/diet', icon: Utensils, label: 'Perfil de Dieta' },
+  { to: '/influencer', icon: Megaphone, label: 'Influenciadores' },
   { to: '/admin', icon: Shield, label: 'Painel Admin' },
   { to: '/profile', icon: User, label: 'Perfil' },
   { to: '/install', icon: Download, label: 'Instalar App' },

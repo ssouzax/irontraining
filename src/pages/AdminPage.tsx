@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { Users, Building2, Megaphone, Tag, Star, Plus, Pencil, Trash2, Shield, Phone, Crown, Gift, ArrowUpDown } from 'lucide-react';
+import { Users, Building2, Megaphone, Tag, Star, Plus, Pencil, Trash2, Shield, Phone, Crown, Gift, ArrowUpDown, DollarSign, Link2, CheckCircle } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
 interface Influencer {
@@ -28,6 +28,12 @@ interface Influencer {
   deal_type: string | null;
   status: string | null;
   notes: string | null;
+  user_id: string | null;
+  referral_code: string | null;
+  commission_rate: number | null;
+  total_referrals: number | null;
+  total_revenue_cents: number | null;
+  is_verified: boolean | null;
 }
 
 interface Brand {
@@ -268,13 +274,16 @@ export default function AdminPage() {
       deal_type: form.get('deal_type') as string || 'free',
       status: form.get('status') as string || 'active',
       notes: form.get('notes') as string || null,
+      commission_rate: parseInt(form.get('commission_rate') as string) || 10,
     };
 
     if (editingInfluencer) {
       await supabase.from('influencers').update(data).eq('id', editingInfluencer.id);
       toast({ title: 'Influenciador atualizado!' });
     } else {
-      await supabase.from('influencers').insert(data);
+      // Generate referral code for manually added influencers
+      const refCode = `IRON${data.name.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6)}${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+      await supabase.from('influencers').insert({ ...data, referral_code: refCode });
       toast({ title: 'Influenciador adicionado!' });
     }
     setDialogOpen(null);
@@ -829,6 +838,10 @@ export default function AdminPage() {
                       </Select>
                     </div>
                     <div>
+                      <Label>Taxa de Comissão (%)</Label>
+                      <Input name="commission_rate" type="number" min={5} max={50} defaultValue={editingInfluencer?.commission_rate || 10} />
+                    </div>
+                    <div>
                       <Label>Notas</Label>
                       <Textarea name="notes" defaultValue={editingInfluencer?.notes || ''} />
                     </div>
@@ -842,10 +855,12 @@ export default function AdminPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
+                    <TableHead>Código Ref.</TableHead>
                     <TableHead>Instagram</TableHead>
-                    <TableHead>Seguidores</TableHead>
-                    <TableHead>WhatsApp</TableHead>
-                    <TableHead>Deal</TableHead>
+                    <TableHead>Referências</TableHead>
+                    <TableHead>Receita</TableHead>
+                    <TableHead>Comissão</TableHead>
+                    <TableHead>Verificado</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Ações</TableHead>
                   </TableRow>
@@ -853,17 +868,34 @@ export default function AdminPage() {
                 <TableBody>
                   {influencers.map((inf) => (
                     <TableRow key={inf.id}>
-                      <TableCell className="font-medium">{inf.name}</TableCell>
-                      <TableCell>{inf.instagram_handle || '-'}</TableCell>
-                      <TableCell>{inf.followers_count?.toLocaleString() || '-'}</TableCell>
-                      <TableCell>
-                        {inf.whatsapp && (
-                          <a href={`https://wa.me/${inf.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-green-600 hover:underline">
-                            <Phone className="w-3 h-3" /> {inf.whatsapp}
-                          </a>
-                        )}
+                      <TableCell className="font-medium">
+                        <div>
+                          {inf.name}
+                          {inf.user_id && <span className="text-xs text-muted-foreground ml-1">(Self)</span>}
+                        </div>
                       </TableCell>
-                      <TableCell><Badge variant="outline">{inf.deal_type}</Badge></TableCell>
+                      <TableCell>
+                        {inf.referral_code ? (
+                          <code className="text-xs bg-secondary px-1.5 py-0.5 rounded">{inf.referral_code}</code>
+                        ) : '-'}
+                      </TableCell>
+                      <TableCell>{inf.instagram_handle || '-'}</TableCell>
+                      <TableCell className="font-medium">{inf.total_referrals || 0}</TableCell>
+                      <TableCell>R$ {((inf.total_revenue_cents || 0) / 100).toFixed(2)}</TableCell>
+                      <TableCell>{inf.commission_rate || 10}%</TableCell>
+                      <TableCell>
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          className={inf.is_verified ? 'text-primary' : 'text-muted-foreground'}
+                          onClick={async () => {
+                            await supabase.from('influencers').update({ is_verified: !inf.is_verified }).eq('id', inf.id);
+                            loadAllData();
+                          }}
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
                       <TableCell><Badge variant={inf.status === 'active' ? 'default' : 'secondary'}>{inf.status}</Badge></TableCell>
                       <TableCell>
                         <div className="flex gap-1">
