@@ -56,11 +56,12 @@ export default function Dashboard() {
     ? getOverallLevel(squat1RM, bench1RM, deadlift1RM, profile.bodyWeight)
     : null;
 
-  const currentBlock = program.blocks.find(b => b.weeks.some(w => w.weekNumber === currentWeek)) || program.blocks[0];
-  const currentWeekData = currentBlock.weeks.find(w => w.weekNumber === currentWeek) || currentBlock.weeks[0];
+  const hasProgram = program.blocks.length > 0;
+  const currentBlock = hasProgram ? (program.blocks.find(b => b.weeks.some(w => w.weekNumber === currentWeek)) || program.blocks[0]) : null;
+  const currentWeekData = currentBlock ? (currentBlock.weeks.find(w => w.weekNumber === currentWeek) || currentBlock.weeks[0]) : null;
   const todayIndex = new Date().getDay();
   const dayMap: Record<number, number> = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 };
-  const todayWorkout = currentWeekData.days[dayMap[todayIndex] ?? 0];
+  const todayWorkout = currentWeekData ? currentWeekData.days[dayMap[todayIndex] ?? 0] : null;
 
   useEffect(() => {
     if (!user) return;
