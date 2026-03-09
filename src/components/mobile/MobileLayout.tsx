@@ -166,10 +166,8 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
             >
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                    <Dumbbell className="w-4 h-4 text-primary-foreground" />
-                  </div>
-                  <span className="font-bold text-foreground">PowerBuild</span>
+                  <img src={logoImg} alt="Iron Training" className="w-8 h-8 object-contain" />
+                  <span className="font-bold text-foreground">Iron Training</span>
                 </div>
                 <button onClick={() => setMenuOpen(false)} className="p-1.5 text-muted-foreground hover:text-foreground">
                   <X className="w-5 h-5" />
