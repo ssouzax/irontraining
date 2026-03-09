@@ -185,7 +185,7 @@ export function MobileWrappedCards() {
                   <p className="text-5xl font-extrabold text-white">{total}<span className="text-xl">kg</span></p>
                 </div>
               </div>
-              <p className="text-[10px] text-white/40 text-center">powerbuild.app</p>
+              <p className="text-[10px] text-white/40 text-center">irontraining.app</p>
             </div>
           )}
 
