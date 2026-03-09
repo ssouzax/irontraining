@@ -872,7 +872,44 @@ export default function AdminPage() {
                 </DialogContent>
               </Dialog>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-6">
+              {/* Pending approvals */}
+              {influencers.filter(i => i.status === 'pending').length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                    ⏳ Aguardando Aprovação ({influencers.filter(i => i.status === 'pending').length})
+                  </h3>
+                  <div className="space-y-2">
+                    {influencers.filter(i => i.status === 'pending').map(inf => (
+                      <div key={inf.id} className="flex items-center justify-between p-4 rounded-xl border border-amber-500/30 bg-amber-500/5">
+                        <div className="space-y-1">
+                          <p className="font-medium text-foreground">{inf.name}</p>
+                          <div className="flex gap-3 text-xs text-muted-foreground">
+                            {inf.instagram_handle && <span>📸 {inf.instagram_handle}</span>}
+                            {inf.tiktok_handle && <span>🎵 {inf.tiktok_handle}</span>}
+                            {inf.youtube_handle && <span>▶️ {inf.youtube_handle}</span>}
+                            {inf.email && <span>✉️ {inf.email}</span>}
+                            {inf.whatsapp && <span>📱 {inf.whatsapp}</span>}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="default" className="gap-1" onClick={() => approveInfluencer(inf)}>
+                            <CheckCircle className="w-3.5 h-3.5" /> Aprovar
+                          </Button>
+                          <Button size="sm" variant="outline" className="gap-1 text-destructive" onClick={() => rejectInfluencer(inf)}>
+                            <X className="w-3.5 h-3.5" /> Rejeitar
+                          </Button>
+                          <Button size="icon" variant="ghost" onClick={() => { setEditingInfluencer(inf); setDialogOpen('influencer'); }}>
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* All influencers table */}
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -889,7 +926,7 @@ export default function AdminPage() {
                 </TableHeader>
                 <TableBody>
                   {influencers.map((inf) => (
-                    <TableRow key={inf.id}>
+                    <TableRow key={inf.id} className={inf.status === 'pending' ? 'opacity-50' : ''}>
                       <TableCell className="font-medium">
                         <div>
                           {inf.name}
@@ -899,7 +936,7 @@ export default function AdminPage() {
                       <TableCell>
                         {inf.referral_code ? (
                           <code className="text-xs bg-secondary px-1.5 py-0.5 rounded">{inf.referral_code}</code>
-                        ) : '-'}
+                        ) : <span className="text-xs text-muted-foreground">Sem código</span>}
                       </TableCell>
                       <TableCell>{inf.instagram_handle || '-'}</TableCell>
                       <TableCell className="font-medium">{inf.total_referrals || 0}</TableCell>
@@ -918,7 +955,15 @@ export default function AdminPage() {
                           <CheckCircle className="w-4 h-4" />
                         </Button>
                       </TableCell>
-                      <TableCell><Badge variant={inf.status === 'active' ? 'default' : 'secondary'}>{inf.status}</Badge></TableCell>
+                      <TableCell>
+                        <Badge variant={
+                          inf.status === 'active' ? 'default' : 
+                          inf.status === 'pending' ? 'outline' : 
+                          'secondary'
+                        }>
+                          {inf.status === 'pending' ? '⏳ Pendente' : inf.status === 'rejected' ? '❌ Rejeitado' : inf.status}
+                        </Badge>
+                      </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
                           <Button size="icon" variant="ghost" onClick={() => { setEditingInfluencer(inf); setDialogOpen('influencer'); }}>
