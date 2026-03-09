@@ -227,20 +227,22 @@ export function MobileProfile() {
         </div>
       </div>
 
-      {/* Lifts Summary */}
-      <div className="grid grid-cols-4 gap-2 px-4 mt-4">
-        {[
-          { label: 'SQT', val: squat1RM },
-          { label: 'BNC', val: bench1RM },
-          { label: 'DL', val: deadlift1RM },
-          { label: 'Total', val: total },
-        ].map(l => (
-          <div key={l.label} className="text-center p-2 rounded-xl bg-card border border-border">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{l.label}</p>
-            <p className="text-lg font-extrabold text-foreground">{l.val}</p>
-          </div>
-        ))}
-      </div>
+      {/* Lifts Summary - Only show if has data */}
+      {hasLiftsData && (
+        <div className="grid grid-cols-4 gap-2 px-4 mt-4">
+          {[
+            { label: 'SQT', val: squat1RM },
+            { label: 'BNC', val: bench1RM },
+            { label: 'DL', val: deadlift1RM },
+            { label: 'Total', val: total },
+          ].map(l => (
+            <div key={l.label} className="text-center p-2 rounded-xl bg-card border border-border">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{l.label}</p>
+              <p className="text-lg font-extrabold text-foreground">{l.val}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Edit Form */}
       <AnimatePresence>
