@@ -43,7 +43,7 @@ interface Post {
   created_at: string;
 }
 
-type Tab = 'posts' | 'prs' | 'achievements' | 'workouts';
+type Tab = 'posts' | 'prs' | 'achievements' | 'workouts' | 'groups';
 
 export function MobileProfile() {
   const { user, signOut } = useAuth();
