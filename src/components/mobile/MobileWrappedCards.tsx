@@ -156,7 +156,7 @@ export function MobileWrappedCards() {
                   </div>
                 </div>
               </div>
-              <p className="text-[10px] text-primary-foreground/40 text-center">powerbuild.app</p>
+              <p className="text-[10px] text-primary-foreground/40 text-center">irontraining.app</p>
             </div>
           )}
 
