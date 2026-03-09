@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Check, Crown, Zap, Star, ArrowRight, Shield, Sparkles, Brain, Dumbbell, Users, MapPin, Gift, Flame } from 'lucide-react';
+import { Check, Crown, Zap, Star, ArrowRight, Shield, Sparkles, Brain, Dumbbell, Users, MapPin, Gift, Flame, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { usePremium } from '@/hooks/usePremium';
