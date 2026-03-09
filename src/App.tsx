@@ -45,6 +45,7 @@ import ShopPage from "./pages/ShopPage";
 import PremiumContentPage from "./pages/PremiumContentPage";
 import AdminPage from "./pages/AdminPage";
 import DietPage from "./pages/DietPage";
+import InfluencerPage from "./pages/InfluencerPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
