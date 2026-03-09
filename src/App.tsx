@@ -43,6 +43,7 @@ import ExecutionGradingPage from "./pages/ExecutionGradingPage";
 import SubscribePage from "./pages/SubscribePage";
 import ShopPage from "./pages/ShopPage";
 import PremiumContentPage from "./pages/PremiumContentPage";
+import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
