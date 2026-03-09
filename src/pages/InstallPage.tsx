@@ -58,7 +58,7 @@ export default function InstallPage() {
         <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-accent mx-auto flex items-center justify-center shadow-lg">
           <Download className="w-10 h-10 text-primary-foreground" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground">Instalar PowerBuild</h1>
+        <h1 className="text-2xl font-bold text-foreground">Instalar Iron Training</h1>
         <p className="text-muted-foreground text-sm">
           Instale o app no seu celular para a melhor experiência de treino.
         </p>
