@@ -48,6 +48,8 @@ import DietPage from "./pages/DietPage";
 import InfluencerPage from "./pages/InfluencerPage";
 import GroupsPage from "./pages/GroupsPage";
 import NotFound from "./pages/NotFound";
+import OnboardingTutorial from "./components/OnboardingTutorial";
+import { useState } from "react";
 
 const queryClient = new QueryClient();
 
