@@ -110,24 +110,30 @@ export default function WorkoutPage() {
                       return (
                         <div key={i} className="flex flex-wrap sm:flex-nowrap items-center gap-2 py-1.5 px-3 rounded-lg bg-secondary/30">
                           <span className="text-xs text-muted-foreground font-mono w-6">{i + 1}</span>
-                          <div className="flex items-center gap-1">
-                            <button onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'weight', Math.max(0, log.weight - 2.5))} className="p-1 rounded hover:bg-secondary transition-colors">
-                              <Minus className="w-3 h-3 text-muted-foreground" />
-                            </button>
-                            <input type="number" value={log.weight || ''} onChange={e => updateSetLog(exercise.id, setGroup.id, i, 'weight', parseFloat(e.target.value) || 0)} placeholder="kg" className="w-14 sm:w-16 bg-background border border-border rounded px-2 py-1 text-xs text-center text-foreground font-mono" />
-                            <button onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'weight', log.weight + 2.5)} className="p-1 rounded hover:bg-secondary transition-colors">
-                              <Plus className="w-3 h-3 text-muted-foreground" />
-                            </button>
+                          <div className="flex flex-col items-center gap-0.5">
+                            <span className="text-[9px] text-muted-foreground uppercase">Peso (kg)</span>
+                            <div className="flex items-center gap-1">
+                              <button onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'weight', Math.max(0, log.weight - 2.5))} className="p-1 rounded hover:bg-secondary transition-colors">
+                                <Minus className="w-3 h-3 text-muted-foreground" />
+                              </button>
+                              <input type="number" value={log.weight || ''} onChange={e => updateSetLog(exercise.id, setGroup.id, i, 'weight', parseFloat(e.target.value) || 0)} placeholder="80" className="w-14 sm:w-16 bg-background border border-border rounded px-2 py-1 text-xs text-center text-foreground font-mono" />
+                              <button onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'weight', log.weight + 2.5)} className="p-1 rounded hover:bg-secondary transition-colors">
+                                <Plus className="w-3 h-3 text-muted-foreground" />
+                              </button>
+                            </div>
                           </div>
                           <span className="text-xs text-muted-foreground">×</span>
-                          <div className="flex items-center gap-1">
-                            <button onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'reps', Math.max(0, log.reps - 1))} className="p-1 rounded hover:bg-secondary transition-colors">
-                              <Minus className="w-3 h-3 text-muted-foreground" />
-                            </button>
-                            <input type="number" value={log.reps} onChange={e => updateSetLog(exercise.id, setGroup.id, i, 'reps', parseInt(e.target.value) || 0)} className="w-10 sm:w-12 bg-background border border-border rounded px-2 py-1 text-xs text-center text-foreground font-mono" />
-                            <button onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'reps', log.reps + 1)} className="p-1 rounded hover:bg-secondary transition-colors">
-                              <Plus className="w-3 h-3 text-muted-foreground" />
-                            </button>
+                          <div className="flex flex-col items-center gap-0.5">
+                            <span className="text-[9px] text-muted-foreground uppercase">Reps</span>
+                            <div className="flex items-center gap-1">
+                              <button onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'reps', Math.max(0, log.reps - 1))} className="p-1 rounded hover:bg-secondary transition-colors">
+                                <Minus className="w-3 h-3 text-muted-foreground" />
+                              </button>
+                              <input type="number" value={log.reps} onChange={e => updateSetLog(exercise.id, setGroup.id, i, 'reps', parseInt(e.target.value) || 0)} placeholder="8" className="w-10 sm:w-12 bg-background border border-border rounded px-2 py-1 text-xs text-center text-foreground font-mono" />
+                              <button onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'reps', log.reps + 1)} className="p-1 rounded hover:bg-secondary transition-colors">
+                                <Plus className="w-3 h-3 text-muted-foreground" />
+                              </button>
+                            </div>
                           </div>
                           <button
                             onClick={() => updateSetLog(exercise.id, setGroup.id, i, 'completed', !log.completed)}

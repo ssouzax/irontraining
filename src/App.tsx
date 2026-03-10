@@ -48,11 +48,16 @@ import DietPage from "./pages/DietPage";
 import InfluencerPage from "./pages/InfluencerPage";
 import GroupsPage from "./pages/GroupsPage";
 import NotFound from "./pages/NotFound";
+import OnboardingTutorial from "./components/OnboardingTutorial";
+import { useState } from "react";
 
 const queryClient = new QueryClient();
 
 function ProtectedRoutes() {
   const { user, loading } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem('iron_onboarding_done');
+  });
 
   if (loading) {
     return (
@@ -63,6 +68,15 @@ function ProtectedRoutes() {
   }
 
   if (!user) return <AuthPage />;
+
+  if (showOnboarding) {
+    return (
+      <OnboardingTutorial onComplete={() => {
+        localStorage.setItem('iron_onboarding_done', 'true');
+        setShowOnboarding(false);
+      }} />
+    );
+  }
 
   return (
     <TrainingProvider>

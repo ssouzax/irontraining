@@ -1,13 +1,15 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTraining } from '@/contexts/TrainingContext';
 import { useState, useEffect, useRef } from 'react';
-import { Check, ChevronLeft, ChevronRight, Minus, Plus, Timer, RotateCcw, X, Clock } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Minus, Plus, Timer, RotateCcw, X, Clock, ArrowRightLeft, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LoggedSet } from '@/types/training';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { usePlayerLevel } from '@/hooks/usePlayerLevel';
+import AdaptExerciseModal from '@/components/AdaptExerciseModal';
+import WorkoutSummary from '@/components/WorkoutSummary';
 
 function estimate1RM(weight: number, reps: number): number {
   if (reps === 1) return weight;
@@ -65,6 +67,71 @@ function RestTimer({ seconds, onComplete, onDismiss, elapsed }: { seconds: numbe
   );
 }
 
+interface ExerciseHistoryEntry {
+  setNumber: number;
+  weight: number;
+  reps: number;
+}
+
+function ExerciseHistoryBadge({ exerciseName, userId }: { exerciseName: string; userId: string }) {
+  const [history, setHistory] = useState<ExerciseHistoryEntry[]>([]);
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from('performed_sets')
+        .select('set_number, weight_used, reps_completed, created_at')
+        .eq('user_id', userId)
+        .eq('exercise_name', exerciseName)
+        .eq('completed', true)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (data && data.length > 0) {
+        const latestDate = data[0].created_at.substring(0, 10);
+        setHistory(
+          data
+            .filter(d => d.created_at.substring(0, 10) === latestDate)
+            .map(d => ({ setNumber: d.set_number, weight: d.weight_used || 0, reps: d.reps_completed || 0 }))
+        );
+      }
+    };
+    load();
+  }, [exerciseName, userId]);
+
+  if (history.length === 0) return null;
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setShow(!show)}
+        className="flex items-center gap-1 text-[10px] text-primary hover:text-primary/80 transition-colors"
+      >
+        <History className="w-3 h-3" />
+        Último treino
+      </button>
+      <AnimatePresence>
+        {show && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            className="absolute top-6 left-0 z-20 bg-card border border-border rounded-lg p-2.5 shadow-lg min-w-[140px]"
+          >
+            <p className="text-[10px] text-muted-foreground mb-1.5 font-medium">Último treino:</p>
+            {history.map((h, i) => (
+              <p key={i} className="text-xs text-foreground font-mono">
+                {h.weight} kg × {h.reps}
+              </p>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 interface SetRowProps {
   setIndex: number;
   targetReps: number;
@@ -103,46 +170,59 @@ function SetRow({ setIndex, targetReps, targetRIR, setType, log, lastWeight, res
         </p>
       </div>
 
-      <div className="flex items-center gap-1">
-        <button onClick={() => onUpdate('weight', Math.max(0, log.weight - 2.5))} className="p-1 sm:p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
-          <Minus className="w-3 h-3 text-muted-foreground" />
-        </button>
-        <input
-          type="number"
-          value={log.weight || ''}
-          onChange={e => onUpdate('weight', parseFloat(e.target.value) || 0)}
-          placeholder="kg"
-          className="w-14 sm:w-16 bg-background border border-border rounded-lg px-1 sm:px-2 py-1.5 text-sm text-center text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
-        />
-        <button onClick={() => onUpdate('weight', log.weight + 2.5)} className="p-1 sm:p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
-          <Plus className="w-3 h-3 text-muted-foreground" />
-        </button>
+      {/* Weight field with label */}
+      <div className="flex flex-col items-center gap-0.5">
+        <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Peso (kg)</span>
+        <div className="flex items-center gap-1">
+          <button onClick={() => onUpdate('weight', Math.max(0, log.weight - 2.5))} className="p-1 sm:p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+            <Minus className="w-3 h-3 text-muted-foreground" />
+          </button>
+          <input
+            type="number"
+            value={log.weight || ''}
+            onChange={e => onUpdate('weight', parseFloat(e.target.value) || 0)}
+            placeholder="80"
+            className="w-14 sm:w-16 bg-background border border-border rounded-lg px-1 sm:px-2 py-1.5 text-sm text-center text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+          <button onClick={() => onUpdate('weight', log.weight + 2.5)} className="p-1 sm:p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+            <Plus className="w-3 h-3 text-muted-foreground" />
+          </button>
+        </div>
       </div>
 
       <span className="text-muted-foreground text-xs">×</span>
 
-      <div className="flex items-center gap-1">
-        <button onClick={() => onUpdate('reps', Math.max(0, log.reps - 1))} className="p-1 sm:p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
-          <Minus className="w-3 h-3 text-muted-foreground" />
-        </button>
-        <input
-          type="number"
-          value={log.reps}
-          onChange={e => onUpdate('reps', parseInt(e.target.value) || 0)}
-          className="w-10 sm:w-12 bg-background border border-border rounded-lg px-1 py-1.5 text-sm text-center text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
-        />
-        <button onClick={() => onUpdate('reps', log.reps + 1)} className="p-1 sm:p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
-          <Plus className="w-3 h-3 text-muted-foreground" />
-        </button>
+      {/* Reps field with label */}
+      <div className="flex flex-col items-center gap-0.5">
+        <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Reps</span>
+        <div className="flex items-center gap-1">
+          <button onClick={() => onUpdate('reps', Math.max(0, log.reps - 1))} className="p-1 sm:p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+            <Minus className="w-3 h-3 text-muted-foreground" />
+          </button>
+          <input
+            type="number"
+            value={log.reps}
+            onChange={e => onUpdate('reps', parseInt(e.target.value) || 0)}
+            placeholder="8"
+            className="w-10 sm:w-12 bg-background border border-border rounded-lg px-1 py-1.5 text-sm text-center text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+          <button onClick={() => onUpdate('reps', log.reps + 1)} className="p-1 sm:p-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+            <Plus className="w-3 h-3 text-muted-foreground" />
+          </button>
+        </div>
       </div>
 
-      <input
-        type="number"
-        value={log.rir ?? ''}
-        onChange={e => onUpdate('rir', parseInt(e.target.value))}
-        placeholder="RIR"
-        className="w-10 sm:w-12 bg-background border border-border rounded-lg px-1 py-1.5 text-xs text-center text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
-      />
+      {/* RIR field with label */}
+      <div className="flex flex-col items-center gap-0.5">
+        <span className="text-[9px] text-muted-foreground uppercase tracking-wider">RIR</span>
+        <input
+          type="number"
+          value={log.rir ?? ''}
+          onChange={e => onUpdate('rir', parseInt(e.target.value))}
+          placeholder="2"
+          className="w-10 sm:w-12 bg-background border border-border rounded-lg px-1 py-1.5 text-xs text-center text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+        />
+      </div>
 
       <div className="hidden sm:flex gap-1">
         <button onClick={() => onUpdate('weight', log.weight + 2.5)} className="text-[10px] px-1.5 py-1 rounded bg-secondary text-muted-foreground hover:text-foreground transition-colors">+2.5</button>
@@ -183,7 +263,12 @@ export default function AppModeWorkout() {
   const [restTimes, setRestTimes] = useState<Record<string, number>>({});
   const [restTimer, setRestTimer] = useState<{ active: boolean; seconds: number; key: string }>({ active: false, seconds: 0, key: '' });
   const [saving, setSaving] = useState(false);
+  const [adaptModal, setAdaptModal] = useState<{ open: boolean; exerciseName: string; exerciseId: string }>({ open: false, exerciseName: '', exerciseId: '' });
+  const [adaptedNames, setAdaptedNames] = useState<Record<string, string>>({});
+  const [showSummary, setShowSummary] = useState(false);
+  const [summaryData, setSummaryData] = useState({ exercises: 0, sets: 0, volume: 0, xp: 0 });
   const lastCompletionTime = useRef<number | null>(null);
+  const workoutStartTime = useRef<number>(Date.now());
 
   const currentBlock = program.blocks.find(b =>
     b.weeks.some(w => w.weekNumber === currentWeek)
@@ -240,6 +325,8 @@ export default function AppModeWorkout() {
     }
   };
 
+  const getExerciseName = (exercise: { id: string; name: string }) => adaptedNames[exercise.id] || exercise.name;
+
   const totalSets = dayData?.exercises.reduce((acc, ex) => acc + ex.sets.reduce((a, s) => a + s.targetSets, 0), 0) || 0;
   const completedSets = Object.values(logData).reduce((acc, sets) => acc + sets.filter(s => s?.completed).length, 0);
 
@@ -261,11 +348,13 @@ export default function AppModeWorkout() {
 
       if (wError) throw wError;
 
-      // Save to both old set_logs and new performed_sets for compatibility
       const setInserts: any[] = [];
       const performedInserts: any[] = [];
+      let totalVolume = 0;
+      let exercisesWithSets = new Set<string>();
       
       dayData.exercises.forEach(exercise => {
+        const displayName = getExerciseName(exercise);
         exercise.sets.forEach(setGroup => {
           const key = getSetKey(exercise.id, setGroup.id);
           for (let i = 0; i < setGroup.targetSets; i++) {
@@ -273,11 +362,13 @@ export default function AppModeWorkout() {
             if (log.completed) {
               const restKey = getSetRestKey(exercise.id, setGroup.id, i);
               const e1rm = log.weight > 0 && log.reps > 0 ? estimate1RM(log.weight, log.reps) : null;
+              totalVolume += (log.weight * log.reps);
+              exercisesWithSets.add(displayName);
               
               setInserts.push({
                 user_id: user.id,
                 workout_log_id: workoutLog.id,
-                exercise_name: exercise.name,
+                exercise_name: displayName,
                 set_type: setGroup.type,
                 set_number: i + 1,
                 target_reps: setGroup.targetReps,
@@ -293,7 +384,7 @@ export default function AppModeWorkout() {
               performedInserts.push({
                 user_id: user.id,
                 workout_log_id: workoutLog.id,
-                exercise_name: exercise.name,
+                exercise_name: displayName,
                 set_number: i + 1,
                 weight_used: log.weight,
                 reps_completed: log.reps,
@@ -315,12 +406,17 @@ export default function AppModeWorkout() {
         if (pError) throw pError;
       }
 
-
-      // Award XP for completing workout
-      const xpAmount = 50 + (completedSets * 5); // Base 50 + 5 per set
+      const xpAmount = 50 + (completedSets * 5);
       await addXP(xpAmount, 'workout_complete');
 
-      toast.success(`Treino salvo! +${xpAmount} XP`);
+      // Show summary
+      setSummaryData({
+        exercises: exercisesWithSets.size,
+        sets: completedSets,
+        volume: Math.round(totalVolume),
+        xp: xpAmount,
+      });
+      setShowSummary(true);
     } catch (err: any) {
       toast.error(err.message || 'Erro ao salvar treino');
     } finally {
@@ -354,6 +450,7 @@ export default function AppModeWorkout() {
         </div>
       </motion.div>
 
+      {/* Column headers */}
       <div className="bg-card rounded-xl border border-border p-3 card-elevated">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs text-muted-foreground">Progresso</span>
@@ -368,71 +465,86 @@ export default function AppModeWorkout() {
         </div>
       </div>
 
-      {dayData.exercises.map((exercise, exIdx) => (
-        <motion.div
-          key={exercise.id}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: exIdx * 0.04 }}
-          className="bg-card rounded-xl border border-border card-elevated overflow-hidden"
-        >
-          <div className="p-3 sm:p-4 border-b border-border flex items-center gap-3">
-            <div className={cn("w-1.5 h-10 rounded-full", exercise.category === 'compound' ? 'bg-primary' : 'bg-muted-foreground/30')} />
-            <div>
-              <h3 className="font-semibold text-foreground text-sm">{exercise.name}</h3>
-              <p className="text-xs text-muted-foreground">{exercise.muscleGroup}</p>
-            </div>
-          </div>
-
-          <div className="p-2 sm:p-3 space-y-2">
-            {exercise.sets.map(setGroup => {
-              const key = getSetKey(exercise.id, setGroup.id);
-              return (
-                <div key={setGroup.id} className="space-y-1.5">
-                  <div className="flex items-center gap-2 px-1 mb-1">
-                    <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded",
-                      setGroup.type === 'top' ? 'bg-primary/20 text-primary' :
-                      setGroup.type === 'backoff' ? 'bg-warning/20 text-warning' :
-                      'bg-secondary text-secondary-foreground'
-                    )}>
-                      {setGroup.type === 'top' ? 'TOP SET' : setGroup.type === 'backoff' ? 'BACK OFF' : 'TRABALHO'}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground font-mono">
-                      {setGroup.targetSets}×{setGroup.targetReps}
-                      {setGroup.targetRIR !== undefined && ` RIR${setGroup.targetRIR}`}
-                      {setGroup.percentage && ` @${setGroup.percentage}%`}
-                    </span>
-                    {setGroup.restSeconds && (
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                        <Timer className="w-3 h-3" />{Math.floor(setGroup.restSeconds / 60)}:{(setGroup.restSeconds % 60).toString().padStart(2, '0')}
-                      </span>
-                    )}
-                  </div>
-                  {Array.from({ length: setGroup.targetSets }, (_, i) => {
-                    const log = getSetLog(key, i, setGroup.targetReps);
-                    const prevLog = i > 0 ? getSetLog(key, i - 1, setGroup.targetReps) : undefined;
-                    const restKey = getSetRestKey(exercise.id, setGroup.id, i);
-                    return (
-                      <SetRow
-                        key={i}
-                        setIndex={i}
-                        targetReps={setGroup.targetReps}
-                        targetRIR={setGroup.targetRIR}
-                        setType={setGroup.type}
-                        log={log}
-                        lastWeight={prevLog?.weight}
-                        restTime={restTimes[restKey]}
-                        onUpdate={(field, value) => updateSetLog(key, i, field, value)}
-                        onComplete={() => completeSet(key, i, setGroup.restSeconds, exercise.id, setGroup.id)}
-                      />
-                    );
-                  })}
+      {dayData.exercises.map((exercise, exIdx) => {
+        const displayName = getExerciseName(exercise);
+        return (
+          <motion.div
+            key={exercise.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: exIdx * 0.04 }}
+            className="bg-card rounded-xl border border-border card-elevated overflow-hidden"
+          >
+            <div className="p-3 sm:p-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className={cn("w-1.5 h-10 rounded-full", exercise.category === 'compound' ? 'bg-primary' : 'bg-muted-foreground/30')} />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-foreground text-sm truncate">{displayName}</h3>
+                  <p className="text-xs text-muted-foreground">{exercise.muscleGroup}</p>
                 </div>
-              );
-            })}
-          </div>
-        </motion.div>
-      ))}
+                <div className="flex items-center gap-2">
+                  {user && <ExerciseHistoryBadge exerciseName={displayName} userId={user.id} />}
+                  <button
+                    onClick={() => setAdaptModal({ open: true, exerciseName: displayName, exerciseId: exercise.id })}
+                    className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors px-2 py-1 rounded-lg bg-secondary/50 hover:bg-secondary"
+                  >
+                    <ArrowRightLeft className="w-3 h-3" />
+                    <span className="hidden sm:inline">Adaptar</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-2 sm:p-3 space-y-2">
+              {exercise.sets.map(setGroup => {
+                const key = getSetKey(exercise.id, setGroup.id);
+                return (
+                  <div key={setGroup.id} className="space-y-1.5">
+                    <div className="flex items-center gap-2 px-1 mb-1">
+                      <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded",
+                        setGroup.type === 'top' ? 'bg-primary/20 text-primary' :
+                        setGroup.type === 'backoff' ? 'bg-warning/20 text-warning' :
+                        'bg-secondary text-secondary-foreground'
+                      )}>
+                        {setGroup.type === 'top' ? 'TOP SET' : setGroup.type === 'backoff' ? 'BACK OFF' : 'TRABALHO'}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground font-mono">
+                        {setGroup.targetSets}×{setGroup.targetReps}
+                        {setGroup.targetRIR !== undefined && ` RIR${setGroup.targetRIR}`}
+                        {setGroup.percentage && ` @${setGroup.percentage}%`}
+                      </span>
+                      {setGroup.restSeconds && (
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                          <Timer className="w-3 h-3" />{Math.floor(setGroup.restSeconds / 60)}:{(setGroup.restSeconds % 60).toString().padStart(2, '0')}
+                        </span>
+                      )}
+                    </div>
+                    {Array.from({ length: setGroup.targetSets }, (_, i) => {
+                      const log = getSetLog(key, i, setGroup.targetReps);
+                      const prevLog = i > 0 ? getSetLog(key, i - 1, setGroup.targetReps) : undefined;
+                      const restKey = getSetRestKey(exercise.id, setGroup.id, i);
+                      return (
+                        <SetRow
+                          key={i}
+                          setIndex={i}
+                          targetReps={setGroup.targetReps}
+                          targetRIR={setGroup.targetRIR}
+                          setType={setGroup.type}
+                          log={log}
+                          lastWeight={prevLog?.weight}
+                          restTime={restTimes[restKey]}
+                          onUpdate={(field, value) => updateSetLog(key, i, field, value)}
+                          onComplete={() => completeSet(key, i, setGroup.restSeconds, exercise.id, setGroup.id)}
+                        />
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        );
+      })}
 
       {/* Rest Timer */}
       <AnimatePresence>
@@ -443,6 +555,31 @@ export default function AppModeWorkout() {
               if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
             }}
             onDismiss={() => setRestTimer({ active: false, seconds: 0, key: '' })}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Adapt Exercise Modal */}
+      <AdaptExerciseModal
+        exerciseName={adaptModal.exerciseName}
+        open={adaptModal.open}
+        onClose={() => setAdaptModal(p => ({ ...p, open: false }))}
+        onSelect={(newName) => {
+          setAdaptedNames(prev => ({ ...prev, [adaptModal.exerciseId]: newName }));
+          toast.success(`Exercício adaptado para: ${newName}`);
+        }}
+      />
+
+      {/* Workout Summary */}
+      <AnimatePresence>
+        {showSummary && (
+          <WorkoutSummary
+            exerciseCount={summaryData.exercises}
+            totalSets={summaryData.sets}
+            totalVolume={summaryData.volume}
+            duration={Math.round((Date.now() - workoutStartTime.current) / 1000)}
+            xpEarned={summaryData.xp}
+            onClose={() => setShowSummary(false)}
           />
         )}
       </AnimatePresence>
