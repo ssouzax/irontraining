@@ -53,6 +53,9 @@ const queryClient = new QueryClient();
 
 function ProtectedRoutes() {
   const { user, loading } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem('iron_onboarding_done');
+  });
 
   if (loading) {
     return (
@@ -63,6 +66,15 @@ function ProtectedRoutes() {
   }
 
   if (!user) return <AuthPage />;
+
+  if (showOnboarding) {
+    return (
+      <OnboardingTutorial onComplete={() => {
+        localStorage.setItem('iron_onboarding_done', 'true');
+        setShowOnboarding(false);
+      }} />
+    );
+  }
 
   return (
     <TrainingProvider>
