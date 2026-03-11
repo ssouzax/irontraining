@@ -281,7 +281,7 @@ export const exerciseGroups: ExerciseGroup[] = [
         ['livre', 'Afundo livre'],
         ['halteres', 'Avanço com halteres'],
         ['smith', 'Afundo Smith'],
-        ['búlgaro', 'Bulgarian split squat'],
+        ['búlgaro', 'Agachamento búlgaro'],
       ]),
       base('Cadeira extensora', 'Pernas', 'accessory', [
         ['máquina', 'Cadeira extensora'],
