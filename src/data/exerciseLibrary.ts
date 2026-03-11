@@ -313,8 +313,8 @@ export const exerciseGroups: ExerciseGroup[] = [
         ['halteres', 'Hip thrust halteres'],
       ]),
       base('Elevação pélvica', 'Glúteos', 'accessory', [
-        ['barra', 'Glute bridge barra'],
-        ['halteres', 'Glute bridge com halteres'],
+        ['barra', 'Elevação pélvica com barra'],
+        ['halteres', 'Elevação pélvica com halteres'],
         ['unilateral', 'Ponte unilateral de glúteo'],
       ]),
       base('Kickback glúteo', 'Glúteos', 'accessory', [
