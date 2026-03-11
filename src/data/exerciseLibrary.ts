@@ -347,23 +347,29 @@ export const exerciseGroups: ExerciseGroup[] = [
         ['crunch', 'Abdominal crunch'],
         ['inverso', 'Abdominal inverso'],
         ['bicicleta', 'Abdominal bicicleta'],
-        ['na polia', 'Cable crunch'],
+        ['na polia', 'Abdominal na polia'],
+        ['com bola', 'Abdominal na bola suíça'],
       ]),
       base('Prancha', 'Core', 'accessory', [
         ['frontal', 'Prancha frontal'],
         ['lateral', 'Prancha lateral'],
+        ['com elevação', 'Prancha com elevação de braço'],
       ]),
       base('Elevação de pernas', 'Core', 'accessory', [
-        ['suspensa', 'Hanging leg raise'],
+        ['suspensa', 'Elevação de pernas suspensa'],
         ['no banco', 'Elevação de pernas no banco'],
-        ['no chão', 'Elevação de pernas chão'],
+        ['no chão', 'Elevação de pernas no chão'],
       ]),
       base('Roda abdominal', 'Core', 'accessory', [
-        ['roda', 'Ab-roller (roda abdominal)'],
-        ['barra', 'Ab rollout barra'],
+        ['roda', 'Roda abdominal'],
+        ['barra', 'Rollout com barra'],
       ]),
-      base('Russian twist', 'Core', 'accessory', [
-        ['corpo', 'Russian twist'],
+      base('Rotação russa', 'Core', 'accessory', [
+        ['corpo', 'Rotação russa'],
+        ['com peso', 'Rotação russa com peso'],
+      ]),
+      base('Prancha lateral com rotação', 'Core', 'accessory', [
+        ['corpo', 'Side plank com rotação'],
       ]),
     ],
   },
