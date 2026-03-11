@@ -107,36 +107,47 @@ export const exerciseGroups: ExerciseGroup[] = [
         ['cabo', 'Remada unilateral cabo'],
       ]),
       base('Pull-up (barra fixa)', 'Costas', 'compound', [
-        ['pegada pronada', 'Pull-up barra aberta'],
-        ['pegada supinada (chin-up)', 'Chin-up barra supinada'],
-        ['pegada neutra', 'Pull-ups pegada neutra'],
-        ['com peso', 'Pull-ups weighted'],
+        ['pegada pronada', 'Barra fixa pegada pronada'],
+        ['pegada supinada (chin-up)', 'Barra fixa pegada supinada'],
+        ['pegada neutra', 'Barra fixa pegada neutra'],
+        ['com peso', 'Barra fixa com peso'],
+        ['assistido', 'Barra fixa assistida'],
       ]),
       base('T-Bar Row', 'Costas', 'compound', [
-        ['máquina', 'T-bar row'],
-        ['landmine', 'Landmine row'],
+        ['máquina', 'Remada cavalinho máquina'],
+        ['landmine', 'Remada cavalinho landmine'],
       ]),
       base('Levantamento terra', 'Costas', 'compound', [
-        ['tradicional', 'Deadlift tradicional'],
-        ['sumô', 'Deadlift sumô'],
-        ['romeno', 'Deadlift romeno'],
-        ['trap bar', 'Trap bar deadlift'],
+        ['tradicional', 'Levantamento terra tradicional'],
+        ['sumô', 'Levantamento terra sumô'],
+        ['romeno', 'Levantamento terra romeno'],
+        ['trap bar', 'Levantamento terra trap bar'],
+        ['snatch grip', 'Levantamento terra snatch grip'],
       ]),
       base('Face pull', 'Costas', 'accessory', [
-        ['polia', 'Face pull'],
-        ['alta rotação', 'Face pull alta rotação'],
+        ['polia', 'Face pull na polia'],
+        ['alta rotação', 'Face pull com rotação externa'],
       ]),
       base('Pullover costas', 'Costas', 'accessory', [
-        ['polia', 'Pull-over na polia'],
-        ['halteres', 'Pull-over halteres'],
+        ['polia', 'Pullover na polia'],
+        ['halteres', 'Pullover halteres costas'],
       ]),
       base('Hiperextensão', 'Costas', 'accessory', [
-        ['corpo', 'Hyperextensions'],
-        ['com peso', 'Hyperextensions com peso'],
+        ['corpo', 'Hiperextensão lombar'],
+        ['com peso', 'Hiperextensão com peso'],
       ]),
       base('Encolhimento (trapézio)', 'Costas', 'accessory', [
         ['barra', 'Encolhimento de ombros barra'],
-        ['halteres', 'Encolhimento halteres'],
+        ['halteres', 'Encolhimento de ombros halteres'],
+        ['smith', 'Encolhimento smith'],
+      ]),
+      base('Remada invertida', 'Costas', 'compound', [
+        ['barra', 'Remada invertida barra'],
+        ['TRX', 'Remada invertida TRX'],
+      ]),
+      base('Good morning', 'Costas', 'accessory', [
+        ['barra', 'Good morning barra'],
+        ['halteres', 'Good morning halteres'],
       ]),
     ],
   },
@@ -168,9 +179,17 @@ export const exerciseGroups: ExerciseGroup[] = [
         ['máquina (reverse fly)', 'Reverse fly'],
       ]),
       base('Remada alta', 'Ombros', 'compound', [
-        ['barra', 'Upright row barra'],
-        ['halteres', 'Upright row halteres'],
-        ['polia', 'Upright row polia'],
+        ['barra', 'Remada alta barra'],
+        ['halteres', 'Remada alta halteres'],
+        ['polia', 'Remada alta polia'],
+      ]),
+      base('Push press', 'Ombros', 'compound', [
+        ['barra', 'Push press barra'],
+      ]),
+      base('Rotação externa', 'Ombros', 'accessory', [
+        ['halteres', 'Rotação externa halteres'],
+        ['polia', 'Rotação externa polia'],
+        ['banda', 'Rotação externa com banda'],
       ]),
     ],
   },
@@ -185,7 +204,7 @@ export const exerciseGroups: ExerciseGroup[] = [
       ]),
       base('Rosca martelo', 'Bíceps', 'accessory', [
         ['halteres', 'Rosca martelo'],
-        ['cross-body', 'Cross-body hammer curl'],
+        ['cross-body', 'Rosca martelo cross-body'],
       ]),
       base('Rosca concentrada', 'Bíceps', 'accessory', [
         ['halteres', 'Rosca concentrada'],
@@ -193,7 +212,7 @@ export const exerciseGroups: ExerciseGroup[] = [
       base('Rosca Scott', 'Bíceps', 'accessory', [
         ['barra', 'Rosca Scott barra'],
         ['halteres', 'Rosca Scott halteres'],
-        ['máquina', 'Preacher curl na máquina'],
+        ['máquina', 'Rosca Scott na máquina'],
       ]),
       base('Rosca no cabo', 'Bíceps', 'accessory', [
         ['polia baixa', 'Rosca no cabo baixa'],
@@ -203,7 +222,7 @@ export const exerciseGroups: ExerciseGroup[] = [
         ['barra', 'Rosca 21'],
       ]),
       base('Rosca inclinada', 'Bíceps', 'accessory', [
-        ['halteres', 'Incline dumbbell curl'],
+        ['halteres', 'Rosca inclinada halteres'],
       ]),
     ],
   },
@@ -227,13 +246,13 @@ export const exerciseGroups: ExerciseGroup[] = [
         ['polia (overhead)', 'Tríceps overhead cable'],
       ]),
       base('Supino pegada fechada', 'Tríceps', 'compound', [
-        ['barra', 'Close grip bench press'],
+        ['barra', 'Supino pegada fechada barra'],
       ]),
       base('Mergulho (dips)', 'Tríceps', 'compound', [
-        ['paralela', 'Dips paralela'],
-        ['máquina', 'Dips máquina'],
-        ['com peso', 'Dips weighted'],
-        ['banco', 'Tríceps banco (bench dips)'],
+        ['paralela', 'Mergulho na paralela'],
+        ['máquina', 'Mergulho na máquina'],
+        ['com peso', 'Mergulho com peso'],
+        ['banco', 'Tríceps no banco'],
       ]),
       base('Kickback', 'Tríceps', 'accessory', [
         ['halteres', 'Tríceps kickback'],
@@ -262,7 +281,7 @@ export const exerciseGroups: ExerciseGroup[] = [
         ['livre', 'Afundo livre'],
         ['halteres', 'Avanço com halteres'],
         ['smith', 'Afundo Smith'],
-        ['búlgaro', 'Bulgarian split squat'],
+        ['búlgaro', 'Agachamento búlgaro'],
       ]),
       base('Cadeira extensora', 'Pernas', 'accessory', [
         ['máquina', 'Cadeira extensora'],
@@ -294,8 +313,8 @@ export const exerciseGroups: ExerciseGroup[] = [
         ['halteres', 'Hip thrust halteres'],
       ]),
       base('Elevação pélvica', 'Glúteos', 'accessory', [
-        ['barra', 'Glute bridge barra'],
-        ['halteres', 'Glute bridge com halteres'],
+        ['barra', 'Elevação pélvica com barra'],
+        ['halteres', 'Elevação pélvica com halteres'],
         ['unilateral', 'Ponte unilateral de glúteo'],
       ]),
       base('Kickback glúteo', 'Glúteos', 'accessory', [
@@ -313,11 +332,11 @@ export const exerciseGroups: ExerciseGroup[] = [
     name: 'Panturrilhas',
     exercises: [
       base('Panturrilha', 'Panturrilhas', 'accessory', [
-        ['em pé', 'Calf raise em pé'],
-        ['sentado', 'Calf raise sentado'],
-        ['unilateral', 'Calf raise unilateral'],
-        ['no leg press', 'Calf press no leg press'],
-        ['smith', 'Smith calf raise'],
+        ['em pé', 'Panturrilha em pé'],
+        ['sentado', 'Panturrilha sentado'],
+        ['unilateral', 'Panturrilha unilateral'],
+        ['no leg press', 'Panturrilha no leg press'],
+        ['smith', 'Panturrilha no smith'],
       ]),
     ],
   },
@@ -328,36 +347,62 @@ export const exerciseGroups: ExerciseGroup[] = [
         ['crunch', 'Abdominal crunch'],
         ['inverso', 'Abdominal inverso'],
         ['bicicleta', 'Abdominal bicicleta'],
-        ['na polia', 'Cable crunch'],
+        ['na polia', 'Abdominal na polia'],
+        ['com bola', 'Abdominal na bola suíça'],
       ]),
       base('Prancha', 'Core', 'accessory', [
         ['frontal', 'Prancha frontal'],
         ['lateral', 'Prancha lateral'],
+        ['com elevação', 'Prancha com elevação de braço'],
       ]),
       base('Elevação de pernas', 'Core', 'accessory', [
-        ['suspensa', 'Hanging leg raise'],
+        ['suspensa', 'Elevação de pernas suspensa'],
         ['no banco', 'Elevação de pernas no banco'],
-        ['no chão', 'Elevação de pernas chão'],
+        ['no chão', 'Elevação de pernas no chão'],
       ]),
       base('Roda abdominal', 'Core', 'accessory', [
-        ['roda', 'Ab-roller (roda abdominal)'],
-        ['barra', 'Ab rollout barra'],
+        ['roda', 'Roda abdominal'],
+        ['barra', 'Rollout com barra'],
       ]),
-      base('Russian twist', 'Core', 'accessory', [
-        ['corpo', 'Russian twist'],
+      base('Rotação russa', 'Core', 'accessory', [
+        ['corpo', 'Rotação russa'],
+        ['com peso', 'Rotação russa com peso'],
+      ]),
+      base('Prancha lateral com rotação', 'Core', 'accessory', [
+        ['corpo', 'Side plank com rotação'],
       ]),
     ],
   },
   {
     name: 'Antebraço',
     exercises: [
-      base('Wrist curl', 'Antebraço', 'accessory', [
-        ['barra', 'Wrist curl barra'],
-        ['halteres', 'Wrist curl halteres'],
-        ['reverso barra', 'Reverse wrist curl barra'],
+      base('Rosca de punho', 'Antebraço', 'accessory', [
+        ['barra', 'Rosca de punho barra'],
+        ['halteres', 'Rosca de punho halteres'],
+        ['reverso barra', 'Rosca de punho reversa barra'],
       ]),
-      base('Farmer carry', 'Antebraço', 'accessory', [
-        ['halteres', 'Farmer carry'],
+      base('Caminhada do fazendeiro', 'Antebraço', 'accessory', [
+        ['halteres', 'Caminhada do fazendeiro halteres'],
+        ['trap bar', 'Caminhada do fazendeiro trap bar'],
+      ]),
+    ],
+  },
+  {
+    name: 'Funcional / Acessórios',
+    exercises: [
+      base('Kettlebell swing', 'Funcional', 'compound', [
+        ['duas mãos', 'Kettlebell swing'],
+        ['uma mão', 'Kettlebell swing unilateral'],
+      ]),
+      base('Band pull-apart', 'Funcional', 'accessory', [
+        ['banda', 'Band pull-apart'],
+      ]),
+      base('Battle rope', 'Funcional', 'compound', [
+        ['corda', 'Battle rope'],
+      ]),
+      base('Burpee', 'Funcional', 'compound', [
+        ['tradicional', 'Burpee'],
+        ['com salto', 'Burpee com box jump'],
       ]),
     ],
   },

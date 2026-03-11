@@ -1,48 +1,58 @@
 import { NavLink as RouterNavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Dumbbell, Calendar, BarChart3, Bot, User, Zap, LogOut, Menu, X, Calculator, Sparkles, Trophy, BookOpen, Award, Users, FolderOpen, Crown, Compass, Download, MapPin, Swords, Brain, Scale, Activity, HeartHandshake, Gauge, Heart, RotateCw, CheckCircle, ShoppingBag, CreditCard, Star, Shield, Utensils, Megaphone } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, Calendar, BarChart3, Bot, User, Zap, LogOut, Menu, X, Calculator, Sparkles, Trophy, BookOpen, Award, Users, FolderOpen, Crown, Compass, Download, MapPin, Swords, Brain, Scale, Activity, HeartHandshake, Gauge, Heart, RotateCw, CheckCircle, ShoppingBag, CreditCard, Star, Shield, Utensils, Megaphone, HelpCircle, MessageSquare } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { PremiumLockBadge } from '@/components/PremiumLock';
+import { PremiumTier } from '@/hooks/usePremium';
 import logoImg from '@/assets/iron-training-logo.png';
 
-const navItems = [
+interface NavItem {
+  to: string;
+  icon: any;
+  label: string;
+  requiredTier?: PremiumTier;
+}
+
+const navItems: NavItem[] = [
   { to: '/', icon: LayoutDashboard, label: 'Painel' },
   { to: '/program', icon: Calendar, label: 'Programa' },
   { to: '/programs', icon: FolderOpen, label: 'Meus Programas' },
-  { to: '/generate', icon: Sparkles, label: 'Gerar Programa' },
+  { to: '/generate', icon: Sparkles, label: 'Gerar Programa', requiredTier: 'basic' },
   { to: '/workout', icon: Dumbbell, label: 'Treino' },
   { to: '/train', icon: Zap, label: 'Modo App' },
-  { to: '/analytics', icon: BarChart3, label: 'Análises' },
+  { to: '/training-notes', icon: MessageSquare, label: 'Anotações' },
+  { to: '/analytics', icon: BarChart3, label: 'Análises', requiredTier: 'basic' },
   { to: '/rankings', icon: Trophy, label: 'Ranking' },
   { to: '/leaderboard', icon: Crown, label: 'Ranking DOTS' },
   { to: '/gym', icon: MapPin, label: 'Minha Academia' },
-  { to: '/rivals', icon: Swords, label: 'Rivais' },
-  { to: '/powerscore', icon: Zap, label: 'Power Score' },
-  { to: '/predictor', icon: Brain, label: 'Preditor IA' },
+  { to: '/rivals', icon: Swords, label: 'Rivais', requiredTier: 'standard' },
+  { to: '/powerscore', icon: Zap, label: 'Power Score', requiredTier: 'standard' },
+  { to: '/predictor', icon: Brain, label: 'Preditor IA', requiredTier: 'basic' },
   { to: '/achievements', icon: Award, label: 'Conquistas' },
   { to: '/feed', icon: Users, label: 'Feed Social' },
   { to: '/discover', icon: Compass, label: 'Explorar' },
   { to: '/exercises', icon: BookOpen, label: 'Exercícios' },
   { to: '/plates', icon: Calculator, label: 'Anilhas' },
-  { to: '/coach', icon: Bot, label: 'Coach IA' },
-  
-  { to: '/body', icon: Scale, label: 'Evolução Corporal' },
-  { to: '/prsimulator', icon: Brain, label: 'Simulador PR' },
-  { to: '/recovery', icon: Activity, label: 'Recuperação' },
-  { to: '/cotraining', icon: HeartHandshake, label: 'Co-Training' },
-  { to: '/barvelocity', icon: Gauge, label: 'Velocidade Barra' },
-  { to: '/wearable', icon: Heart, label: 'Wearable' },
-  { to: '/replay3d', icon: RotateCw, label: 'Replay 3D' },
-  { to: '/grading', icon: CheckCircle, label: 'Notas Execução' },
+  { to: '/coach', icon: Bot, label: 'Coach IA', requiredTier: 'premium' },
+  { to: '/body', icon: Scale, label: 'Evolução Corporal', requiredTier: 'standard' },
+  { to: '/prsimulator', icon: Brain, label: 'Simulador PR', requiredTier: 'standard' },
+  { to: '/recovery', icon: Activity, label: 'Recuperação', requiredTier: 'standard' },
+  { to: '/cotraining', icon: HeartHandshake, label: 'Co-Training', requiredTier: 'standard' },
+  { to: '/barvelocity', icon: Gauge, label: 'Velocidade Barra', requiredTier: 'premium' },
+  { to: '/wearable', icon: Heart, label: 'Wearable', requiredTier: 'premium' },
+  { to: '/replay3d', icon: RotateCw, label: 'Replay 3D', requiredTier: 'premium' },
+  { to: '/grading', icon: CheckCircle, label: 'Notas Execução', requiredTier: 'basic' },
+  { to: '/diet', icon: Utensils, label: 'Dieta IA', requiredTier: 'premium' },
   { to: '/subscribe', icon: Crown, label: 'Planos Premium' },
   { to: '/shop', icon: ShoppingBag, label: 'Loja' },
-  { to: '/premium-content', icon: Star, label: 'Conteúdo Premium' },
-  { to: '/diet', icon: Utensils, label: 'Perfil de Dieta' },
+  { to: '/premium-content', icon: Star, label: 'Conteúdo Premium', requiredTier: 'premium' },
   { to: '/influencer', icon: Megaphone, label: 'Influenciadores' },
   { to: '/admin', icon: Shield, label: 'Painel Admin' },
   { to: '/groups', icon: Users, label: 'Grupos' },
   { to: '/profile', icon: User, label: 'Perfil' },
+  { to: '/help', icon: HelpCircle, label: 'Central de Ajuda' },
   { to: '/install', icon: Download, label: 'Instalar App' },
 ];
 
@@ -80,7 +90,8 @@ export function AppSidebar() {
               )}
             >
               <item.icon className={cn("w-5 h-5 shrink-0", isActive && "text-primary")} />
-              <span>{item.label}</span>
+              <span className="flex-1">{item.label}</span>
+              {item.requiredTier && <PremiumLockBadge requiredTier={item.requiredTier} />}
             </RouterNavLink>
           );
         })}

@@ -47,6 +47,8 @@ import AdminPage from "./pages/AdminPage";
 import DietPage from "./pages/DietPage";
 import InfluencerPage from "./pages/InfluencerPage";
 import GroupsPage from "./pages/GroupsPage";
+import HelpCenterPage from "./pages/HelpCenterPage";
+import TrainingNotesPage from "./pages/TrainingNotesPage";
 import NotFound from "./pages/NotFound";
 import OnboardingTutorial from "./components/OnboardingTutorial";
 import { useState } from "react";
@@ -119,6 +121,8 @@ function ProtectedRoutes() {
           <Route path="/diet" element={<DietPage />} />
           <Route path="/influencer" element={<InfluencerPage />} />
           <Route path="/groups" element={<GroupsPage />} />
+          <Route path="/help" element={<HelpCenterPage />} />
+          <Route path="/training-notes" element={<TrainingNotesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
