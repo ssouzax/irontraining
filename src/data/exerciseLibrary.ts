@@ -222,7 +222,7 @@ export const exerciseGroups: ExerciseGroup[] = [
         ['barra', 'Rosca 21'],
       ]),
       base('Rosca inclinada', 'Bíceps', 'accessory', [
-        ['halteres', 'Incline dumbbell curl'],
+        ['halteres', 'Rosca inclinada halteres'],
       ]),
     ],
   },
