@@ -332,11 +332,11 @@ export const exerciseGroups: ExerciseGroup[] = [
     name: 'Panturrilhas',
     exercises: [
       base('Panturrilha', 'Panturrilhas', 'accessory', [
-        ['em pé', 'Calf raise em pé'],
-        ['sentado', 'Calf raise sentado'],
-        ['unilateral', 'Calf raise unilateral'],
-        ['no leg press', 'Calf press no leg press'],
-        ['smith', 'Smith calf raise'],
+        ['em pé', 'Panturrilha em pé'],
+        ['sentado', 'Panturrilha sentado'],
+        ['unilateral', 'Panturrilha unilateral'],
+        ['no leg press', 'Panturrilha no leg press'],
+        ['smith', 'Panturrilha no smith'],
       ]),
     ],
   },
