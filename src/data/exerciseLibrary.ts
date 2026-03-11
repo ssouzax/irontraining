@@ -179,9 +179,17 @@ export const exerciseGroups: ExerciseGroup[] = [
         ['máquina (reverse fly)', 'Reverse fly'],
       ]),
       base('Remada alta', 'Ombros', 'compound', [
-        ['barra', 'Upright row barra'],
-        ['halteres', 'Upright row halteres'],
-        ['polia', 'Upright row polia'],
+        ['barra', 'Remada alta barra'],
+        ['halteres', 'Remada alta halteres'],
+        ['polia', 'Remada alta polia'],
+      ]),
+      base('Push press', 'Ombros', 'compound', [
+        ['barra', 'Push press barra'],
+      ]),
+      base('Rotação externa', 'Ombros', 'accessory', [
+        ['halteres', 'Rotação externa halteres'],
+        ['polia', 'Rotação externa polia'],
+        ['banda', 'Rotação externa com banda'],
       ]),
     ],
   },
