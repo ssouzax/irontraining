@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Sparkles, Loader2, ChevronDown, ChevronRight, Dumbbell, Target, Zap, Brain } from 'lucide-react';
+import { Sparkles, Loader2, ChevronDown, ChevronRight, Dumbbell, Target, Zap, Brain, AlertTriangle, Clock, User } from 'lucide-react';
 import { useTraining } from '@/contexts/TrainingContext';
 import { calculate1RM } from '@/data/defaultProfile';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,6 +40,45 @@ interface GeneratedProgram {
   }[];
 }
 
+const goalOptions = [
+  { value: 'powerbuilding', label: 'Powerbuilding', desc: 'Força + hipertrofia' },
+  { value: 'strength', label: 'Força Máxima', desc: 'Foco em 1RM' },
+  { value: 'hypertrophy', label: 'Hipertrofia', desc: 'Ganho muscular' },
+  { value: 'recomp', label: 'Recomposição', desc: 'Perda de gordura + ganho muscular' },
+  { value: 'endurance', label: 'Resistência Muscular', desc: 'Alta repetição' },
+];
+
+const experienceLevels = [
+  { value: 'beginner', label: 'Iniciante', desc: 'Menos de 1 ano' },
+  { value: 'intermediate', label: 'Intermediário', desc: '1 a 3 anos' },
+  { value: 'advanced', label: 'Avançado', desc: '3+ anos' },
+];
+
+const equipmentOptions = [
+  { value: 'full', label: 'Academia completa' },
+  { value: 'limited', label: 'Academia limitada' },
+  { value: 'home', label: 'Treino em casa' },
+];
+
+const injuryOptions = [
+  { value: 'none', label: 'Nenhuma' },
+  { value: 'shoulder', label: 'Ombro' },
+  { value: 'knee', label: 'Joelho' },
+  { value: 'lower_back', label: 'Lombar' },
+  { value: 'wrist', label: 'Punho' },
+  { value: 'hip', label: 'Quadril' },
+];
+
+const focusOptions = [
+  { value: 'none', label: 'Equilibrado' },
+  { value: 'chest', label: 'Peito' },
+  { value: 'back', label: 'Costas' },
+  { value: 'legs', label: 'Pernas' },
+  { value: 'glutes', label: 'Glúteos' },
+  { value: 'arms', label: 'Braços' },
+  { value: 'shoulders', label: 'Ombros' },
+];
+
 export default function ProgramGenerator() {
   const { profile } = useTraining();
   const squat1RM = calculate1RM(profile.currentLifts.squat.weight, profile.currentLifts.squat.reps);
@@ -50,19 +89,43 @@ export default function ProgramGenerator() {
   const [bench, setBench] = useState(bench1RM);
   const [deadlift, setDeadlift] = useState(deadlift1RM);
   const [bodyWeight, setBodyWeight] = useState(profile.bodyWeight);
+  const [age, setAge] = useState(25);
+  const [height, setHeight] = useState(175);
+  const [sex, setSex] = useState('male');
   const [goal, setGoal] = useState('powerbuilding');
   const [frequency, setFrequency] = useState(5);
+  const [experience, setExperience] = useState('intermediate');
+  const [equipment, setEquipment] = useState('full');
+  const [sessionTime, setSessionTime] = useState(60);
+  const [injuries, setInjuries] = useState<string[]>(['none']);
+  const [muscleFocus, setMuscleFocus] = useState('none');
   const [usePredictions, setUsePredictions] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [program, setProgram] = useState<GeneratedProgram | null>(null);
   const [expandedBlock, setExpandedBlock] = useState<number | null>(null);
   const [expandedWeek, setExpandedWeek] = useState<string | null>(null);
 
+  const toggleInjury = (val: string) => {
+    if (val === 'none') {
+      setInjuries(['none']);
+    } else {
+      setInjuries(prev => {
+        const without = prev.filter(v => v !== 'none');
+        return without.includes(val) ? without.filter(v => v !== val) : [...without, val];
+      });
+    }
+  };
+
   const generate = async () => {
     setGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-program', {
-        body: { squat1RM: squat, bench1RM: bench, deadlift1RM: deadlift, bodyWeight, goal, frequency, usePredictions },
+        body: {
+          squat1RM: squat, bench1RM: bench, deadlift1RM: deadlift,
+          bodyWeight, age, height, sex, goal, frequency, experience,
+          equipment, sessionTime, injuries: injuries.filter(i => i !== 'none'),
+          muscleFocus, usePredictions,
+        },
       });
       if (error) throw error;
       if (data?.program) {
@@ -79,101 +142,195 @@ export default function ProgramGenerator() {
     }
   };
 
+  const InputField = ({ label, value, onChange, type = 'number', placeholder = '' }: any) => (
+    <div>
+      <label className="text-xs text-muted-foreground block mb-1.5">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground font-mono text-center focus:outline-none focus:ring-1 focus:ring-primary"
+      />
+    </div>
+  );
+
+  const SelectField = ({ label, value, onChange, children }: any) => (
+    <div>
+      <label className="text-xs text-muted-foreground block mb-1.5">{label}</label>
+      <select
+        value={value}
+        onChange={onChange}
+        className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+      >
+        {children}
+      </select>
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-3xl mx-auto">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">Gerar Programa</h1>
-        <p className="text-muted-foreground mt-1">Programa personalizado baseado nos seus PRs</p>
+        <p className="text-muted-foreground mt-1">Programa personalizado baseado nos seus dados</p>
       </motion.div>
 
-      {/* Input Form */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-        className="bg-card rounded-xl border border-border p-5 sm:p-6 card-elevated space-y-5">
-        
+      {/* Section 1: Personal Data */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+        className="bg-card rounded-xl border border-border p-5 card-elevated space-y-4">
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-          <Target className="w-4 h-4 text-primary" /> Seus 1RMs Estimados
+          <User className="w-4 h-4 text-primary" /> Dados Pessoais
         </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <InputField label="Peso (kg)" value={bodyWeight} onChange={(e: any) => setBodyWeight(parseFloat(e.target.value) || 0)} placeholder="80" />
+          <InputField label="Altura (cm)" value={height} onChange={(e: any) => setHeight(parseInt(e.target.value) || 0)} placeholder="175" />
+          <InputField label="Idade" value={age} onChange={(e: any) => setAge(parseInt(e.target.value) || 0)} placeholder="25" />
+          <SelectField label="Sexo" value={sex} onChange={(e: any) => setSex(e.target.value)}>
+            <option value="male">Masculino</option>
+            <option value="female">Feminino</option>
+          </SelectField>
+        </div>
+      </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            { label: 'Agachamento', value: squat, set: setSquat },
-            { label: 'Supino', value: bench, set: setBench },
-            { label: 'Terra', value: deadlift, set: setDeadlift },
-          ].map(({ label, value, set }) => (
-            <div key={label}>
-              <label className="text-xs text-muted-foreground block mb-1.5">{label} 1RM (kg)</label>
-              <input
-                type="number"
-                value={value}
-                onChange={e => set(parseFloat(e.target.value) || 0)}
-                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground font-mono text-center focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
+      {/* Section 2: 1RMs */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+        className="bg-card rounded-xl border border-border p-5 card-elevated space-y-4">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <Target className="w-4 h-4 text-primary" /> 1RMs Estimados
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <InputField label="Agachamento (kg)" value={squat} onChange={(e: any) => setSquat(parseFloat(e.target.value) || 0)} placeholder="140" />
+          <InputField label="Supino (kg)" value={bench} onChange={(e: any) => setBench(parseFloat(e.target.value) || 0)} placeholder="100" />
+          <InputField label="Levantamento terra (kg)" value={deadlift} onChange={(e: any) => setDeadlift(parseFloat(e.target.value) || 0)} placeholder="180" />
+        </div>
+        <p className="text-[10px] text-muted-foreground">Se não souber, coloque 0 e o sistema estimará baseado no seu nível.</p>
+      </motion.div>
+
+      {/* Section 3: Experience */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+        className="bg-card rounded-xl border border-border p-5 card-elevated space-y-4">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <Dumbbell className="w-4 h-4 text-primary" /> Nível de Experiência
+        </h3>
+        <div className="grid grid-cols-3 gap-2">
+          {experienceLevels.map(lvl => (
+            <button key={lvl.value} onClick={() => setExperience(lvl.value)}
+              className={cn("p-3 rounded-xl border text-center transition-all",
+                experience === lvl.value ? "border-primary bg-primary/5" : "border-border hover:bg-secondary/50"
+              )}>
+              <p className="text-sm font-medium text-foreground">{lvl.label}</p>
+              <p className="text-[10px] text-muted-foreground">{lvl.desc}</p>
+            </button>
           ))}
         </div>
+      </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className="text-xs text-muted-foreground block mb-1.5">Peso Corporal (kg)</label>
-            <input
-              type="number"
-              value={bodyWeight}
-              onChange={e => setBodyWeight(parseFloat(e.target.value) || 0)}
-              className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground font-mono text-center focus:outline-none focus:ring-1 focus:ring-primary"
-            />
-          </div>
-          <div>
-            <label className="text-xs text-muted-foreground block mb-1.5">Objetivo</label>
-            <select
-              value={goal}
-              onChange={e => setGoal(e.target.value)}
-              className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-            >
-              <option value="powerbuilding">Powerbuilding</option>
-              <option value="strength">Força</option>
-              <option value="hypertrophy">Hipertrofia</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs text-muted-foreground block mb-1.5">Dias por Semana</label>
-            <select
-              value={frequency}
-              onChange={e => setFrequency(parseInt(e.target.value))}
-              className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-            >
-              <option value={3}>3 dias</option>
-              <option value={4}>4 dias</option>
-              <option value={5}>5 dias</option>
-              <option value={6}>6 dias</option>
-            </select>
+      {/* Section 4: Goal */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+        className="bg-card rounded-xl border border-border p-5 card-elevated space-y-4">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <Zap className="w-4 h-4 text-primary" /> Objetivo Principal
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {goalOptions.map(g => (
+            <button key={g.value} onClick={() => setGoal(g.value)}
+              className={cn("p-3 rounded-xl border text-left transition-all",
+                goal === g.value ? "border-primary bg-primary/5" : "border-border hover:bg-secondary/50"
+              )}>
+              <p className="text-sm font-medium text-foreground">{g.label}</p>
+              <p className="text-[10px] text-muted-foreground">{g.desc}</p>
+            </button>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Section 5: Training Preferences */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+        className="bg-card rounded-xl border border-border p-5 card-elevated space-y-4">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <Clock className="w-4 h-4 text-primary" /> Preferências de Treino
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <SelectField label="Dias por semana" value={frequency} onChange={(e: any) => setFrequency(parseInt(e.target.value))}>
+            {[2, 3, 4, 5, 6, 7].map(d => <option key={d} value={d}>{d} dias</option>)}
+          </SelectField>
+          <SelectField label="Tempo por sessão" value={sessionTime} onChange={(e: any) => setSessionTime(parseInt(e.target.value))}>
+            <option value={45}>45 minutos</option>
+            <option value={60}>60 minutos</option>
+            <option value={90}>90 minutos</option>
+            <option value={120}>120+ minutos</option>
+          </SelectField>
+          <SelectField label="Equipamento disponível" value={equipment} onChange={(e: any) => setEquipment(e.target.value)}>
+            {equipmentOptions.map(eq => <option key={eq.value} value={eq.value}>{eq.label}</option>)}
+          </SelectField>
+        </div>
+      </motion.div>
+
+      {/* Section 6: Focus & Injuries */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+        className="bg-card rounded-xl border border-border p-5 card-elevated space-y-4">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-warning" /> Foco Muscular e Limitações
+        </h3>
+        <div>
+          <label className="text-xs text-muted-foreground block mb-2">Prioridade muscular (opcional)</label>
+          <div className="flex flex-wrap gap-2">
+            {focusOptions.map(f => (
+              <button key={f.value} onClick={() => setMuscleFocus(f.value)}
+                className={cn("px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
+                  muscleFocus === f.value
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:bg-secondary/50"
+                )}>
+                {f.label}
+              </button>
+            ))}
           </div>
         </div>
-
-        {/* Prediction Toggle */}
-        <div className="flex items-center justify-between p-3 rounded-xl bg-primary/5 border border-primary/20">
-          <div className="flex items-center gap-2">
-            <Brain className="w-4 h-4 text-primary" />
-            <div>
-              <p className="text-sm font-medium text-foreground">Usar Predições IA</p>
-              <p className="text-[10px] text-muted-foreground">Ajusta cargas baseado no seu histórico de progressão</p>
-            </div>
+        <div>
+          <label className="text-xs text-muted-foreground block mb-2">Lesões ou limitações</label>
+          <div className="flex flex-wrap gap-2">
+            {injuryOptions.map(inj => (
+              <button key={inj.value} onClick={() => toggleInjury(inj.value)}
+                className={cn("px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
+                  injuries.includes(inj.value)
+                    ? "border-warning bg-warning/10 text-warning"
+                    : "border-border text-muted-foreground hover:bg-secondary/50"
+                )}>
+                {inj.label}
+              </button>
+            ))}
           </div>
-          <button
-            onClick={() => setUsePredictions(!usePredictions)}
-            className={cn("w-11 h-6 rounded-full transition-colors relative",
-              usePredictions ? "bg-primary" : "bg-secondary"
-            )}
-          >
-            <div className={cn("absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform",
-              usePredictions ? "translate-x-5" : "translate-x-0.5"
-            )} />
-          </button>
         </div>
+      </motion.div>
 
+      {/* Prediction Toggle */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+        className="flex items-center justify-between p-4 rounded-xl bg-primary/5 border border-primary/20">
+        <div className="flex items-center gap-2">
+          <Brain className="w-4 h-4 text-primary" />
+          <div>
+            <p className="text-sm font-medium text-foreground">Usar Predições IA</p>
+            <p className="text-[10px] text-muted-foreground">Ajusta cargas baseado no seu histórico</p>
+          </div>
+        </div>
+        <button
+          onClick={() => setUsePredictions(!usePredictions)}
+          className={cn("w-11 h-6 rounded-full transition-colors relative",
+            usePredictions ? "bg-primary" : "bg-secondary"
+          )}>
+          <div className={cn("absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform",
+            usePredictions ? "translate-x-5" : "translate-x-0.5"
+          )} />
+        </button>
+      </motion.div>
+
+      {/* Generate Button */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
         <button
           onClick={generate}
           disabled={generating}
-          className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-medium text-sm hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+          className="w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-semibold text-sm hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
         >
           {generating ? (
             <>
@@ -189,10 +346,10 @@ export default function ProgramGenerator() {
         </button>
       </motion.div>
 
-      {/* Generated Program */}
+      {/* Generated Program Display */}
       {program && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-          <div className="bg-card rounded-xl border border-border p-5 sm:p-6 card-elevated">
+          <div className="bg-card rounded-xl border border-border p-5 card-elevated">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Dumbbell className="w-5 h-5 text-primary" />
@@ -209,7 +366,7 @@ export default function ProgramGenerator() {
             <div key={bIdx} className="bg-card rounded-xl border border-border card-elevated overflow-hidden">
               <button
                 onClick={() => setExpandedBlock(expandedBlock === bIdx ? null : bIdx)}
-                className="w-full flex items-center justify-between p-4 sm:p-5 hover:bg-secondary/30 transition-colors"
+                className="w-full flex items-center justify-between p-4 hover:bg-secondary/30 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -231,14 +388,14 @@ export default function ProgramGenerator() {
                       <div key={weekKey} className="border-b border-border last:border-0">
                         <button
                           onClick={() => setExpandedWeek(expandedWeek === weekKey ? null : weekKey)}
-                          className="w-full flex items-center justify-between px-4 sm:px-5 py-3 hover:bg-secondary/20 transition-colors"
+                          className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/20 transition-colors"
                         >
                           <span className="text-sm text-foreground font-medium">Semana {week.weekNumber}</span>
                           {expandedWeek === weekKey ? <ChevronDown className="w-3 h-3 text-muted-foreground" /> : <ChevronRight className="w-3 h-3 text-muted-foreground" />}
                         </button>
 
                         {expandedWeek === weekKey && (
-                          <div className="px-4 sm:px-5 pb-4 space-y-3">
+                          <div className="px-4 pb-4 space-y-3">
                             {week.days.map((day, dIdx) => (
                               <div key={dIdx} className="p-3 rounded-lg bg-secondary/30">
                                 <p className="text-sm font-medium text-foreground">{day.dayOfWeek} — {day.name}</p>
