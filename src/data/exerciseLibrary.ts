@@ -204,7 +204,7 @@ export const exerciseGroups: ExerciseGroup[] = [
       ]),
       base('Rosca martelo', 'Bíceps', 'accessory', [
         ['halteres', 'Rosca martelo'],
-        ['cross-body', 'Cross-body hammer curl'],
+        ['cross-body', 'Rosca martelo cross-body'],
       ]),
       base('Rosca concentrada', 'Bíceps', 'accessory', [
         ['halteres', 'Rosca concentrada'],
