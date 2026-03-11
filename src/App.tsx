@@ -47,6 +47,8 @@ import AdminPage from "./pages/AdminPage";
 import DietPage from "./pages/DietPage";
 import InfluencerPage from "./pages/InfluencerPage";
 import GroupsPage from "./pages/GroupsPage";
+import HelpCenterPage from "./pages/HelpCenterPage";
+import TrainingNotesPage from "./pages/TrainingNotesPage";
 import NotFound from "./pages/NotFound";
 import OnboardingTutorial from "./components/OnboardingTutorial";
 import { useState } from "react";
