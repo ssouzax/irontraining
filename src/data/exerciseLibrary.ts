@@ -246,13 +246,13 @@ export const exerciseGroups: ExerciseGroup[] = [
         ['polia (overhead)', 'Tríceps overhead cable'],
       ]),
       base('Supino pegada fechada', 'Tríceps', 'compound', [
-        ['barra', 'Close grip bench press'],
+        ['barra', 'Supino pegada fechada barra'],
       ]),
       base('Mergulho (dips)', 'Tríceps', 'compound', [
-        ['paralela', 'Dips paralela'],
-        ['máquina', 'Dips máquina'],
-        ['com peso', 'Dips weighted'],
-        ['banco', 'Tríceps banco (bench dips)'],
+        ['paralela', 'Mergulho na paralela'],
+        ['máquina', 'Mergulho na máquina'],
+        ['com peso', 'Mergulho com peso'],
+        ['banco', 'Tríceps no banco'],
       ]),
       base('Kickback', 'Tríceps', 'accessory', [
         ['halteres', 'Tríceps kickback'],
