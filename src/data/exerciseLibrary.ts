@@ -376,13 +376,33 @@ export const exerciseGroups: ExerciseGroup[] = [
   {
     name: 'Antebraço',
     exercises: [
-      base('Wrist curl', 'Antebraço', 'accessory', [
-        ['barra', 'Wrist curl barra'],
-        ['halteres', 'Wrist curl halteres'],
-        ['reverso barra', 'Reverse wrist curl barra'],
+      base('Rosca de punho', 'Antebraço', 'accessory', [
+        ['barra', 'Rosca de punho barra'],
+        ['halteres', 'Rosca de punho halteres'],
+        ['reverso barra', 'Rosca de punho reversa barra'],
       ]),
-      base('Farmer carry', 'Antebraço', 'accessory', [
-        ['halteres', 'Farmer carry'],
+      base('Caminhada do fazendeiro', 'Antebraço', 'accessory', [
+        ['halteres', 'Caminhada do fazendeiro halteres'],
+        ['trap bar', 'Caminhada do fazendeiro trap bar'],
+      ]),
+    ],
+  },
+  {
+    name: 'Funcional / Acessórios',
+    exercises: [
+      base('Kettlebell swing', 'Funcional', 'compound', [
+        ['duas mãos', 'Kettlebell swing'],
+        ['uma mão', 'Kettlebell swing unilateral'],
+      ]),
+      base('Band pull-apart', 'Funcional', 'accessory', [
+        ['banda', 'Band pull-apart'],
+      ]),
+      base('Battle rope', 'Funcional', 'compound', [
+        ['corda', 'Battle rope'],
+      ]),
+      base('Burpee', 'Funcional', 'compound', [
+        ['tradicional', 'Burpee'],
+        ['com salto', 'Burpee com box jump'],
       ]),
     ],
   },
