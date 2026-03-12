@@ -87,16 +87,16 @@ function ProtectedRoutes() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/program" element={<ProgramPage />} />
           <Route path="/programs" element={<ProgramManagerPage />} />
-          <Route path="/generate" element={<ProgramGenerator />} />
+          <Route path="/generate" element={<PremiumGate requiredTier="basic" feature="Gerar Programa"><ProgramGenerator /></PremiumGate>} />
           <Route path="/workout" element={<WorkoutPage />} />
           <Route path="/train" element={<AppModeWorkout />} />
-          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/analytics" element={<PremiumGate requiredTier="basic" feature="Análises"><AnalyticsPage /></PremiumGate>} />
           <Route path="/rankings" element={<RankingsPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/gym" element={<GymPage />} />
           <Route path="/rivals" element={<RivalsPage />} />
-          <Route path="/powerscore" element={<PowerScorePage />} />
-          <Route path="/predictor" element={<PredictorPage />} />
+          <Route path="/powerscore" element={<PremiumGate requiredTier="standard" feature="Power Score"><PowerScorePage /></PremiumGate>} />
+          <Route path="/predictor" element={<PremiumGate requiredTier="basic" feature="Preditor IA"><PredictorPage /></PremiumGate>} />
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/exercises" element={<ExerciseLibrary />} />
           <Route path="/feed" element={<SocialFeedPage />} />
@@ -104,21 +104,21 @@ function ProtectedRoutes() {
           <Route path="/athlete/:userId" element={<AthleteProfilePage />} />
           <Route path="/plates" element={<PlateCalculator />} />
           <Route path="/streaks" element={<StreakLeaderboardPage />} />
-          <Route path="/coach" element={<CoachPage />} />
+          <Route path="/coach" element={<PremiumGate requiredTier="premium" feature="Coach IA"><CoachPage /></PremiumGate>} />
           
           <Route path="/body" element={<BodyCompositionPage />} />
-          <Route path="/prsimulator" element={<PRSimulatorPage />} />
-          <Route path="/recovery" element={<RecoveryPage />} />
+          <Route path="/prsimulator" element={<PremiumGate requiredTier="standard" feature="Simulador PR"><PRSimulatorPage /></PremiumGate>} />
+          <Route path="/recovery" element={<PremiumGate requiredTier="standard" feature="Recuperação"><RecoveryPage /></PremiumGate>} />
           <Route path="/cotraining" element={<CoTrainingPage />} />
-          <Route path="/barvelocity" element={<BarVelocityPage />} />
-          <Route path="/wearable" element={<WearablePage />} />
-          <Route path="/replay3d" element={<Replay3DPage />} />
-          <Route path="/grading" element={<ExecutionGradingPage />} />
+          <Route path="/barvelocity" element={<PremiumGate requiredTier="premium" feature="Velocidade da Barra"><BarVelocityPage /></PremiumGate>} />
+          <Route path="/wearable" element={<PremiumGate requiredTier="premium" feature="Wearable"><WearablePage /></PremiumGate>} />
+          <Route path="/replay3d" element={<PremiumGate requiredTier="premium" feature="Replay 3D"><Replay3DPage /></PremiumGate>} />
+          <Route path="/grading" element={<PremiumGate requiredTier="basic" feature="Notas de Execução"><ExecutionGradingPage /></PremiumGate>} />
           <Route path="/subscribe" element={<SubscribePage />} />
           <Route path="/shop" element={<ShopPage />} />
-          <Route path="/premium-content" element={<PremiumContentPage />} />
+          <Route path="/premium-content" element={<PremiumGate requiredTier="premium" feature="Conteúdo Premium"><PremiumContentPage /></PremiumGate>} />
           <Route path="/admin" element={<AdminPage />} />
-          <Route path="/diet" element={<DietPage />} />
+          <Route path="/diet" element={<PremiumGate requiredTier="premium" feature="Dieta IA"><DietPage /></PremiumGate>} />
           <Route path="/influencer" element={<InfluencerPage />} />
           <Route path="/groups" element={<GroupsPage />} />
           <Route path="/help" element={<HelpCenterPage />} />
