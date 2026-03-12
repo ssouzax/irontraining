@@ -51,6 +51,7 @@ import HelpCenterPage from "./pages/HelpCenterPage";
 import TrainingNotesPage from "./pages/TrainingNotesPage";
 import NotFound from "./pages/NotFound";
 import OnboardingTutorial from "./components/OnboardingTutorial";
+import { PremiumGate } from "./components/PremiumGate";
 import { useState } from "react";
 
 const queryClient = new QueryClient();
