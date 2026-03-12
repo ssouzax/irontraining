@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Sparkles, Loader2, ChevronDown, ChevronRight, Dumbbell, Target, Zap, Brain, AlertTriangle, Clock, User } from 'lucide-react';
+import { Sparkles, Loader2, ChevronDown, ChevronRight, Dumbbell, Target, Zap, Brain, AlertTriangle, Clock, User, CheckCircle2 } from 'lucide-react';
 import { useTraining } from '@/contexts/TrainingContext';
 import { calculate1RM } from '@/data/defaultProfile';
 import { supabase } from '@/integrations/supabase/client';
@@ -101,6 +101,7 @@ export default function ProgramGenerator() {
   const [muscleFocus, setMuscleFocus] = useState('none');
   const [usePredictions, setUsePredictions] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [generationStatus, setGenerationStatus] = useState('');
   const [program, setProgram] = useState<GeneratedProgram | null>(null);
   const [expandedBlock, setExpandedBlock] = useState<number | null>(null);
   const [expandedWeek, setExpandedWeek] = useState<string | null>(null);
@@ -118,7 +119,10 @@ export default function ProgramGenerator() {
 
   const generate = async () => {
     setGenerating(true);
+    setGenerationStatus('Construindo estrutura do programa...');
+    setProgram(null);
     try {
+      setGenerationStatus('Gerando exercícios bloco a bloco com IA...');
       const { data, error } = await supabase.functions.invoke('generate-program', {
         body: {
           squat1RM: squat, bench1RM: bench, deadlift1RM: deadlift,
@@ -131,12 +135,22 @@ export default function ProgramGenerator() {
       if (data?.program) {
         setProgram(data.program);
         setExpandedBlock(0);
-        toast.success(usePredictions ? 'Programa gerado com predições IA!' : 'Programa gerado com sucesso!');
+        setGenerationStatus('');
+        const totalDays = data.program.blocks.reduce(
+          (acc: number, b: any) => acc + b.weeks.reduce((wa: number, w: any) => wa + (w.days?.length || 0), 0), 0
+        );
+        const totalExercises = data.program.blocks.reduce(
+          (acc: number, b: any) => acc + b.weeks.reduce(
+            (wa: number, w: any) => wa + w.days.reduce((da: number, d: any) => da + (d.exercises?.length || 0), 0), 0
+          ), 0
+        );
+        toast.success(`Programa completo: ${data.program.durationWeeks} semanas, ${totalDays} treinos, ${totalExercises} exercícios!`);
       } else if (data?.error) {
         throw new Error(data.error);
       }
     } catch (err: any) {
       toast.error(err.message || 'Falha ao gerar programa');
+      setGenerationStatus('');
     } finally {
       setGenerating(false);
     }
@@ -172,7 +186,7 @@ export default function ProgramGenerator() {
     <div className="space-y-6 max-w-3xl mx-auto">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">Gerar Programa</h1>
-        <p className="text-muted-foreground mt-1">Programa personalizado baseado nos seus dados</p>
+        <p className="text-muted-foreground mt-1">Programa personalizado com periodização profissional</p>
       </motion.div>
 
       {/* Section 1: Personal Data */}
@@ -270,7 +284,7 @@ export default function ProgramGenerator() {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
         className="bg-card rounded-xl border border-border p-5 card-elevated space-y-4">
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-warning" /> Foco Muscular e Limitações
+          <AlertTriangle className="w-4 h-4 text-primary" /> Foco Muscular e Limitações
         </h3>
         <div>
           <label className="text-xs text-muted-foreground block mb-2">Prioridade muscular (opcional)</label>
@@ -294,7 +308,7 @@ export default function ProgramGenerator() {
               <button key={inj.value} onClick={() => toggleInjury(inj.value)}
                 className={cn("px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
                   injuries.includes(inj.value)
-                    ? "border-warning bg-warning/10 text-warning"
+                    ? "border-primary bg-primary/10 text-primary"
                     : "border-border text-muted-foreground hover:bg-secondary/50"
                 )}>
                 {inj.label}
@@ -335,15 +349,40 @@ export default function ProgramGenerator() {
           {generating ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              {usePredictions ? 'Gerando com predições IA...' : 'Gerando programa com IA...'}
+              Gerando programa completo...
             </>
           ) : (
             <>
               <Sparkles className="w-4 h-4" />
-              {usePredictions ? 'Gerar com Predições IA' : 'Gerar Programa Personalizado'}
+              Gerar Programa Profissional (12 semanas)
             </>
           )}
         </button>
+
+        {/* Generation progress */}
+        {generating && generationStatus && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="mt-3 p-4 rounded-xl bg-card border border-border space-y-3"
+          >
+            <div className="flex items-center gap-2">
+              <Loader2 className="w-3 h-3 animate-spin text-primary" />
+              <p className="text-xs text-muted-foreground">{generationStatus}</p>
+            </div>
+            <div className="space-y-1.5">
+              {['Estrutura do programa', 'Bloco Hipertrofia', 'Bloco Força', 'Bloco Intensificação', 'Bloco PR/Deload', 'Validação e salvamento'].map((step, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className={cn("w-1.5 h-1.5 rounded-full", i === 0 ? 'bg-primary' : 'bg-muted')} />
+                  <span className="text-[10px] text-muted-foreground">{step}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground italic">
+              A IA gera cada bloco separadamente para garantir programa 100% completo. Isso pode levar 30-60 segundos.
+            </p>
+          </motion.div>
+        )}
       </motion.div>
 
       {/* Generated Program Display */}
@@ -352,14 +391,24 @@ export default function ProgramGenerator() {
           <div className="bg-card rounded-xl border border-border p-5 card-elevated">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Dumbbell className="w-5 h-5 text-primary" />
+                <CheckCircle2 className="w-5 h-5 text-primary" />
               </div>
               <div>
                 <h2 className="font-bold text-foreground">{program.name}</h2>
                 <p className="text-xs text-muted-foreground">{program.description}</p>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">{program.durationWeeks} semanas · {program.blocks.length} blocos</p>
+            <div className="flex gap-3 mt-3">
+              <div className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium">
+                {program.durationWeeks} semanas
+              </div>
+              <div className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium">
+                {program.blocks.length} blocos
+              </div>
+              <div className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium">
+                {program.blocks.reduce((a, b) => a + b.weeks.reduce((wa, w) => wa + w.days.length, 0), 0)} treinos
+              </div>
+            </div>
           </div>
 
           {program.blocks.map((block, bIdx) => (
@@ -377,7 +426,10 @@ export default function ProgramGenerator() {
                     <p className="text-xs text-muted-foreground">{block.weekRange} · {block.goal}</p>
                   </div>
                 </div>
-                {expandedBlock === bIdx ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-muted-foreground">{block.weeks.length} sem</span>
+                  {expandedBlock === bIdx ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+                </div>
               </button>
 
               {expandedBlock === bIdx && (
@@ -391,24 +443,27 @@ export default function ProgramGenerator() {
                           className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/20 transition-colors"
                         >
                           <span className="text-sm text-foreground font-medium">Semana {week.weekNumber}</span>
-                          {expandedWeek === weekKey ? <ChevronDown className="w-3 h-3 text-muted-foreground" /> : <ChevronRight className="w-3 h-3 text-muted-foreground" />}
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-muted-foreground">{week.days?.length || 0} dias</span>
+                            {expandedWeek === weekKey ? <ChevronDown className="w-3 h-3 text-muted-foreground" /> : <ChevronRight className="w-3 h-3 text-muted-foreground" />}
+                          </div>
                         </button>
 
                         {expandedWeek === weekKey && (
                           <div className="px-4 pb-4 space-y-3">
-                            {week.days.map((day, dIdx) => (
+                            {(week.days || []).map((day, dIdx) => (
                               <div key={dIdx} className="p-3 rounded-lg bg-secondary/30">
                                 <p className="text-sm font-medium text-foreground">{day.dayOfWeek} — {day.name}</p>
                                 <p className="text-xs text-muted-foreground mb-2">{day.focus}</p>
                                 <div className="space-y-1">
-                                  {day.exercises.map((ex, eIdx) => (
+                                  {(day.exercises || []).map((ex, eIdx) => (
                                     <div key={eIdx} className="flex items-center justify-between py-1 px-2 rounded bg-background/50">
                                       <div className="flex items-center gap-2">
                                         <div className={cn("w-1.5 h-1.5 rounded-full", ex.category === 'compound' ? 'bg-primary' : 'bg-muted-foreground')} />
                                         <span className="text-xs text-foreground">{ex.name}</span>
                                       </div>
                                       <span className="text-[10px] text-muted-foreground font-mono">
-                                        {ex.sets.map(s => {
+                                        {(ex.sets || []).map(s => {
                                           let label = `${s.targetSets}×${s.targetReps}`;
                                           if (s.targetWeight) label += ` ${s.targetWeight}kg`;
                                           if (s.targetRIR !== undefined) label += ` R${s.targetRIR}`;
@@ -418,6 +473,7 @@ export default function ProgramGenerator() {
                                     </div>
                                   ))}
                                 </div>
+                                <p className="text-[10px] text-muted-foreground mt-1">{(day.exercises || []).length} exercícios</p>
                               </div>
                             ))}
                           </div>
