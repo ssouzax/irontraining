@@ -36,7 +36,7 @@ const navItems: NavItem[] = [
   { to: '/exercises', icon: BookOpen, label: 'Exercícios' },
   { to: '/plates', icon: Calculator, label: 'Anilhas' },
   { to: '/coach', icon: Bot, label: 'Coach IA', requiredTier: 'premium' },
-  { to: '/body', icon: Scale, label: 'Evolução Corporal', requiredTier: 'standard' },
+  { to: '/body', icon: Scale, label: 'Evolução Corporal' },
   { to: '/prsimulator', icon: Brain, label: 'Simulador PR', requiredTier: 'standard' },
   { to: '/recovery', icon: Activity, label: 'Recuperação', requiredTier: 'standard' },
   { to: '/cotraining', icon: HeartHandshake, label: 'Co-Training', requiredTier: 'standard' },
