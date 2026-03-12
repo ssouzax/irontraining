@@ -6,42 +6,82 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `Você é o GERADOR DE PROGRAMAS, uma IA especializada em criar treinos powerbuilding completos e progressivos. SEMPRE responda em Português (Brasil).
+const SYSTEM_PROMPT = `Você é o GERADOR DE PROGRAMAS PROFISSIONAL do app Iron Training. SEMPRE responda em Português (Brasil).
 
 Você DEVE responder usando a tool generate_program.
 
-Suas funções:
+REGRA CRÍTICA: O programa gerado DEVE ser COMPLETO. Nunca gere semanas, dias ou exercícios incompletos.
 
-1. RECEBER dados do atleta:
-   - Levantamentos máximos (1RM), peso corporal, experiência, objetivos
-   - Frequência semanal e disponibilidade de equipamentos
+REGRAS OBRIGATÓRIAS:
 
-2. CRIAR treinos completos:
-   - Dividir por dias (Push/Squat/Pull/Upper/Deadlift ou variações conforme frequência)
-   - Selecionar exercícios compostos principais, secundários e isoladores
-   - Especificar séries, reps, RIR e carga sugerida calculada dos 1RMs
-   - Aplicar estrutura Top Set + Back-Off para todos compostos
+1. ESTRUTURA DIÁRIA DE EXERCÍCIOS:
+   - MÍNIMO 6 exercícios por dia de treino
+   - IDEAL 7 exercícios
+   - MÁXIMO 8 exercícios
+   - Nunca gerar menos de 6 exercícios por dia
 
-3. PERIODIZAÇÃO inteligente (12 semanas):
-   - Bloco 1 (Hipertrofia, semanas 1-4): RIR 2-3, reps mais altas (6-8 compostos, 8-12 acessórios)
-   - Bloco 2 (Força, semanas 5-8): RIR 1-2, reps moderadas (3-5 compostos)
-   - Bloco 3 (Pico/Intensidade Neural, semanas 9-11): RIR 0-1, reps baixas (1-3 compostos)
-   - Semana 12: Teste de PR — tentativas máximas
-   - Incluir deloads automáticos (semana 4 e 8 mais leves)
+2. ESTRUTURA INTERNA DE CADA TREINO:
+   - 1 exercício principal composto (movimento base: Supino/Agachamento/Terra)
+   - 2 exercícios compostos secundários
+   - 3-4 exercícios acessórios/isoladores
+   
+3. ESTRUTURA DE CADA EXERCÍCIO:
+   - Séries, repetições, RIR e descanso OBRIGATÓRIOS
+   - Compostos principais: Top set (1×3-5 RIR1) + Back-off (3×5 @85-90%)
+   - Compostos secundários: 3-4×6-10 com RIR 1-2
+   - Acessórios: 3×10-15 com RIR 1-2
+   - Descanso: 180s compostos pesados, 150s back-offs, 90-120s acessórios
 
-4. REGRAS de progressão automática:
-   - Se atleta atingir topo da faixa de reps com RIR target → aumentar 2.5-5kg
-   - Back-off calculado automaticamente: 85-90% do top set
-   - Progressão semanal de carga dentro de cada bloco
-   - Evitar overtraining: monitorar volume total por grupo muscular
+4. PERIODIZAÇÃO OBRIGATÓRIA (12 semanas):
+   BLOCO 1 — BASE/HIPERTROFIA (semanas 1-4):
+   - Reps moderadas (6-10 compostos, 10-15 acessórios)
+   - Volume maior, RIR 2-3
+   - Deload semana 4 (reduzir volume 40%)
+   
+   BLOCO 2 — FORÇA (semanas 5-8):
+   - Reps menores (3-6 compostos, 8-12 acessórios)
+   - Cargas maiores, RIR 1-2
+   - Deload semana 8 (reduzir volume 40%)
+   
+   BLOCO 3 — INTENSIFICAÇÃO (semanas 9-11):
+   - Cargas altas (1-4 compostos)
+   - Volume reduzido, RIR 0-1
+   
+   BLOCO 4 — PR/DELOAD (semana 12):
+   - Tentativas de recorde pessoal ou teste de 1RM
 
-5. DETALHES técnicos:
-   - Rest: 180s compostos pesados, 150s back-offs, 90-120s acessórios
-   - Notas técnicas para exercícios com risco (joelhos no agachamento, ombros no supino)
-   - Alertas de fadiga e risco de plateau
-   - Todos os pesos arredondados para múltiplo mais próximo de 2.5kg
+5. PROGRESSÃO DE CARGA:
+   - Se completar reps com RIR correto: +2.5kg supino, +5kg agachamento/terra
+   - Back-off: 85-90% do top set
+   - Progressão semanal dentro de cada bloco
 
-Todos os nomes de exercícios, dias e descrições devem ser em Português (Brasil).`;
+6. DISTRIBUIÇÃO SEMANAL:
+   - 3 dias: Full Body A/B/C
+   - 4 dias: Upper/Lower/Upper/Lower
+   - 5 dias: Push/Legs/Pull/Posterior/Deadlift+Upper
+   - 6 dias: Push/Pull/Legs/Push/Pull/Legs
+
+7. VOLUME SEMANAL (séries por músculo):
+   - Peito: 12-18 séries
+   - Costas: 14-20 séries
+   - Quadríceps: 12-18 séries
+   - Posterior: 10-16 séries
+   - Ombros: 10-16 séries
+   - Braços: 8-14 séries
+
+8. SELEÇÃO DE EXERCÍCIOS:
+   - Cada grupo: 1 principal + 2 compostos + 2-3 isoladores
+   - Variar exercícios entre dias (não repetir exatamente os mesmos)
+   - Todos os nomes em Português (Brasil)
+
+9. VALIDAÇÃO FINAL:
+   ✔ Todas as semanas completas
+   ✔ Todos os dias completos com 6-8 exercícios
+   ✔ Todas as séries com reps, RIR e descanso
+   ✔ Progressão definida
+   Se algo estiver incompleto, REGENERE automaticamente.
+
+10. PESOS ARREDONDADOS para múltiplo mais próximo de 2.5kg.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -59,13 +99,12 @@ serve(async (req) => {
 
     const { data: { user } } = await supabase.auth.getUser();
 
-    const { squat1RM, bench1RM, deadlift1RM, bodyWeight, goal, frequency, saveToDb, usePredictions } = await req.json();
+    const { squat1RM, bench1RM, deadlift1RM, bodyWeight, age, height, sex, goal, frequency, experience, equipment, sessionTime, injuries, muscleFocus, saveToDb, usePredictions } = await req.json();
 
-    // If usePredictions is true, fetch prediction data to adjust program loads
+    // Build prediction context if enabled
     let predictionContext = '';
     if (usePredictions && user) {
       try {
-        // Fetch recent PRs and workout data for AI context
         const threeMonthsAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
         const [prsRes, workoutsRes, liftsRes, streakRes] = await Promise.all([
           supabase.from("personal_records").select("exercise_name, weight, estimated_1rm, recorded_at").eq("user_id", user.id).gte("recorded_at", threeMonthsAgo).order("recorded_at", { ascending: true }),
@@ -73,39 +112,34 @@ serve(async (req) => {
           supabase.from("current_lifts").select("exercise, weight, reps, is_pr, recorded_at").eq("user_id", user.id).order("recorded_at", { ascending: false }).limit(30),
           supabase.from("training_streaks").select("current_streak, longest_streak, weekly_consistency_streak").eq("user_id", user.id).single(),
         ]);
-
-        predictionContext = `
-
-DADOS DE PROGRESSÃO DO ATLETA (use para ajustar cargas automaticamente):
-- PRs recentes (3 meses): ${JSON.stringify(prsRes.data || [])}
-- Lifts recentes: ${JSON.stringify(liftsRes.data || [])}
-- Total treinos 3 meses: ${(workoutsRes.data || []).length}
-- Fadiga média: ${(workoutsRes.data || []).filter(w => w.fatigue).reduce((a, b) => a + (b.fatigue || 0), 0) / Math.max(1, (workoutsRes.data || []).filter(w => w.fatigue).length) || 'N/A'}
-- Streak: ${JSON.stringify(streakRes.data || {})}
-
-INSTRUÇÕES DE AJUSTE BASEADO EM PREDIÇÕES:
-- Analise a taxa de progressão recente do atleta para cada lift
-- Se o atleta está progredindo bem (PRs frequentes), use cargas mais agressivas (percentuais mais altos dos 1RMs)
-- Se há sinais de plateau ou fadiga alta, use cargas mais conservadoras e inclua deload na semana 2
-- Ajuste o volume de acessórios baseado na consistência de treino
-- Se a consistência é baixa (<3x/sem), reduza volume total em 15-20%
-- Projete as cargas das semanas finais baseado na taxa de ganho semanal observada
-- Inclua notas de progressão automática em cada bloco`;
+        predictionContext = `\n\nDADOS DE PROGRESSÃO DO ATLETA:\n- PRs recentes: ${JSON.stringify(prsRes.data || [])}\n- Lifts recentes: ${JSON.stringify(liftsRes.data || [])}\n- Total treinos 3 meses: ${(workoutsRes.data || []).length}\n- Streak: ${JSON.stringify(streakRes.data || {})}\nUse esses dados para ajustar cargas e volume.`;
       } catch (e) {
         console.error("Failed to fetch prediction data:", e);
       }
     }
 
-    const userPrompt = `Gere um programa completo de 12 semanas de powerbuilding para um atleta com:
-- Agachamento 1RM: ${squat1RM}kg
-- Supino 1RM: ${bench1RM}kg  
-- Terra 1RM: ${deadlift1RM}kg
-- Peso Corporal: ${bodyWeight}kg
+    const injuryContext = injuries && injuries.length > 0
+      ? `\nLESÕES/LIMITAÇÕES: ${injuries.join(', ')}. Adapte exercícios para evitar agravamento.`
+      : '';
+
+    const focusContext = muscleFocus && muscleFocus !== 'none'
+      ? `\nFOCO MUSCULAR PRIORITÁRIO: ${muscleFocus}. Aumente volume desse grupo em 20%.`
+      : '';
+
+    const userPrompt = `Gere um programa COMPLETO de 12 semanas para:
+- Agachamento 1RM: ${squat1RM || 0}kg
+- Supino 1RM: ${bench1RM || 0}kg
+- Terra 1RM: ${deadlift1RM || 0}kg
+- Peso corporal: ${bodyWeight || 80}kg
+- Idade: ${age || 25} | Altura: ${height || 175}cm | Sexo: ${sex || 'male'}
+- Nível: ${experience || 'intermediate'}
 - Objetivo: ${goal || 'powerbuilding'}
 - Frequência: ${frequency || 5} dias/semana
-${predictionContext}
+- Tempo por sessão: ${sessionTime || 60} minutos
+- Equipamento: ${equipment || 'full'}
+${injuryContext}${focusContext}${predictionContext}
 
-Gere todos os 4 blocos com exercícios específicos, séries, reps, RIR targets e cargas calculadas dos 1RMs. Nomes em Português.`;
+OBRIGATÓRIO: Gere TODAS as 12 semanas, TODOS os dias, com MÍNIMO 6 exercícios por dia. Cada exercício com séries, reps, RIR e descanso. Nomes em Português (Brasil).`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -114,7 +148,7 @@ Gere todos os 4 blocos com exercícios específicos, séries, reps, RIR targets 
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userPrompt },
@@ -123,7 +157,7 @@ Gere todos os 4 blocos com exercícios específicos, séries, reps, RIR targets 
           type: "function",
           function: {
             name: "generate_program",
-            description: "Return a complete periodized training program",
+            description: "Return a complete periodized training program with ALL weeks, ALL days, and minimum 6 exercises per day",
             parameters: {
               type: "object",
               properties: {
@@ -160,6 +194,7 @@ Gere todos os 4 blocos com exercícios específicos, séries, reps, RIR targets 
                                       focus: { type: "string" },
                                       exercises: {
                                         type: "array",
+                                        minItems: 6,
                                         items: {
                                           type: "object",
                                           properties: {
@@ -179,7 +214,7 @@ Gere todos os 4 blocos com exercícios específicos, séries, reps, RIR targets 
                                                   percentage: { type: "number" },
                                                   restSeconds: { type: "number" },
                                                 },
-                                                required: ["type", "targetSets", "targetReps"],
+                                                required: ["type", "targetSets", "targetReps", "restSeconds"],
                                               },
                                             },
                                           },
@@ -214,7 +249,7 @@ Gere todos os 4 blocos com exercícios específicos, séries, reps, RIR targets 
       const t = await response.text();
       console.error("AI error:", response.status, t);
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Limite de requisições excedido." }), {
+        return new Response(JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns minutos." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
@@ -240,13 +275,11 @@ Gere todos os 4 blocos com exercícios específicos, séries, reps, RIR targets 
     const parsed = JSON.parse(toolCall.function.arguments);
     const program = parsed.program;
 
-    // Save to DB if user is authenticated and saveToDb is true
+    // Save to DB if user is authenticated
     if (user && saveToDb !== false) {
       try {
-        // Deactivate existing programs
         await supabase.from("training_programs").update({ is_active: false }).eq("user_id", user.id);
 
-        // Create program
         const { data: dbProgram, error: progErr } = await supabase.from("training_programs").insert({
           user_id: user.id,
           name: program.name,
@@ -270,54 +303,36 @@ Gere todos os 4 blocos com exercícios específicos, séries, reps, RIR targets 
             end_week: block.endWeek || block.weeks[block.weeks.length - 1]?.weekNumber || 4,
             order_index: bIdx,
           }).select().single();
-
           if (blockErr) throw blockErr;
 
           for (const week of block.weeks) {
             const { data: dbWeek, error: weekErr } = await supabase.from("training_weeks").insert({
-              block_id: dbBlock.id,
-              week_number: week.weekNumber,
+              block_id: dbBlock.id, week_number: week.weekNumber,
             }).select().single();
-
             if (weekErr) throw weekErr;
 
             for (let dIdx = 0; dIdx < week.days.length; dIdx++) {
               const day = week.days[dIdx];
               const { data: dbDay, error: dayErr } = await supabase.from("training_days").insert({
-                week_id: dbWeek.id,
-                day_name: day.name,
-                day_of_week: day.dayOfWeek,
-                focus: day.focus,
-                order_index: dIdx,
+                week_id: dbWeek.id, day_name: day.name, day_of_week: day.dayOfWeek, focus: day.focus, order_index: dIdx,
               }).select().single();
-
               if (dayErr) throw dayErr;
 
               for (let eIdx = 0; eIdx < day.exercises.length; eIdx++) {
                 const ex = day.exercises[eIdx];
                 const { data: dbExercise, error: exErr } = await supabase.from("workout_exercises").insert({
-                  day_id: dbDay.id,
-                  exercise_name: ex.name,
-                  category: ex.category,
-                  muscle_group: ex.muscleGroup,
-                  order_index: eIdx,
+                  day_id: dbDay.id, exercise_name: ex.name, category: ex.category, muscle_group: ex.muscleGroup, order_index: eIdx,
                 }).select().single();
-
                 if (exErr) throw exErr;
 
                 for (let sIdx = 0; sIdx < ex.sets.length; sIdx++) {
                   const s = ex.sets[sIdx];
                   await supabase.from("planned_sets").insert({
-                    workout_exercise_id: dbExercise.id,
-                    set_number: sIdx + 1,
-                    target_sets: s.targetSets,
-                    target_reps: s.targetReps,
-                    target_rir: s.targetRIR,
-                    target_weight: s.targetWeight,
-                    load_percentage: s.percentage,
+                    workout_exercise_id: dbExercise.id, set_number: sIdx + 1,
+                    target_sets: s.targetSets, target_reps: s.targetReps, target_rir: s.targetRIR,
+                    target_weight: s.targetWeight, load_percentage: s.percentage,
                     rest_seconds: s.restSeconds || 120,
-                    is_top_set: s.type === "top",
-                    is_backoff: s.type === "backoff",
+                    is_top_set: s.type === "top", is_backoff: s.type === "backoff",
                   });
                 }
               }
@@ -331,7 +346,6 @@ Gere todos os 4 blocos com exercícios específicos, séries, reps, RIR targets 
         });
       } catch (dbErr) {
         console.error("DB save error:", dbErr);
-        // Return program even if DB save fails
         return new Response(JSON.stringify({ ...parsed, dbSaveError: true }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });

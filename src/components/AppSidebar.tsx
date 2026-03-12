@@ -39,7 +39,7 @@ const navItems: NavItem[] = [
   { to: '/body', icon: Scale, label: 'Evolução Corporal' },
   { to: '/prsimulator', icon: Brain, label: 'Simulador PR', requiredTier: 'standard' },
   { to: '/recovery', icon: Activity, label: 'Recuperação', requiredTier: 'standard' },
-  { to: '/cotraining', icon: HeartHandshake, label: 'Co-Training', requiredTier: 'standard' },
+  { to: '/cotraining', icon: HeartHandshake, label: 'Co-Training' },
   { to: '/barvelocity', icon: Gauge, label: 'Velocidade Barra', requiredTier: 'premium' },
   { to: '/wearable', icon: Heart, label: 'Wearable', requiredTier: 'premium' },
   { to: '/replay3d', icon: RotateCw, label: 'Replay 3D', requiredTier: 'premium' },
