@@ -27,7 +27,7 @@ const navItems: NavItem[] = [
   { to: '/rankings', icon: Trophy, label: 'Ranking' },
   { to: '/leaderboard', icon: Crown, label: 'Ranking DOTS' },
   { to: '/gym', icon: MapPin, label: 'Minha Academia' },
-  { to: '/rivals', icon: Swords, label: 'Rivais', requiredTier: 'standard' },
+  { to: '/rivals', icon: Swords, label: 'Rivais' },
   { to: '/powerscore', icon: Zap, label: 'Power Score', requiredTier: 'standard' },
   { to: '/predictor', icon: Brain, label: 'Preditor IA', requiredTier: 'basic' },
   { to: '/achievements', icon: Award, label: 'Conquistas' },
