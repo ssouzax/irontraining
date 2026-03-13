@@ -186,31 +186,7 @@ export default function Dashboard() {
         )}
       </motion.div>
 
-      {/* Today's Workout */}
-      {todayWorkout && (
-        <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">Treino de Hoje</h3>
-              <p className="text-xs text-muted-foreground">{todayWorkout.name} — {todayWorkout.focus}</p>
-            </div>
-            <Link to="/train" className="text-xs bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-1">
-              <Zap className="w-3 h-3" /> Iniciar Treino
-            </Link>
-          </div>
-          <div className="space-y-2">
-            {todayWorkout.exercises.map(ex => (
-              <div key={ex.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-secondary/50">
-                <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${ex.category === 'compound' ? 'bg-primary' : 'bg-muted-foreground'}`} />
-                  <span className="text-sm text-foreground">{ex.name}</span>
-                </div>
-                <span className="text-xs text-muted-foreground font-mono">{ex.sets.map(s => `${s.targetSets}×${s.targetReps}`).join(' + ')}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      )}
+      {/* Old Today's Workout section removed - now using TodayWorkoutCard above */}
 
       {/* Block Overview - Only show if has program */}
       {hasProgram && (
