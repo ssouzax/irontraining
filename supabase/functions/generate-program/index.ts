@@ -6,272 +6,491 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// ─── STEP 1: Deterministic structure builders ───
+// ═══════════════════════════════════════════════════════════════
+// EXERCISE POOLS — 100% deterministic, no AI needed
+// ═══════════════════════════════════════════════════════════════
+
+interface ExerciseTemplate {
+  name: string;
+  category: "compound" | "accessory";
+  muscleGroup: string;
+}
+
+const POOLS: Record<string, { main: ExerciseTemplate[]; compound: ExerciseTemplate[]; accessory: ExerciseTemplate[]; isolation: ExerciseTemplate[] }> = {
+  push: {
+    main: [
+      { name: "Supino reto com barra", category: "compound", muscleGroup: "Peito" },
+    ],
+    compound: [
+      { name: "Supino inclinado com halteres", category: "compound", muscleGroup: "Peito" },
+      { name: "Desenvolvimento militar com barra", category: "compound", muscleGroup: "Ombros" },
+      { name: "Supino declinado", category: "compound", muscleGroup: "Peito" },
+      { name: "Desenvolvimento com halteres", category: "compound", muscleGroup: "Ombros" },
+      { name: "Supino máquina", category: "compound", muscleGroup: "Peito" },
+    ],
+    accessory: [
+      { name: "Elevação lateral", category: "accessory", muscleGroup: "Ombros" },
+      { name: "Crucifixo inclinado", category: "accessory", muscleGroup: "Peito" },
+      { name: "Crossover", category: "accessory", muscleGroup: "Peito" },
+      { name: "Elevação frontal", category: "accessory", muscleGroup: "Ombros" },
+      { name: "Fly na máquina (peck deck)", category: "accessory", muscleGroup: "Peito" },
+    ],
+    isolation: [
+      { name: "Tríceps corda", category: "accessory", muscleGroup: "Tríceps" },
+      { name: "Tríceps francês", category: "accessory", muscleGroup: "Tríceps" },
+      { name: "Tríceps testa", category: "accessory", muscleGroup: "Tríceps" },
+      { name: "Tríceps no mergulho", category: "accessory", muscleGroup: "Tríceps" },
+      { name: "Tríceps pulley reto", category: "accessory", muscleGroup: "Tríceps" },
+    ],
+  },
+  pull: {
+    main: [
+      { name: "Barra fixa", category: "compound", muscleGroup: "Costas" },
+    ],
+    compound: [
+      { name: "Remada curvada com barra", category: "compound", muscleGroup: "Costas" },
+      { name: "Puxada frontal", category: "compound", muscleGroup: "Costas" },
+      { name: "Remada cavaleiro", category: "compound", muscleGroup: "Costas" },
+      { name: "Remada unilateral com halter", category: "compound", muscleGroup: "Costas" },
+      { name: "Remada baixa no cabo", category: "compound", muscleGroup: "Costas" },
+    ],
+    accessory: [
+      { name: "Face pull", category: "accessory", muscleGroup: "Ombros" },
+      { name: "Pullover na polia", category: "accessory", muscleGroup: "Costas" },
+      { name: "Encolhimento com barra", category: "accessory", muscleGroup: "Trapézio" },
+      { name: "Remada alta", category: "accessory", muscleGroup: "Trapézio" },
+    ],
+    isolation: [
+      { name: "Rosca direta com barra", category: "accessory", muscleGroup: "Bíceps" },
+      { name: "Rosca alternada com halteres", category: "accessory", muscleGroup: "Bíceps" },
+      { name: "Rosca martelo", category: "accessory", muscleGroup: "Bíceps" },
+      { name: "Rosca scott", category: "accessory", muscleGroup: "Bíceps" },
+      { name: "Rosca concentrada", category: "accessory", muscleGroup: "Bíceps" },
+    ],
+  },
+  legs: {
+    main: [
+      { name: "Agachamento livre", category: "compound", muscleGroup: "Quadríceps" },
+    ],
+    compound: [
+      { name: "Leg press 45°", category: "compound", muscleGroup: "Quadríceps" },
+      { name: "Agachamento hack", category: "compound", muscleGroup: "Quadríceps" },
+      { name: "Agachamento búlgaro", category: "compound", muscleGroup: "Quadríceps" },
+      { name: "Passada com halteres", category: "compound", muscleGroup: "Quadríceps" },
+    ],
+    accessory: [
+      { name: "Cadeira extensora", category: "accessory", muscleGroup: "Quadríceps" },
+      { name: "Cadeira flexora", category: "accessory", muscleGroup: "Posterior" },
+      { name: "Stiff com barra", category: "accessory", muscleGroup: "Posterior" },
+      { name: "Abdução de quadril", category: "accessory", muscleGroup: "Glúteos" },
+    ],
+    isolation: [
+      { name: "Panturrilha em pé", category: "accessory", muscleGroup: "Panturrilha" },
+      { name: "Panturrilha sentado", category: "accessory", muscleGroup: "Panturrilha" },
+      { name: "Abdominal no cabo", category: "accessory", muscleGroup: "Abdômen" },
+    ],
+  },
+  posterior: {
+    main: [
+      { name: "Levantamento terra romeno", category: "compound", muscleGroup: "Posterior" },
+    ],
+    compound: [
+      { name: "Stiff com barra", category: "compound", muscleGroup: "Posterior" },
+      { name: "Hip thrust com barra", category: "compound", muscleGroup: "Glúteos" },
+      { name: "Agachamento sumô", category: "compound", muscleGroup: "Glúteos" },
+      { name: "Good morning", category: "compound", muscleGroup: "Posterior" },
+    ],
+    accessory: [
+      { name: "Cadeira flexora", category: "accessory", muscleGroup: "Posterior" },
+      { name: "Mesa flexora", category: "accessory", muscleGroup: "Posterior" },
+      { name: "Elevação pélvica", category: "accessory", muscleGroup: "Glúteos" },
+      { name: "Abdução na máquina", category: "accessory", muscleGroup: "Glúteos" },
+    ],
+    isolation: [
+      { name: "Panturrilha no leg press", category: "accessory", muscleGroup: "Panturrilha" },
+      { name: "Hiperextensão lombar", category: "accessory", muscleGroup: "Lombar" },
+      { name: "Abdominal infra", category: "accessory", muscleGroup: "Abdômen" },
+    ],
+  },
+  upper: {
+    main: [
+      { name: "Supino reto com barra", category: "compound", muscleGroup: "Peito" },
+    ],
+    compound: [
+      { name: "Remada curvada com barra", category: "compound", muscleGroup: "Costas" },
+      { name: "Desenvolvimento militar", category: "compound", muscleGroup: "Ombros" },
+      { name: "Puxada frontal", category: "compound", muscleGroup: "Costas" },
+      { name: "Supino inclinado com halteres", category: "compound", muscleGroup: "Peito" },
+    ],
+    accessory: [
+      { name: "Elevação lateral", category: "accessory", muscleGroup: "Ombros" },
+      { name: "Face pull", category: "accessory", muscleGroup: "Ombros" },
+    ],
+    isolation: [
+      { name: "Rosca direta", category: "accessory", muscleGroup: "Bíceps" },
+      { name: "Tríceps corda", category: "accessory", muscleGroup: "Tríceps" },
+      { name: "Rosca martelo", category: "accessory", muscleGroup: "Bíceps" },
+      { name: "Tríceps testa", category: "accessory", muscleGroup: "Tríceps" },
+    ],
+  },
+  fullbody: {
+    main: [
+      { name: "Agachamento livre", category: "compound", muscleGroup: "Quadríceps" },
+    ],
+    compound: [
+      { name: "Supino reto com barra", category: "compound", muscleGroup: "Peito" },
+      { name: "Remada curvada com barra", category: "compound", muscleGroup: "Costas" },
+      { name: "Desenvolvimento militar", category: "compound", muscleGroup: "Ombros" },
+      { name: "Levantamento terra romeno", category: "compound", muscleGroup: "Posterior" },
+    ],
+    accessory: [
+      { name: "Leg press 45°", category: "compound", muscleGroup: "Quadríceps" },
+      { name: "Puxada frontal", category: "accessory", muscleGroup: "Costas" },
+      { name: "Elevação lateral", category: "accessory", muscleGroup: "Ombros" },
+    ],
+    isolation: [
+      { name: "Rosca direta", category: "accessory", muscleGroup: "Bíceps" },
+      { name: "Tríceps corda", category: "accessory", muscleGroup: "Tríceps" },
+      { name: "Panturrilha em pé", category: "accessory", muscleGroup: "Panturrilha" },
+    ],
+  },
+  lower: {
+    main: [
+      { name: "Agachamento livre", category: "compound", muscleGroup: "Quadríceps" },
+    ],
+    compound: [
+      { name: "Leg press 45°", category: "compound", muscleGroup: "Quadríceps" },
+      { name: "Levantamento terra romeno", category: "compound", muscleGroup: "Posterior" },
+      { name: "Hip thrust com barra", category: "compound", muscleGroup: "Glúteos" },
+      { name: "Agachamento búlgaro", category: "compound", muscleGroup: "Quadríceps" },
+    ],
+    accessory: [
+      { name: "Cadeira extensora", category: "accessory", muscleGroup: "Quadríceps" },
+      { name: "Cadeira flexora", category: "accessory", muscleGroup: "Posterior" },
+      { name: "Stiff com halteres", category: "accessory", muscleGroup: "Posterior" },
+      { name: "Abdução na máquina", category: "accessory", muscleGroup: "Glúteos" },
+    ],
+    isolation: [
+      { name: "Panturrilha em pé", category: "accessory", muscleGroup: "Panturrilha" },
+      { name: "Panturrilha sentado", category: "accessory", muscleGroup: "Panturrilha" },
+      { name: "Abdominal no cabo", category: "accessory", muscleGroup: "Abdômen" },
+    ],
+  },
+  deadlift: {
+    main: [
+      { name: "Levantamento terra convencional", category: "compound", muscleGroup: "Posterior" },
+    ],
+    compound: [
+      { name: "Remada curvada com barra", category: "compound", muscleGroup: "Costas" },
+      { name: "Hip thrust com barra", category: "compound", muscleGroup: "Glúteos" },
+      { name: "Good morning", category: "compound", muscleGroup: "Posterior" },
+    ],
+    accessory: [
+      { name: "Puxada frontal", category: "accessory", muscleGroup: "Costas" },
+      { name: "Cadeira flexora", category: "accessory", muscleGroup: "Posterior" },
+      { name: "Face pull", category: "accessory", muscleGroup: "Ombros" },
+    ],
+    isolation: [
+      { name: "Rosca direta", category: "accessory", muscleGroup: "Bíceps" },
+      { name: "Hiperextensão lombar", category: "accessory", muscleGroup: "Lombar" },
+      { name: "Encolhimento com halteres", category: "accessory", muscleGroup: "Trapézio" },
+    ],
+  },
+  shoulders_arms: {
+    main: [
+      { name: "Desenvolvimento militar com barra", category: "compound", muscleGroup: "Ombros" },
+    ],
+    compound: [
+      { name: "Desenvolvimento Arnold", category: "compound", muscleGroup: "Ombros" },
+      { name: "Supino fechado", category: "compound", muscleGroup: "Tríceps" },
+    ],
+    accessory: [
+      { name: "Elevação lateral", category: "accessory", muscleGroup: "Ombros" },
+      { name: "Elevação lateral inclinada", category: "accessory", muscleGroup: "Ombros" },
+      { name: "Crucifixo inverso", category: "accessory", muscleGroup: "Ombros" },
+    ],
+    isolation: [
+      { name: "Rosca direta com barra W", category: "accessory", muscleGroup: "Bíceps" },
+      { name: "Rosca martelo", category: "accessory", muscleGroup: "Bíceps" },
+      { name: "Tríceps francês", category: "accessory", muscleGroup: "Tríceps" },
+      { name: "Tríceps corda", category: "accessory", muscleGroup: "Tríceps" },
+    ],
+  },
+  chest_back: {
+    main: [
+      { name: "Supino reto com barra", category: "compound", muscleGroup: "Peito" },
+    ],
+    compound: [
+      { name: "Barra fixa", category: "compound", muscleGroup: "Costas" },
+      { name: "Supino inclinado com halteres", category: "compound", muscleGroup: "Peito" },
+      { name: "Remada curvada com barra", category: "compound", muscleGroup: "Costas" },
+    ],
+    accessory: [
+      { name: "Crossover", category: "accessory", muscleGroup: "Peito" },
+      { name: "Remada baixa no cabo", category: "accessory", muscleGroup: "Costas" },
+      { name: "Pullover na polia", category: "accessory", muscleGroup: "Costas" },
+    ],
+    isolation: [
+      { name: "Fly na máquina (peck deck)", category: "accessory", muscleGroup: "Peito" },
+      { name: "Face pull", category: "accessory", muscleGroup: "Ombros" },
+    ],
+  },
+  recovery: {
+    main: [
+      { name: "Prancha abdominal", category: "accessory", muscleGroup: "Abdômen" },
+    ],
+    compound: [
+      { name: "Agachamento corporal", category: "compound", muscleGroup: "Quadríceps" },
+    ],
+    accessory: [
+      { name: "Abdominal crunch", category: "accessory", muscleGroup: "Abdômen" },
+      { name: "Prancha lateral", category: "accessory", muscleGroup: "Abdômen" },
+      { name: "Elevação de quadril", category: "accessory", muscleGroup: "Glúteos" },
+    ],
+    isolation: [
+      { name: "Panturrilha em pé", category: "accessory", muscleGroup: "Panturrilha" },
+      { name: "Rotação externa de ombro", category: "accessory", muscleGroup: "Ombros" },
+    ],
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// BLOCK DEFINITIONS — fixed periodization
+// ═══════════════════════════════════════════════════════════════
 
 interface BlockDef {
   name: string;
   goal: string;
   blockType: string;
-  weekRange: string;
   startWeek: number;
   endWeek: number;
-  repRange: string;
-  rirRange: string;
-  volumeMultiplier: number;
-  intensityMultiplier: number;
+  weekConfigs: { sets: number; reps: number; rir: number }[];
 }
 
-function buildBlocks(durationWeeks: number): BlockDef[] {
-  if (durationWeeks <= 4) {
-    return [{
-      name: "Hipertrofia", goal: "Volume e hipertrofia", blockType: "hypertrophy",
-      weekRange: `Semanas 1-${durationWeeks}`, startWeek: 1, endWeek: durationWeeks,
-      repRange: "8-12 compostos, 10-15 acessórios", rirRange: "RIR 2-3",
-      volumeMultiplier: 1.0, intensityMultiplier: 0.70,
-    }];
-  }
-  if (durationWeeks <= 8) {
-    const mid = Math.ceil(durationWeeks / 2);
-    return [
-      { name: "Hipertrofia", goal: "Volume e base muscular", blockType: "hypertrophy", weekRange: `Semanas 1-${mid}`, startWeek: 1, endWeek: mid, repRange: "8-12 compostos, 10-15 acessórios", rirRange: "RIR 2-3", volumeMultiplier: 1.0, intensityMultiplier: 0.70 },
-      { name: "Força", goal: "Ganho de força máxima", blockType: "strength", weekRange: `Semanas ${mid+1}-${durationWeeks}`, startWeek: mid+1, endWeek: durationWeeks, repRange: "4-6 compostos, 8-12 acessórios", rirRange: "RIR 1-2", volumeMultiplier: 0.85, intensityMultiplier: 0.80 },
-    ];
-  }
-  // 12 weeks (default)
+function buildBlocks(): BlockDef[] {
   return [
-    { name: "Base / Hipertrofia", goal: "Volume, hipertrofia e base muscular", blockType: "hypertrophy", weekRange: "Semanas 1-4", startWeek: 1, endWeek: 4, repRange: "6-10 compostos, 10-15 acessórios", rirRange: "RIR 2-3", volumeMultiplier: 1.0, intensityMultiplier: 0.70 },
-    { name: "Força", goal: "Ganho de força com cargas maiores", blockType: "strength", weekRange: "Semanas 5-8", startWeek: 5, endWeek: 8, repRange: "3-6 compostos, 8-12 acessórios", rirRange: "RIR 1-2", volumeMultiplier: 0.85, intensityMultiplier: 0.80 },
-    { name: "Intensificação", goal: "Cargas altas e volume reduzido", blockType: "peak", weekRange: "Semanas 9-11", startWeek: 9, endWeek: 11, repRange: "1-4 compostos, 6-10 acessórios", rirRange: "RIR 0-1", volumeMultiplier: 0.70, intensityMultiplier: 0.90 },
-    { name: "PR / Deload", goal: "Teste de 1RM ou recuperação ativa", blockType: "testing", weekRange: "Semana 12", startWeek: 12, endWeek: 12, repRange: "1-3 teste ou 8-12 leve", rirRange: "RIR 0 ou 4+", volumeMultiplier: 0.50, intensityMultiplier: 0.95 },
+    {
+      name: "Base / Hipertrofia",
+      goal: "Adaptação, volume e hipertrofia",
+      blockType: "hypertrophy",
+      startWeek: 1, endWeek: 3,
+      weekConfigs: [
+        { sets: 3, reps: 12, rir: 3 },
+        { sets: 4, reps: 10, rir: 2 },
+        { sets: 4, reps: 8, rir: 2 },
+      ],
+    },
+    {
+      name: "Hipertrofia Intensa",
+      goal: "Maximizar crescimento muscular",
+      blockType: "hypertrophy_heavy",
+      startWeek: 4, endWeek: 6,
+      weekConfigs: [
+        { sets: 4, reps: 10, rir: 2 },
+        { sets: 4, reps: 8, rir: 1 },
+        { sets: 5, reps: 6, rir: 1 },
+      ],
+    },
+    {
+      name: "Força",
+      goal: "Desenvolvimento de força máxima",
+      blockType: "strength",
+      startWeek: 7, endWeek: 10,
+      weekConfigs: [
+        { sets: 4, reps: 6, rir: 2 },
+        { sets: 5, reps: 5, rir: 1 },
+        { sets: 5, reps: 4, rir: 1 },
+        { sets: 4, reps: 3, rir: 0 }, // top set week
+      ],
+    },
+    {
+      name: "Deload / Recuperação",
+      goal: "Recuperação ativa e redução de fadiga",
+      blockType: "deload",
+      startWeek: 11, endWeek: 12,
+      weekConfigs: [
+        { sets: 3, reps: 10, rir: 4 },
+        { sets: 2, reps: 10, rir: 4 },
+      ],
+    },
   ];
 }
 
-function getDaySplit(frequency: number): { name: string; dayOfWeek: string; focus: string }[] {
-  const splits: Record<number, { name: string; dayOfWeek: string; focus: string }[]> = {
+// ═══════════════════════════════════════════════════════════════
+// DAY SPLITS
+// ═══════════════════════════════════════════════════════════════
+
+interface DaySplitDef {
+  name: string;
+  dayOfWeek: string;
+  focus: string;
+  poolKey: string;
+}
+
+function getDaySplit(frequency: number): DaySplitDef[] {
+  const splits: Record<number, DaySplitDef[]> = {
     2: [
-      { name: "Full Body A", dayOfWeek: "Segunda", focus: "Corpo inteiro - ênfase push" },
-      { name: "Full Body B", dayOfWeek: "Quinta", focus: "Corpo inteiro - ênfase pull" },
+      { name: "Full Body A", dayOfWeek: "Segunda", focus: "Corpo inteiro - push", poolKey: "fullbody" },
+      { name: "Full Body B", dayOfWeek: "Quinta", focus: "Corpo inteiro - pull", poolKey: "fullbody" },
     ],
     3: [
-      { name: "Full Body A", dayOfWeek: "Segunda", focus: "Peito, Costas, Pernas" },
-      { name: "Full Body B", dayOfWeek: "Quarta", focus: "Ombros, Braços, Pernas" },
-      { name: "Full Body C", dayOfWeek: "Sexta", focus: "Posterior, Peito, Costas" },
+      { name: "Full Body A", dayOfWeek: "Segunda", focus: "Peito, Costas, Pernas", poolKey: "fullbody" },
+      { name: "Full Body B", dayOfWeek: "Quarta", focus: "Ombros, Braços, Pernas", poolKey: "fullbody" },
+      { name: "Full Body C", dayOfWeek: "Sexta", focus: "Posterior, Peito, Costas", poolKey: "fullbody" },
     ],
     4: [
-      { name: "Upper A", dayOfWeek: "Segunda", focus: "Peito, Ombros, Tríceps" },
-      { name: "Lower A", dayOfWeek: "Terça", focus: "Quadríceps, Posterior, Panturrilha" },
-      { name: "Upper B", dayOfWeek: "Quinta", focus: "Costas, Bíceps, Ombros" },
-      { name: "Lower B", dayOfWeek: "Sexta", focus: "Glúteos, Posterior, Quadríceps" },
+      { name: "Upper A", dayOfWeek: "Segunda", focus: "Peito, Ombros, Tríceps", poolKey: "upper" },
+      { name: "Lower A", dayOfWeek: "Terça", focus: "Quadríceps, Posterior, Panturrilha", poolKey: "lower" },
+      { name: "Upper B", dayOfWeek: "Quinta", focus: "Costas, Bíceps, Ombros", poolKey: "pull" },
+      { name: "Lower B", dayOfWeek: "Sexta", focus: "Glúteos, Posterior, Quadríceps", poolKey: "posterior" },
     ],
     5: [
-      { name: "Push", dayOfWeek: "Segunda", focus: "Peito, Ombros, Tríceps" },
-      { name: "Legs", dayOfWeek: "Terça", focus: "Quadríceps, Panturrilha, Abdômen" },
-      { name: "Pull", dayOfWeek: "Quarta", focus: "Costas, Bíceps, Antebraço" },
-      { name: "Posterior", dayOfWeek: "Quinta", focus: "Posterior, Glúteos, Lombar" },
-      { name: "Upper", dayOfWeek: "Sexta", focus: "Ombros, Peito, Costas, Braços" },
+      { name: "Push", dayOfWeek: "Segunda", focus: "Peito, Ombros, Tríceps", poolKey: "push" },
+      { name: "Legs", dayOfWeek: "Terça", focus: "Quadríceps, Panturrilha, Abdômen", poolKey: "legs" },
+      { name: "Pull", dayOfWeek: "Quarta", focus: "Costas, Bíceps, Antebraço", poolKey: "pull" },
+      { name: "Posterior", dayOfWeek: "Quinta", focus: "Posterior, Glúteos, Lombar", poolKey: "posterior" },
+      { name: "Upper", dayOfWeek: "Sexta", focus: "Ombros, Peito, Costas, Braços", poolKey: "upper" },
     ],
     6: [
-      { name: "Push A", dayOfWeek: "Segunda", focus: "Peito, Ombros, Tríceps" },
-      { name: "Pull A", dayOfWeek: "Terça", focus: "Costas, Bíceps, Antebraço" },
-      { name: "Legs A", dayOfWeek: "Quarta", focus: "Quadríceps, Panturrilha" },
-      { name: "Push B", dayOfWeek: "Quinta", focus: "Ombros, Peito, Tríceps" },
-      { name: "Pull B", dayOfWeek: "Sexta", focus: "Costas, Posterior, Bíceps" },
-      { name: "Legs B", dayOfWeek: "Sábado", focus: "Posterior, Glúteos, Panturrilha" },
+      { name: "Push A", dayOfWeek: "Segunda", focus: "Peito, Ombros, Tríceps", poolKey: "push" },
+      { name: "Pull A", dayOfWeek: "Terça", focus: "Costas, Bíceps, Antebraço", poolKey: "pull" },
+      { name: "Legs A", dayOfWeek: "Quarta", focus: "Quadríceps, Panturrilha", poolKey: "legs" },
+      { name: "Push B", dayOfWeek: "Quinta", focus: "Ombros, Peito, Tríceps", poolKey: "push" },
+      { name: "Pull B", dayOfWeek: "Sexta", focus: "Costas, Posterior, Bíceps", poolKey: "pull" },
+      { name: "Legs B", dayOfWeek: "Sábado", focus: "Posterior, Glúteos, Panturrilha", poolKey: "posterior" },
     ],
     7: [
-      { name: "Push", dayOfWeek: "Segunda", focus: "Peito, Ombros, Tríceps" },
-      { name: "Pull", dayOfWeek: "Terça", focus: "Costas, Bíceps" },
-      { name: "Legs", dayOfWeek: "Quarta", focus: "Quadríceps, Panturrilha" },
-      { name: "Ombros + Braços", dayOfWeek: "Quinta", focus: "Ombros, Bíceps, Tríceps" },
-      { name: "Posterior", dayOfWeek: "Sexta", focus: "Posterior, Glúteos, Lombar" },
-      { name: "Peito + Costas", dayOfWeek: "Sábado", focus: "Peito, Costas" },
-      { name: "Recuperação Ativa", dayOfWeek: "Domingo", focus: "Abdômen, Mobilidade, Cardio leve" },
+      { name: "Push", dayOfWeek: "Segunda", focus: "Peito, Ombros, Tríceps", poolKey: "push" },
+      { name: "Pull", dayOfWeek: "Terça", focus: "Costas, Bíceps", poolKey: "pull" },
+      { name: "Legs", dayOfWeek: "Quarta", focus: "Quadríceps, Panturrilha", poolKey: "legs" },
+      { name: "Ombros + Braços", dayOfWeek: "Quinta", focus: "Ombros, Bíceps, Tríceps", poolKey: "shoulders_arms" },
+      { name: "Posterior", dayOfWeek: "Sexta", focus: "Posterior, Glúteos, Lombar", poolKey: "posterior" },
+      { name: "Peito + Costas", dayOfWeek: "Sábado", focus: "Peito, Costas", poolKey: "chest_back" },
+      { name: "Recuperação Ativa", dayOfWeek: "Domingo", focus: "Abdômen, Mobilidade", poolKey: "recovery" },
     ],
   };
   return splits[frequency] || splits[5];
 }
 
-// ─── STEP 2: AI call per block to generate day templates ───
+// ═══════════════════════════════════════════════════════════════
+// EXERCISE SELECTOR — deterministic with seeded variation
+// ═══════════════════════════════════════════════════════════════
 
-const BLOCK_PROMPT = `Você é um treinador profissional de força e hipertrofia. Responda APENAS com a tool generate_block_days.
-
-REGRAS OBRIGATÓRIAS:
-1. Cada dia DEVE ter entre 6 e 8 exercícios
-2. Estrutura: 1 composto principal + 2 compostos secundários + 3-4 acessórios/isoladores
-3. Compostos principais: Top set + Back-off sets
-4. Todos os nomes em Português (Brasil)
-5. Todos exercícios DEVEM ter séries, repetições, RIR e descanso
-6. Descanso: 180s compostos pesados, 120s back-offs, 90s acessórios
-7. Pesos arredondados para múltiplo de 2.5kg
-8. NUNCA gerar menos de 6 exercícios por dia`;
-
-async function generateBlockDays(
-  apiKey: string,
-  block: BlockDef,
-  daySplit: { name: string; focus: string }[],
-  userContext: string,
-): Promise<any[]> {
-  const dayNames = daySplit.map(d => `"${d.name}" (foco: ${d.focus})`).join(", ");
-
-  const prompt = `Gere os exercícios para o bloco "${block.name}" (${block.goal}).
-Fase: ${block.blockType} | Reps: ${block.repRange} | Intensidade: ${block.rirRange}
-Multiplicador de volume: ${block.volumeMultiplier} | Intensidade: ${Math.round(block.intensityMultiplier * 100)}% do 1RM
-
-Dias a gerar: ${dayNames}
-
-${userContext}
-
-Gere EXATAMENTE ${daySplit.length} dias, cada um com 6-8 exercícios completos.`;
-
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
-      messages: [
-        { role: "system", content: BLOCK_PROMPT },
-        { role: "user", content: prompt },
-      ],
-      tools: [{
-        type: "function",
-        function: {
-          name: "generate_block_days",
-          description: "Return exercises for each day type in a training block",
-          parameters: {
-            type: "object",
-            properties: {
-              days: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    name: { type: "string" },
-                    focus: { type: "string" },
-                    exercises: {
-                      type: "array",
-                      minItems: 6,
-                      items: {
-                        type: "object",
-                        properties: {
-                          name: { type: "string" },
-                          category: { type: "string", enum: ["compound", "accessory"] },
-                          muscleGroup: { type: "string" },
-                          sets: {
-                            type: "array",
-                            items: {
-                              type: "object",
-                              properties: {
-                                type: { type: "string", enum: ["top", "backoff", "normal"] },
-                                targetSets: { type: "number" },
-                                targetReps: { type: "number" },
-                                targetRIR: { type: "number" },
-                                targetWeight: { type: "number" },
-                                percentage: { type: "number" },
-                                restSeconds: { type: "number" },
-                              },
-                              required: ["type", "targetSets", "targetReps", "restSeconds"],
-                            },
-                          },
-                        },
-                        required: ["name", "category", "muscleGroup", "sets"],
-                      },
-                    },
-                  },
-                  required: ["name", "focus", "exercises"],
-                },
-              },
-            },
-            required: ["days"],
-          },
-        },
-      }],
-      tool_choice: { type: "function", function: { name: "generate_block_days" } },
-    }),
-  });
-
-  if (!response.ok) {
-    const t = await response.text();
-    console.error(`AI error for block ${block.name}:`, response.status, t);
-    throw new Error(`Falha ao gerar bloco ${block.name}: ${response.status}`);
-  }
-
-  const aiResult = await response.json();
-  const toolCall = aiResult.choices?.[0]?.message?.tool_calls?.[0];
-  if (!toolCall) throw new Error(`Nenhum dado retornado para bloco ${block.name}`);
-
-  const parsed = JSON.parse(toolCall.function.arguments);
-  return parsed.days || [];
-}
-
-// ─── STEP 3: Apply weekly progression to day templates ───
-
-function applyWeekProgression(
-  dayTemplate: any,
+function selectExercises(
+  poolKey: string,
   weekNumber: number,
-  blockStartWeek: number,
+  dayIndex: number,
   blockType: string,
-): any {
-  const weekInBlock = weekNumber - blockStartWeek;
-  const progressionKg = weekInBlock * 2.5;
+  isDeload: boolean,
+): ExerciseTemplate[] {
+  const pool = POOLS[poolKey] || POOLS["fullbody"];
+  const seed = weekNumber * 7 + dayIndex;
+  const targetCount = isDeload ? 5 : (blockType === "strength" ? 6 : 7);
 
-  return {
-    ...dayTemplate,
-    exercises: (dayTemplate.exercises || []).map((ex: any) => ({
-      ...ex,
-      sets: (ex.sets || []).map((s: any) => {
-        let weight = s.targetWeight || 0;
-        if (weight > 0) {
-          if (ex.category === "compound") {
-            weight = Math.round((weight + progressionKg) / 2.5) * 2.5;
-          } else if (weekInBlock > 0) {
-            weight = Math.round((weight + weekInBlock * 1.25) / 2.5) * 2.5;
-          }
-        }
-        return { ...s, targetWeight: weight > 0 ? weight : undefined };
-      }),
-    })),
+  const pick = (arr: ExerciseTemplate[], count: number, offset = 0): ExerciseTemplate[] => {
+    if (arr.length === 0) return [];
+    const result: ExerciseTemplate[] = [];
+    for (let i = 0; i < count && i < arr.length; i++) {
+      result.push(arr[(i + offset + seed) % arr.length]);
+    }
+    return result;
   };
+
+  const exercises: ExerciseTemplate[] = [];
+  // 1 main
+  exercises.push(...pick(pool.main, 1));
+  // 2 compound
+  exercises.push(...pick(pool.compound, 2, seed));
+  // 2-3 accessory
+  const accCount = Math.min(targetCount - 5, pool.accessory.length);
+  exercises.push(...pick(pool.accessory, Math.max(accCount, 2), seed + 1));
+  // 2 isolation
+  exercises.push(...pick(pool.isolation, 2, seed + 2));
+
+  // Ensure minimum 6
+  while (exercises.length < 6) {
+    const fallback = pool.accessory[(exercises.length + seed) % pool.accessory.length];
+    if (fallback && !exercises.find(e => e.name === fallback.name)) {
+      exercises.push(fallback);
+    } else break;
+  }
+
+  // Deduplicate
+  const seen = new Set<string>();
+  return exercises.filter(e => {
+    if (seen.has(e.name)) return false;
+    seen.add(e.name);
+    return true;
+  });
 }
 
-// ─── STEP 4: Validate completeness ───
+// ═══════════════════════════════════════════════════════════════
+// BUILD SETS for each exercise
+// ═══════════════════════════════════════════════════════════════
 
-function validateProgram(program: any, frequency: number): string[] {
-  const errors: string[] = [];
-  if (!program.blocks || program.blocks.length === 0) {
-    errors.push("Nenhum bloco gerado");
-    return errors;
+function buildSets(
+  ex: ExerciseTemplate,
+  exIndex: number,
+  config: { sets: number; reps: number; rir: number },
+  blockType: string,
+  bench1RM: number,
+  squat1RM: number,
+  deadlift1RM: number,
+) {
+  const isMain = exIndex === 0;
+  const isCompound = ex.category === "compound";
+
+  // Estimate weight from 1RM
+  let base1RM = 0;
+  const name = ex.name.toLowerCase();
+  if (name.includes("supino") && !name.includes("inclinado")) base1RM = bench1RM;
+  else if (name.includes("agachamento") && !name.includes("búlgaro")) base1RM = squat1RM;
+  else if (name.includes("terra") || name.includes("stiff")) base1RM = deadlift1RM;
+
+  if (isMain && blockType === "strength") {
+    // Top set + backoff
+    const topPct = blockType === "strength" ? 0.87 : 0.80;
+    const backPct = topPct - 0.10;
+    const topWeight = base1RM > 0 ? Math.round(base1RM * topPct / 2.5) * 2.5 : undefined;
+    const backWeight = base1RM > 0 ? Math.round(base1RM * backPct / 2.5) * 2.5 : undefined;
+
+    return [
+      {
+        type: "top", targetSets: 1, targetReps: Math.max(config.reps - 2, 1),
+        targetRIR: Math.max(config.rir - 1, 0), targetWeight: topWeight,
+        percentage: Math.round(topPct * 100), restSeconds: 180,
+      },
+      {
+        type: "backoff", targetSets: config.sets - 1, targetReps: config.reps,
+        targetRIR: config.rir, targetWeight: backWeight,
+        percentage: Math.round(backPct * 100), restSeconds: 150,
+      },
+    ];
   }
-  for (const block of program.blocks) {
-    if (!block.weeks || block.weeks.length === 0) {
-      errors.push(`Bloco "${block.name}" sem semanas`);
-      continue;
-    }
-    for (const week of block.weeks) {
-      if (!week.days || week.days.length < frequency) {
-        errors.push(`Semana ${week.weekNumber}: ${week.days?.length || 0}/${frequency} dias`);
-      }
-      for (const day of (week.days || [])) {
-        if (!day.exercises || day.exercises.length < 5) {
-          errors.push(`Semana ${week.weekNumber}, ${day.name}: apenas ${day.exercises?.length || 0} exercícios`);
-        }
-      }
-    }
-  }
-  return errors;
+
+  const pct = isCompound ? 0.72 : 0.65;
+  const weight = base1RM > 0 ? Math.round(base1RM * pct / 2.5) * 2.5 : undefined;
+  const reps = isCompound ? config.reps : Math.min(config.reps + 4, 15);
+  const rest = isCompound ? 120 : 90;
+
+  return [{
+    type: "normal",
+    targetSets: config.sets,
+    targetReps: reps,
+    targetRIR: isCompound ? config.rir : config.rir + 1,
+    targetWeight: weight,
+    restSeconds: rest,
+  }];
 }
 
-// ─── Main handler ───
+// ═══════════════════════════════════════════════════════════════
+// MAIN HANDLER
+// ═══════════════════════════════════════════════════════════════
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
-
     const authHeader = req.headers.get("Authorization");
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -282,96 +501,49 @@ serve(async (req) => {
     const { data: { user } } = await supabase.auth.getUser();
 
     const {
-      squat1RM, bench1RM, deadlift1RM, bodyWeight, age, height, sex,
-      goal, frequency, experience, equipment, sessionTime,
-      injuries, muscleFocus, saveToDb, usePredictions,
+      squat1RM = 0, bench1RM = 0, deadlift1RM = 0, bodyWeight = 80,
+      goal = "powerbuilding", frequency = 5, experience = "intermediate",
+      saveToDb,
     } = await req.json();
 
-    const freq = frequency || 5;
-    const durationWeeks = 12;
-
-    // Build prediction context
-    let predictionContext = '';
-    if (usePredictions && user) {
-      try {
-        const threeMonthsAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
-        const [prsRes, liftsRes] = await Promise.all([
-          supabase.from("personal_records").select("exercise_name, weight, estimated_1rm").eq("user_id", user.id).gte("recorded_at", threeMonthsAgo).order("recorded_at", { ascending: false }).limit(10),
-          supabase.from("current_lifts").select("exercise, weight, reps").eq("user_id", user.id).order("recorded_at", { ascending: false }).limit(10),
-        ]);
-        if (prsRes.data?.length) predictionContext += `\nPRs recentes: ${JSON.stringify(prsRes.data)}`;
-        if (liftsRes.data?.length) predictionContext += `\nLifts recentes: ${JSON.stringify(liftsRes.data)}`;
-      } catch (e) { console.error("Prediction fetch error:", e); }
-    }
-
-    const injuryCtx = injuries?.length ? `\nLESÕES: ${injuries.join(', ')}. Adapte exercícios.` : '';
-    const focusCtx = muscleFocus && muscleFocus !== 'none' ? `\nFOCO MUSCULAR: ${muscleFocus}. Aumente volume desse grupo em 20%.` : '';
-
-    const userContext = `Dados do atleta:
-- Agachamento 1RM: ${squat1RM || 0}kg | Supino 1RM: ${bench1RM || 0}kg | Terra 1RM: ${deadlift1RM || 0}kg
-- Peso: ${bodyWeight || 80}kg | Idade: ${age || 25} | Sexo: ${sex || 'male'}
-- Nível: ${experience || 'intermediate'} | Objetivo: ${goal || 'powerbuilding'}
-- Tempo por sessão: ${sessionTime || 60}min | Equipamento: ${equipment || 'full'}${injuryCtx}${focusCtx}${predictionContext}`;
-
-    // ─── STEP 1: Build deterministic structure ───
-    const blocks = buildBlocks(durationWeeks);
+    const freq = Math.min(Math.max(frequency, 2), 7);
+    const blocks = buildBlocks();
     const daySplit = getDaySplit(freq);
 
-    // ─── STEP 2: Generate exercises per block via AI ───
+    // ─── Build complete program deterministically ───
     const programBlocks: any[] = [];
 
     for (const block of blocks) {
-      console.log(`Generating block: ${block.name} (weeks ${block.startWeek}-${block.endWeek})`);
-
-      let dayTemplates: any[];
-      try {
-        dayTemplates = await generateBlockDays(LOVABLE_API_KEY, block, daySplit, userContext);
-      } catch (err) {
-        console.error(`Failed block ${block.name}, retrying...`, err);
-        // Retry once
-        dayTemplates = await generateBlockDays(LOVABLE_API_KEY, block, daySplit, userContext);
-      }
-
-      // Ensure we have templates for all days
-      while (dayTemplates.length < daySplit.length) {
-        const missing = daySplit[dayTemplates.length];
-        dayTemplates.push({
-          name: missing.name,
-          focus: missing.focus,
-          exercises: dayTemplates[0]?.exercises || [],
-        });
-      }
-
-      // ─── STEP 3: Replicate across weeks with progression ───
       const weeks: any[] = [];
-      for (let w = block.startWeek; w <= block.endWeek; w++) {
-        const isDeloadWeek = (w === block.endWeek && block.endWeek - block.startWeek >= 3);
-        const days = daySplit.map((ds, idx) => {
-          const template = dayTemplates[idx] || dayTemplates[0];
-          const progressed = applyWeekProgression(template, w, block.startWeek, block.blockType);
 
-          // Deload: reduce volume
-          if (isDeloadWeek) {
+      for (let w = block.startWeek; w <= block.endWeek; w++) {
+        const weekInBlock = w - block.startWeek;
+        const config = block.weekConfigs[Math.min(weekInBlock, block.weekConfigs.length - 1)];
+        const progressionKg = weekInBlock * 2.5;
+
+        const days = daySplit.map((ds, dIdx) => {
+          const exercises = selectExercises(
+            ds.poolKey, w, dIdx, block.blockType, block.blockType === "deload"
+          );
+
+          const exercisesWithSets = exercises.map((ex, eIdx) => {
+            const sets = buildSets(
+              ex, eIdx, config, block.blockType,
+              bench1RM + progressionKg, squat1RM + progressionKg * 2, deadlift1RM + progressionKg * 2,
+            );
             return {
-              name: ds.name,
-              dayOfWeek: ds.dayOfWeek,
-              focus: ds.focus + " (Deload)",
-              exercises: (progressed.exercises || []).map((ex: any) => ({
-                ...ex,
-                sets: (ex.sets || []).map((s: any) => ({
-                  ...s,
-                  targetSets: Math.max(2, Math.ceil((s.targetSets || 3) * 0.6)),
-                  targetRIR: Math.max((s.targetRIR || 2) + 2, 3),
-                })),
-              })),
+              name: ex.name,
+              category: ex.category,
+              muscleGroup: ex.muscleGroup,
+              sets,
             };
-          }
+          });
 
           return {
             name: ds.name,
             dayOfWeek: ds.dayOfWeek,
-            focus: ds.focus,
-            exercises: progressed.exercises,
+            focus: block.blockType === "deload" ? ds.focus + " (Deload)" : ds.focus,
+            exercises: exercisesWithSets,
           };
         });
 
@@ -381,7 +553,7 @@ serve(async (req) => {
       programBlocks.push({
         name: block.name,
         goal: block.goal,
-        weekRange: block.weekRange,
+        weekRange: `Semanas ${block.startWeek}-${block.endWeek}`,
         blockType: block.blockType,
         startWeek: block.startWeek,
         endWeek: block.endWeek,
@@ -389,28 +561,38 @@ serve(async (req) => {
       });
     }
 
-    const goalLabel = {
+    const goalLabel: Record<string, string> = {
       powerbuilding: "Powerbuilding",
       strength: "Força Máxima",
       hypertrophy: "Hipertrofia",
-      recomp: "Recomposição Corporal",
-      endurance: "Resistência Muscular",
-    }[goal || "powerbuilding"] || "Powerbuilding";
+      recomp: "Recomposição",
+      endurance: "Resistência",
+    };
 
     const program = {
-      name: `Iron ${goalLabel} ${durationWeeks}sem`,
-      description: `Programa de ${durationWeeks} semanas focado em ${goalLabel.toLowerCase()} com ${freq} dias/semana. Periodização em ${programBlocks.length} blocos.`,
-      durationWeeks,
+      name: `Iron ${goalLabel[goal] || "Powerbuilding"} 12sem`,
+      description: `Programa de 12 semanas focado em ${(goalLabel[goal] || "powerbuilding").toLowerCase()} com ${freq} dias/semana. 4 blocos de periodização.`,
+      durationWeeks: 12,
       blocks: programBlocks,
     };
 
-    // ─── STEP 4: Validate ───
-    const errors = validateProgram(program, freq);
-    if (errors.length > 0) {
-      console.warn("Validation warnings:", errors);
+    // ─── VALIDATE ───
+    let totalDays = 0;
+    let totalExercises = 0;
+    for (const b of program.blocks) {
+      for (const w of b.weeks) {
+        totalDays += w.days.length;
+        for (const d of w.days) {
+          totalExercises += d.exercises.length;
+          if (d.exercises.length < 5) {
+            console.warn(`Warning: ${b.name} Week ${w.weekNumber} ${d.name} has only ${d.exercises.length} exercises`);
+          }
+        }
+      }
     }
+    console.log(`Program generated: ${program.blocks.length} blocks, ${totalDays} days, ${totalExercises} exercises`);
 
-    // ─── STEP 5: Save to DB ───
+    // ─── SAVE TO DB ───
     if (user && saveToDb !== false) {
       try {
         await supabase.from("training_programs").update({ is_active: false }).eq("user_id", user.id);
@@ -418,9 +600,9 @@ serve(async (req) => {
         const { data: dbProgram, error: progErr } = await supabase.from("training_programs").insert({
           user_id: user.id,
           name: program.name,
-          program_type: goal || "powerbuilding",
+          program_type: goal,
           description: program.description,
-          duration_weeks: program.durationWeeks,
+          duration_weeks: 12,
           days_per_week: freq,
           is_active: true,
         }).select().single();
@@ -430,13 +612,8 @@ serve(async (req) => {
         for (let bIdx = 0; bIdx < program.blocks.length; bIdx++) {
           const block = program.blocks[bIdx];
           const { data: dbBlock, error: blockErr } = await supabase.from("training_blocks").insert({
-            program_id: dbProgram.id,
-            name: block.name,
-            block_type: block.blockType,
-            goal: block.goal,
-            start_week: block.startWeek,
-            end_week: block.endWeek,
-            order_index: bIdx,
+            program_id: dbProgram.id, name: block.name, block_type: block.blockType,
+            goal: block.goal, start_week: block.startWeek, end_week: block.endWeek, order_index: bIdx,
           }).select().single();
           if (blockErr) throw blockErr;
 
@@ -449,18 +626,20 @@ serve(async (req) => {
             for (let dIdx = 0; dIdx < week.days.length; dIdx++) {
               const day = week.days[dIdx];
               const { data: dbDay, error: dayErr } = await supabase.from("training_days").insert({
-                week_id: dbWeek.id, day_name: day.name, day_of_week: day.dayOfWeek, focus: day.focus, order_index: dIdx,
+                week_id: dbWeek.id, day_name: day.name, day_of_week: day.dayOfWeek,
+                focus: day.focus, order_index: dIdx,
               }).select().single();
               if (dayErr) throw dayErr;
 
-              for (let eIdx = 0; eIdx < (day.exercises || []).length; eIdx++) {
+              for (let eIdx = 0; eIdx < day.exercises.length; eIdx++) {
                 const ex = day.exercises[eIdx];
                 const { data: dbEx, error: exErr } = await supabase.from("workout_exercises").insert({
-                  day_id: dbDay.id, exercise_name: ex.name, category: ex.category, muscle_group: ex.muscleGroup, order_index: eIdx,
+                  day_id: dbDay.id, exercise_name: ex.name, category: ex.category,
+                  muscle_group: ex.muscleGroup, order_index: eIdx,
                 }).select().single();
                 if (exErr) throw exErr;
 
-                for (let sIdx = 0; sIdx < (ex.sets || []).length; sIdx++) {
+                for (let sIdx = 0; sIdx < ex.sets.length; sIdx++) {
                   const s = ex.sets[sIdx];
                   await supabase.from("planned_sets").insert({
                     workout_exercise_id: dbEx.id, set_number: sIdx + 1,
