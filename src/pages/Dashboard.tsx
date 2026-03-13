@@ -3,12 +3,13 @@ import { useTraining } from '@/contexts/TrainingContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserPRs } from '@/hooks/useUserPRs';
 import { TrendingUp, Target, Dumbbell, Activity, Zap, CheckCircle, XCircle, Sparkles, AlertTriangle, Trophy, Shield, ArrowUpRight } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { TodayWorkoutCard } from '@/components/TodayWorkoutCard';
+import { MuscleRecoveryMap } from '@/components/MuscleRecoveryMap';
 
 const fadeIn = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.4 } };
 
