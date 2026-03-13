@@ -3,12 +3,13 @@ import { useTraining } from '@/contexts/TrainingContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserPRs } from '@/hooks/useUserPRs';
 import { TrendingUp, Target, Dumbbell, Activity, Zap, CheckCircle, XCircle, Sparkles, AlertTriangle, Trophy, Shield, ArrowUpRight } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { TodayWorkoutCard } from '@/components/TodayWorkoutCard';
+import { MuscleRecoveryMap } from '@/components/MuscleRecoveryMap';
 
 const fadeIn = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.4 } };
 
@@ -115,6 +116,12 @@ export default function Dashboard() {
         <p className="text-muted-foreground mt-1">{hasProgram ? `Semana ${currentWeek} · ${currentBlock?.name}` : 'Bem-vindo ao Iron Training'}</p>
       </motion.div>
 
+      {/* Today's Workout Card */}
+      <TodayWorkoutCard />
+
+      {/* Muscle Recovery Map */}
+      <MuscleRecoveryMap />
+
       {/* Empty State - Configure PRs */}
       {!prsLoading && !hasPRs && (
         <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-6 sm:p-8 card-elevated text-center">
@@ -179,31 +186,7 @@ export default function Dashboard() {
         )}
       </motion.div>
 
-      {/* Today's Workout */}
-      {todayWorkout && (
-        <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">Treino de Hoje</h3>
-              <p className="text-xs text-muted-foreground">{todayWorkout.name} — {todayWorkout.focus}</p>
-            </div>
-            <Link to="/train" className="text-xs bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-1">
-              <Zap className="w-3 h-3" /> Iniciar Treino
-            </Link>
-          </div>
-          <div className="space-y-2">
-            {todayWorkout.exercises.map(ex => (
-              <div key={ex.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-secondary/50">
-                <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${ex.category === 'compound' ? 'bg-primary' : 'bg-muted-foreground'}`} />
-                  <span className="text-sm text-foreground">{ex.name}</span>
-                </div>
-                <span className="text-xs text-muted-foreground font-mono">{ex.sets.map(s => `${s.targetSets}×${s.targetReps}`).join(' + ')}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      )}
+      {/* Old Today's Workout section removed - now using TodayWorkoutCard above */}
 
       {/* Block Overview - Only show if has program */}
       {hasProgram && (
