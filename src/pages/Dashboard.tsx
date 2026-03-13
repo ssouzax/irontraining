@@ -116,6 +116,12 @@ export default function Dashboard() {
         <p className="text-muted-foreground mt-1">{hasProgram ? `Semana ${currentWeek} · ${currentBlock?.name}` : 'Bem-vindo ao Iron Training'}</p>
       </motion.div>
 
+      {/* Today's Workout Card */}
+      <TodayWorkoutCard />
+
+      {/* Muscle Recovery Map */}
+      <MuscleRecoveryMap />
+
       {/* Empty State - Configure PRs */}
       {!prsLoading && !hasPRs && (
         <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-6 sm:p-8 card-elevated text-center">
