@@ -132,9 +132,9 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Top bar */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border px-4 h-14 flex items-center justify-between">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border/30 px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => setMenuOpen(true)} className="p-1.5 -ml-1 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={() => setMenuOpen(true)} className="p-2 -ml-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/50 active:scale-95 transition-all">
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
@@ -142,7 +142,7 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
             <span className="font-bold text-foreground text-base tracking-tight">Iron Training</span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <StreakFireIcon />
           <NotificationBell />
         </div>
