@@ -132,9 +132,9 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Top bar */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border px-4 h-14 flex items-center justify-between">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border/30 px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => setMenuOpen(true)} className="p-1.5 -ml-1 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={() => setMenuOpen(true)} className="p-2 -ml-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/50 active:scale-95 transition-all">
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
@@ -142,7 +142,7 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
             <span className="font-bold text-foreground text-base tracking-tight">Iron Training</span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <StreakFireIcon />
           <NotificationBell />
         </div>
@@ -228,7 +228,7 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
       </AnimatePresence>
 
       {/* Content */}
-      <main className="flex-1 pt-14 pb-20 overflow-y-auto overflow-x-hidden">
+      <main className="flex-1 pt-14 pb-24 overflow-y-auto overflow-x-hidden">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={activeTab}
@@ -268,8 +268,8 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-border safe-area-bottom">
-        <div className="flex items-center justify-around h-16">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-border/50 safe-area-bottom">
+        <div className="flex items-center justify-around h-[68px] max-w-md mx-auto">
           {bottomTabs.map(tab => {
             const isActive = activeTab === tab.key;
             const isPost = tab.key === 'post';
@@ -278,22 +278,38 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
                 key={tab.key}
                 onClick={() => changeTab(tab.key)}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 py-1 px-3 transition-colors",
-                  isPost && "relative -mt-4"
+                  "relative flex flex-col items-center justify-center gap-0.5 min-w-[56px] py-1 transition-all active:scale-95",
+                  isPost && "-mt-5"
                 )}
               >
                 {isPost ? (
-                  <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
+                  <motion.div 
+                    whileTap={{ scale: 0.9 }}
+                    className="w-13 h-13 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/40 ring-4 ring-card/95">
                     <tab.icon className="w-6 h-6 text-primary-foreground" />
-                  </div>
+                  </motion.div>
                 ) : (
-                  <tab.icon className={cn(
-                    "w-6 h-6 transition-colors",
-                    isActive ? "text-primary" : "text-muted-foreground"
-                  )} />
+                  <>
+                    <motion.div
+                      whileTap={{ scale: 0.85 }}
+                      className="relative"
+                    >
+                      <tab.icon className={cn(
+                        "w-[22px] h-[22px] transition-colors duration-200",
+                        isActive ? "text-primary" : "text-muted-foreground"
+                      )} />
+                    </motion.div>
+                    {isActive && (
+                      <motion.div
+                        layoutId="nav-indicator"
+                        className="absolute -top-0.5 w-5 h-0.5 rounded-full bg-primary"
+                        transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                      />
+                    )}
+                  </>
                 )}
                 <span className={cn(
-                  "text-[10px] font-medium transition-colors",
+                  "text-[10px] font-semibold transition-colors duration-200",
                   isActive ? "text-primary" : "text-muted-foreground",
                   isPost && "mt-0.5"
                 )}>
