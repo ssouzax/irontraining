@@ -228,7 +228,7 @@ export function MobileLayout({ workoutContent }: MobileLayoutProps) {
       </AnimatePresence>
 
       {/* Content */}
-      <main className="flex-1 pt-14 pb-20 overflow-y-auto overflow-x-hidden">
+      <main className="flex-1 pt-14 pb-24 overflow-y-auto overflow-x-hidden">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={activeTab}
