@@ -2,14 +2,16 @@ import { motion } from 'framer-motion';
 import { useTraining } from '@/contexts/TrainingContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserPRs } from '@/hooks/useUserPRs';
-import { TrendingUp, Target, Dumbbell, Activity, Zap, CheckCircle, XCircle, Sparkles, AlertTriangle, Trophy, Shield, ArrowUpRight } from 'lucide-react';
+import { TrendingUp, Target, Dumbbell, CheckCircle, XCircle, Sparkles, Trophy } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
 import { TodayWorkoutCard } from '@/components/TodayWorkoutCard';
 import { MuscleRecoveryMap } from '@/components/MuscleRecoveryMap';
+import { StreakCard } from '@/components/dashboard/StreakCard';
+import { PlayerLevelCard } from '@/components/dashboard/PlayerLevelCard';
+import { WeeklyProgressCard } from '@/components/dashboard/WeeklyProgressCard';
 
 const fadeIn = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.4 } };
 
@@ -47,13 +49,8 @@ export default function Dashboard() {
   const [analyzing, setAnalyzing] = useState(false);
 
   const hasPRs = prs.length > 0 && prs.some(p => p.estimated_1rm > 0);
-
   const hasProgram = program.blocks.length > 0;
   const currentBlock = hasProgram ? (program.blocks.find(b => b.weeks.some(w => w.weekNumber === currentWeek)) || program.blocks[0]) : null;
-  const currentWeekData = currentBlock ? (currentBlock.weeks.find(w => w.weekNumber === currentWeek) || currentBlock.weeks[0]) : null;
-  const todayIndex = new Date().getDay();
-  const dayMap: Record<number, number> = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 };
-  const todayWorkout = currentWeekData ? currentWeekData.days[dayMap[todayIndex] ?? 0] : null;
 
   useEffect(() => {
     if (!user) return;
@@ -100,29 +97,32 @@ export default function Dashboard() {
     }
   };
 
-  const volumeData = [
-    { day: 'Seg', sets: 22 }, { day: 'Ter', sets: 19 }, { day: 'Qua', sets: 20 },
-    { day: 'Qui', sets: 20 }, { day: 'Sex', sets: 16 },
-  ];
-
-  const tooltipStyle = {
-    background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))',
-  };
-
   return (
     <div className="space-y-6 sm:space-y-8">
+      {/* Header */}
       <motion.div {...fadeIn}>
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">Painel</h1>
-        <p className="text-muted-foreground mt-1">{hasProgram ? `Semana ${currentWeek} · ${currentBlock?.name}` : 'Bem-vindo ao Iron Training'}</p>
+        <p className="text-muted-foreground mt-1">
+          {hasProgram ? `Semana ${currentWeek} · ${currentBlock?.name}` : 'Bem-vindo ao Iron Training'}
+        </p>
       </motion.div>
 
-      {/* Today's Workout Card */}
+      {/* Card 1 — Today's Workout (priority) */}
       <TodayWorkoutCard />
 
-      {/* Muscle Recovery Map */}
+      {/* Card 2 & 3 — Streak + Player Level side by side */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <StreakCard />
+        <PlayerLevelCard />
+      </div>
+
+      {/* Card 4 — Weekly Progress */}
+      <WeeklyProgressCard />
+
+      {/* Card 5 — Muscle Recovery Map */}
       <MuscleRecoveryMap />
 
-      {/* Empty State - Configure PRs */}
+      {/* PR Stats */}
       {!prsLoading && !hasPRs && (
         <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-6 sm:p-8 card-elevated text-center">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
@@ -138,7 +138,6 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      {/* PR Stats from DB */}
       {hasPRs && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {prs.filter(p => p.estimated_1rm > 0).slice(0, 3).map(pr => (
@@ -186,9 +185,7 @@ export default function Dashboard() {
         )}
       </motion.div>
 
-      {/* Old Today's Workout section removed - now using TodayWorkoutCard above */}
-
-      {/* Block Overview - Only show if has program */}
+      {/* Block Overview */}
       {hasProgram && (
         <motion.div {...fadeIn} className="bg-card rounded-xl border border-border p-4 sm:p-6 card-elevated">
           <h3 className="text-sm font-semibold text-foreground mb-4">Blocos do Programa</h3>
