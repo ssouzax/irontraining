@@ -99,6 +99,7 @@ export default function ProgramGenerator() {
   const [sessionTime, setSessionTime] = useState(60);
   const [injuries, setInjuries] = useState<string[]>(['none']);
   const [muscleFocus, setMuscleFocus] = useState('none');
+  const [preferDumbell, setPreferDumbell] = useState(false);
   const [usePredictions, setUsePredictions] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [generationStatus, setGenerationStatus] = useState('');
@@ -128,7 +129,7 @@ export default function ProgramGenerator() {
           squat1RM: squat, bench1RM: bench, deadlift1RM: deadlift,
           bodyWeight, age, height, sex, goal, frequency, experience,
           equipment, sessionTime, injuries: injuries.filter(i => i !== 'none'),
-          muscleFocus, usePredictions,
+          muscleFocus, usePredictions, preferDumbell,
         },
       });
       if (error) throw error;
@@ -277,6 +278,24 @@ export default function ProgramGenerator() {
           <SelectField label="Equipamento disponível" value={equipment} onChange={(e: any) => setEquipment(e.target.value)}>
             {equipmentOptions.map(eq => <option key={eq.value} value={eq.value}>{eq.label}</option>)}
           </SelectField>
+        </div>
+        <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border">
+          <div>
+            <p className="text-sm font-medium text-foreground">Preferir halteres</p>
+            <p className="text-xs text-muted-foreground">Substitui barra por halteres sempre que possível</p>
+          </div>
+          <button
+            onClick={() => setPreferDumbell(prev => !prev)}
+            className={cn(
+              "relative w-11 h-6 rounded-full transition-colors duration-200",
+              preferDumbell ? "bg-primary" : "bg-muted-foreground/30"
+            )}
+          >
+            <span className={cn(
+              "absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200",
+              preferDumbell ? "translate-x-5" : "translate-x-0"
+            )} />
+          </button>
         </div>
       </motion.div>
 
