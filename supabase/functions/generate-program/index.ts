@@ -310,6 +310,21 @@ function buildBlocks(goal: string): BlockDef[] {
       { name: "Deload", goal: "Recuperacao ativa", blockType: "deload", startWeek: 10, endWeek: 12, weekConfigs: [{ sets: 3, reps: 12, rir: 4 }, { sets: 2, reps: 12, rir: 4 }, { sets: 2, reps: 10, rir: 4 }] },
     ];
   }
+  if (goal === "endurance") {
+    return [
+      { name: "Resistencia Base", goal: "Adaptacao muscular", blockType: "hypertrophy", startWeek: 1, endWeek: 4, weekConfigs: [{ sets: 3, reps: 15, rir: 3 }, { sets: 3, reps: 15, rir: 2 }, { sets: 4, reps: 12, rir: 2 }, { sets: 4, reps: 12, rir: 2 }] },
+      { name: "Resistencia Intensa", goal: "Alta repeticao", blockType: "hypertrophy", startWeek: 5, endWeek: 9, weekConfigs: [{ sets: 4, reps: 15, rir: 2 }, { sets: 4, reps: 12, rir: 1 }, { sets: 4, reps: 12, rir: 1 }, { sets: 5, reps: 10, rir: 1 }, { sets: 4, reps: 10, rir: 0 }] },
+      { name: "Deload", goal: "Recuperacao ativa", blockType: "deload", startWeek: 10, endWeek: 12, weekConfigs: [{ sets: 3, reps: 12, rir: 4 }, { sets: 2, reps: 12, rir: 4 }, { sets: 2, reps: 10, rir: 4 }] },
+    ];
+  }
+  if (goal === "recomp") {
+    return [
+      { name: "Recomposicao Base", goal: "Volume moderado + intensidade", blockType: "hypertrophy", startWeek: 1, endWeek: 4, weekConfigs: [{ sets: 3, reps: 12, rir: 3 }, { sets: 4, reps: 10, rir: 2 }, { sets: 4, reps: 10, rir: 2 }, { sets: 4, reps: 8, rir: 2 }] },
+      { name: "Recomposicao Intensa", goal: "Forca + hipertrofia", blockType: "hypertrophy_heavy", startWeek: 5, endWeek: 9, weekConfigs: [{ sets: 4, reps: 8, rir: 2 }, { sets: 4, reps: 8, rir: 1 }, { sets: 5, reps: 6, rir: 1 }, { sets: 5, reps: 6, rir: 1 }, { sets: 4, reps: 6, rir: 0 }] },
+      { name: "Deload", goal: "Recuperacao ativa", blockType: "deload", startWeek: 10, endWeek: 12, weekConfigs: [{ sets: 3, reps: 10, rir: 4 }, { sets: 2, reps: 10, rir: 4 }, { sets: 2, reps: 10, rir: 4 }] },
+    ];
+  }
+  // powerbuilding default
   return [
     { name: "Base / Hipertrofia", goal: "Adaptacao, volume e hipertrofia", blockType: "hypertrophy", startWeek: 1, endWeek: 3, weekConfigs: [{ sets: 3, reps: 12, rir: 3 }, { sets: 4, reps: 10, rir: 2 }, { sets: 4, reps: 8, rir: 2 }] },
     { name: "Hipertrofia Intensa", goal: "Maximizar crescimento muscular", blockType: "hypertrophy_heavy", startWeek: 4, endWeek: 6, weekConfigs: [{ sets: 4, reps: 10, rir: 2 }, { sets: 4, reps: 8, rir: 1 }, { sets: 5, reps: 6, rir: 1 }] },
@@ -400,9 +415,15 @@ function buildSets(ex: ExerciseTemplate, exIndex: number, config: { sets: number
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
+    // Authenticate the user via their JWT
     const authHeader = req.headers.get("Authorization");
-    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader || "" } } });
-    const { data: { user } } = await supabase.auth.getUser();
+    const anonClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader || "" } },
+    });
+    const { data: { user } } = await anonClient.auth.getUser();
+
+    // Use service role for DB writes to bypass RLS (we validate user ownership ourselves)
+    const serviceClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
     const { squat1RM = 0, bench1RM = 0, deadlift1RM = 0, bodyWeight = 80, goal = "powerbuilding", frequency = 5, experience = "intermediate", equipment = "full", injuries = [], preferDumbell = false, saveToDb } = await req.json();
 
@@ -427,7 +448,10 @@ serve(async (req) => {
         const progressionKg = weekInBlock * 2.5;
         const days = daySplit.map((ds, dIdx) => {
           const exercises = selectExercises(ds.poolKey, w, dIdx, block.blockType, bIdx, block.blockType === "deload", prefs);
-          const exercisesWithSets = exercises.map((ex, eIdx) => ({ name: ex.name, category: ex.category, muscleGroup: ex.muscleGroup, sets: buildSets(ex, eIdx, config, block.blockType, bench1RM + progressionKg, squat1RM + progressionKg * 2, deadlift1RM + progressionKg * 2) }));
+          const exercisesWithSets = exercises.map((ex, eIdx) => ({
+            name: ex.name, category: ex.category, muscleGroup: ex.muscleGroup,
+            sets: buildSets(ex, eIdx, config, block.blockType, bench1RM + progressionKg, squat1RM + progressionKg * 2, deadlift1RM + progressionKg * 2),
+          }));
           return { name: ds.name, dayOfWeek: ds.dayOfWeek, focus: block.blockType === "deload" ? ds.focus + " (Deload)" : ds.focus, exercises: exercisesWithSets };
         });
         weeks.push({ weekNumber: w, days });
@@ -444,42 +468,103 @@ serve(async (req) => {
       blocks: programBlocks,
     };
 
-    let totalDays = 0, totalExercises = 0;
-    for (const b of program.blocks) for (const w of b.weeks) { totalDays += w.days.length; for (const d of w.days) totalExercises += d.exercises.length; }
-    console.log(`Generated: ${program.blocks.length} blocks, ${totalDays} days, ${totalExercises} exercises. preferDumbell=${prefs.preferDumbell}, equipment=${prefs.equipment}, injuries=${prefs.injuries}, level=${prefs.experience}`);
+    console.log(`Generated program: ${program.blocks.length} blocks, goal=${goal}, freq=${freq}`);
 
+    // Save to DB using service role (fast, no RLS overhead)
     if (user && saveToDb !== false) {
       try {
-        await supabase.from("training_programs").update({ is_active: false }).eq("user_id", user.id);
-        const { data: dbProgram, error: progErr } = await supabase.from("training_programs").insert({ user_id: user.id, name: program.name, program_type: goal, description: program.description, duration_weeks: 12, days_per_week: freq, is_active: true }).select().single();
+        // Deactivate old programs
+        await serviceClient.from("training_programs").update({ is_active: false }).eq("user_id", user.id);
+
+        // Insert program
+        const { data: dbProgram, error: progErr } = await serviceClient.from("training_programs").insert({
+          user_id: user.id, name: program.name, program_type: goal,
+          description: program.description, duration_weeks: 12, days_per_week: freq, is_active: true,
+        }).select("id").single();
         if (progErr) throw progErr;
-        for (let bIdx = 0; bIdx < program.blocks.length; bIdx++) {
-          const block = program.blocks[bIdx];
-          const { data: dbBlock, error: blockErr } = await supabase.from("training_blocks").insert({ program_id: dbProgram.id, name: block.name, block_type: block.blockType, goal: block.goal, start_week: block.startWeek, end_week: block.endWeek, order_index: bIdx }).select().single();
-          if (blockErr) throw blockErr;
+
+        // Batch insert blocks
+        const blockRows = program.blocks.map((b: any, i: number) => ({
+          program_id: dbProgram.id, name: b.name, block_type: b.blockType,
+          goal: b.goal, start_week: b.startWeek, end_week: b.endWeek, order_index: i,
+        }));
+        const { data: dbBlocks, error: blocksErr } = await serviceClient.from("training_blocks").insert(blockRows).select("id, order_index");
+        if (blocksErr) throw blocksErr;
+
+        // Batch insert weeks
+        const weekRows: any[] = [];
+        for (const dbBlock of dbBlocks!) {
+          const block = program.blocks[dbBlock.order_index];
           for (const week of block.weeks) {
-            const { data: dbWeek, error: weekErr } = await supabase.from("training_weeks").insert({ block_id: dbBlock.id, week_number: week.weekNumber }).select().single();
-            if (weekErr) throw weekErr;
+            weekRows.push({ block_id: dbBlock.id, week_number: week.weekNumber });
+          }
+        }
+        const { data: dbWeeks, error: weeksErr } = await serviceClient.from("training_weeks").insert(weekRows).select("id, block_id, week_number");
+        if (weeksErr) throw weeksErr;
+
+        // Build a lookup: block_id+week_number -> week_id
+        const weekLookup = new Map<string, string>();
+        for (const w of dbWeeks!) weekLookup.set(`${w.block_id}_${w.week_number}`, w.id);
+
+        // Batch insert days
+        const dayRows: any[] = [];
+        const dayMeta: any[] = []; // track block/week/day indices for exercise mapping
+        for (const dbBlock of dbBlocks!) {
+          const block = program.blocks[dbBlock.order_index];
+          for (const week of block.weeks) {
+            const weekId = weekLookup.get(`${dbBlock.id}_${week.weekNumber}`);
+            if (!weekId) continue;
             for (let dIdx = 0; dIdx < week.days.length; dIdx++) {
               const day = week.days[dIdx];
-              const { data: dbDay, error: dayErr } = await supabase.from("training_days").insert({ week_id: dbWeek.id, day_name: day.name, day_of_week: day.dayOfWeek, focus: day.focus, order_index: dIdx }).select().single();
-              if (dayErr) throw dayErr;
-              for (let eIdx = 0; eIdx < day.exercises.length; eIdx++) {
-                const ex = day.exercises[eIdx];
-                const { data: dbEx, error: exErr } = await supabase.from("workout_exercises").insert({ day_id: dbDay.id, exercise_name: ex.name, category: ex.category, muscle_group: ex.muscleGroup, order_index: eIdx }).select().single();
-                if (exErr) throw exErr;
-                for (let sIdx = 0; sIdx < ex.sets.length; sIdx++) {
-                  const s = ex.sets[sIdx];
-                  await supabase.from("planned_sets").insert({ workout_exercise_id: dbEx.id, set_number: sIdx + 1, target_sets: s.targetSets, target_reps: s.targetReps, target_rir: s.targetRIR, target_weight: s.targetWeight, load_percentage: s.percentage, rest_seconds: s.restSeconds || 120, is_top_set: s.type === "top", is_backoff: s.type === "backoff" });
-                }
-              }
+              dayRows.push({ week_id: weekId, day_name: day.name, day_of_week: day.dayOfWeek, focus: day.focus, order_index: dIdx });
+              dayMeta.push({ blockIdx: dbBlock.order_index, weekNumber: week.weekNumber, dayIdx: dIdx });
             }
           }
         }
+        const { data: dbDays, error: daysErr } = await serviceClient.from("training_days").insert(dayRows).select("id");
+        if (daysErr) throw daysErr;
+
+        // Batch insert exercises
+        const exRows: any[] = [];
+        const exMeta: any[] = [];
+        for (let i = 0; i < dbDays!.length; i++) {
+          const meta = dayMeta[i];
+          const day = program.blocks[meta.blockIdx].weeks.find((w: any) => w.weekNumber === meta.weekNumber)?.days[meta.dayIdx];
+          if (!day) continue;
+          for (let eIdx = 0; eIdx < day.exercises.length; eIdx++) {
+            const ex = day.exercises[eIdx];
+            exRows.push({ day_id: dbDays![i].id, exercise_name: ex.name, category: ex.category, muscle_group: ex.muscleGroup, order_index: eIdx });
+            exMeta.push({ exercises: day.exercises, exIdx: eIdx });
+          }
+        }
+        const { data: dbExercises, error: exErr } = await serviceClient.from("workout_exercises").insert(exRows).select("id");
+        if (exErr) throw exErr;
+
+        // Batch insert planned sets
+        const setRows: any[] = [];
+        for (let i = 0; i < dbExercises!.length; i++) {
+          const { exercises, exIdx } = exMeta[i];
+          const ex = exercises[exIdx];
+          for (let sIdx = 0; sIdx < ex.sets.length; sIdx++) {
+            const s = ex.sets[sIdx];
+            setRows.push({
+              workout_exercise_id: dbExercises![i].id, set_number: sIdx + 1,
+              target_sets: s.targetSets, target_reps: s.targetReps, target_rir: s.targetRIR,
+              target_weight: s.targetWeight ?? null, load_percentage: s.percentage ?? null,
+              rest_seconds: s.restSeconds || 120, is_top_set: s.type === "top", is_backoff: s.type === "backoff",
+            });
+          }
+        }
+        if (setRows.length > 0) {
+          const { error: setsErr } = await serviceClient.from("planned_sets").insert(setRows);
+          if (setsErr) throw setsErr;
+        }
+
+        console.log(`Saved to DB: program=${dbProgram.id}, blocks=${dbBlocks!.length}, weeks=${dbWeeks!.length}, days=${dbDays!.length}, exercises=${dbExercises!.length}, sets=${setRows.length}`);
         return new Response(JSON.stringify({ program, programId: dbProgram.id }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      } catch (dbErr) {
+      } catch (dbErr: any) {
         console.error("DB save error:", dbErr);
-        return new Response(JSON.stringify({ program, dbSaveError: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ program, dbSaveError: true, dbErrorMessage: dbErr?.message }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
     }
 
