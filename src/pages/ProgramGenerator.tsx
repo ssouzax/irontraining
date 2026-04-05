@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Sparkles, Loader2, ChevronDown, ChevronRight, Dumbbell, Target, Zap, Brain, AlertTriangle, Clock, User, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Loader2, ChevronDown, ChevronRight, Dumbbell, Target, Zap, Brain, AlertTriangle, Clock, User, CheckCircle2, Play } from 'lucide-react';
 import { useTraining } from '@/contexts/TrainingContext';
 import { calculate1RM } from '@/data/defaultProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface GeneratedProgram {
   name: string;
@@ -80,7 +81,8 @@ const focusOptions = [
 ];
 
 export default function ProgramGenerator() {
-  const { profile } = useTraining();
+  const { profile, loadActiveProgram } = useTraining();
+  const navigate = useNavigate();
   const squat1RM = calculate1RM(profile.currentLifts.squat.weight, profile.currentLifts.squat.reps);
   const bench1RM = calculate1RM(profile.currentLifts.bench.weight, profile.currentLifts.bench.reps);
   const deadlift1RM = calculate1RM(profile.currentLifts.deadlift.weight, profile.currentLifts.deadlift.reps);
@@ -146,6 +148,8 @@ export default function ProgramGenerator() {
           ), 0
         );
         toast.success(`Programa completo: ${data.program.durationWeeks} semanas, ${totalDays} treinos, ${totalExercises} exercícios!`);
+        // Auto-load into training context
+        await loadActiveProgram();
       } else if (data?.error) {
         throw new Error(data.error);
       }
@@ -417,7 +421,7 @@ export default function ProgramGenerator() {
                 <p className="text-xs text-muted-foreground">{program.description}</p>
               </div>
             </div>
-            <div className="flex gap-3 mt-3">
+              <div className="flex gap-3 mt-3">
               <div className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium">
                 {program.durationWeeks} semanas
               </div>
@@ -425,9 +429,18 @@ export default function ProgramGenerator() {
                 {program.blocks.length} blocos
               </div>
               <div className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium">
-                {program.blocks.reduce((a, b) => a + b.weeks.reduce((wa, w) => wa + w.days.length, 0), 0)} treinos
+                {program.blocks.reduce((a, b) => a + b.weeks.reduce((wa, w) => wa + (w.days?.length || 0), 0), 0)} treinos
               </div>
             </div>
+
+            {/* Activate & Train Button */}
+            <button
+              onClick={() => navigate('/train')}
+              className="w-full mt-4 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3.5 rounded-xl font-bold text-sm transition-colors"
+            >
+              <Play className="w-4 h-4" />
+              ATIVAR E COMEÇAR A TREINAR
+            </button>
           </div>
 
           {program.blocks.map((block, bIdx) => (
