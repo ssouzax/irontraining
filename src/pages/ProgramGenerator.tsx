@@ -81,7 +81,8 @@ const focusOptions = [
 ];
 
 export default function ProgramGenerator() {
-  const { profile } = useTraining();
+  const { profile, loadActiveProgram } = useTraining();
+  const navigate = useNavigate();
   const squat1RM = calculate1RM(profile.currentLifts.squat.weight, profile.currentLifts.squat.reps);
   const bench1RM = calculate1RM(profile.currentLifts.bench.weight, profile.currentLifts.bench.reps);
   const deadlift1RM = calculate1RM(profile.currentLifts.deadlift.weight, profile.currentLifts.deadlift.reps);
