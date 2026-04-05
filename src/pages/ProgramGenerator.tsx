@@ -148,6 +148,8 @@ export default function ProgramGenerator() {
           ), 0
         );
         toast.success(`Programa completo: ${data.program.durationWeeks} semanas, ${totalDays} treinos, ${totalExercises} exercícios!`);
+        // Auto-load into training context
+        await loadActiveProgram();
       } else if (data?.error) {
         throw new Error(data.error);
       }
