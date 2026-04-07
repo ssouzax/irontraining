@@ -2150,6 +2150,8 @@ export type Database = {
           created_at: string
           display_name: string | null
           email: string | null
+          followers_count: number | null
+          following_count: number | null
           goals: string | null
           gym_class: string | null
           gym_id: string | null
@@ -2157,6 +2159,7 @@ export type Database = {
           id: string
           instagram_url: string | null
           location: string | null
+          posts_count: number | null
           profile_public: boolean | null
           referral_coupon_used: string | null
           referred_by_influencer_id: string | null
@@ -2182,6 +2185,8 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           email?: string | null
+          followers_count?: number | null
+          following_count?: number | null
           goals?: string | null
           gym_class?: string | null
           gym_id?: string | null
@@ -2189,6 +2194,7 @@ export type Database = {
           id?: string
           instagram_url?: string | null
           location?: string | null
+          posts_count?: number | null
           profile_public?: boolean | null
           referral_coupon_used?: string | null
           referred_by_influencer_id?: string | null
@@ -2214,6 +2220,8 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           email?: string | null
+          followers_count?: number | null
+          following_count?: number | null
           goals?: string | null
           gym_class?: string | null
           gym_id?: string | null
@@ -2221,6 +2229,7 @@ export type Database = {
           id?: string
           instagram_url?: string | null
           location?: string | null
+          posts_count?: number | null
           profile_public?: boolean | null
           referral_coupon_used?: string | null
           referred_by_influencer_id?: string | null
@@ -2671,6 +2680,68 @@ export type Database = {
           whatsapp_contact?: string | null
         }
         Relationships: []
+      }
+      stories: {
+        Row: {
+          caption: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          media_type: string
+          media_url: string
+          user_id: string
+          views_count: number
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_type?: string
+          media_url: string
+          user_id: string
+          views_count?: number
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_type?: string
+          media_url?: string
+          user_id?: string
+          views_count?: number
+        }
+        Relationships: []
+      }
+      story_views: {
+        Row: {
+          id: string
+          story_id: string
+          viewed_at: string
+          viewer_id: string
+        }
+        Insert: {
+          id?: string
+          story_id: string
+          viewed_at?: string
+          viewer_id: string
+        }
+        Update: {
+          id?: string
+          story_id?: string
+          viewed_at?: string
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_views_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscription_plans: {
         Row: {
