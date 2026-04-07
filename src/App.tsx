@@ -103,6 +103,7 @@ function ProtectedRoutes() {
           <Route path="/feed" element={<SocialFeedPage />} />
           <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/athlete/:userId" element={<AthleteProfilePage />} />
+          <Route path="/profile/:username" element={<AthleteProfilePage />} />
           <Route path="/plates" element={<PlateCalculator />} />
           <Route path="/streaks" element={<StreakLeaderboardPage />} />
           <Route path="/coach" element={<PremiumGate requiredTier="premium" feature="Coach IA"><CoachPage /></PremiumGate>} />
