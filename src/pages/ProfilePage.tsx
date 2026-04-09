@@ -149,7 +149,7 @@ export default function ProfilePage() {
     if (uploadError) { toast.error('Erro no upload'); setUploading(false); return; }
     const { data: { publicUrl } } = supabase.storage.from('social-media').getPublicUrl(path);
     const field = type === 'avatar' ? 'avatar_url' : 'cover_url';
-    await supabase.from('profiles').update({ [field]: publicUrl }).eq('user_id', user.id);
+    await supabase.from('profiles').update({ [field]: publicUrl } as any).eq('user_id', user.id);
     setProfile(p => ({ ...p, [field]: publicUrl }));
     setUploading(false);
     toast.success(`${type === 'avatar' ? 'Foto' : 'Capa'} atualizada!`);

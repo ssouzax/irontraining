@@ -1,17 +1,17 @@
-import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { Heart, MessageCircle, Share2, Send, Trophy, Dumbbell, Plus, Image, X, Loader2, UserPlus, UserMinus } from 'lucide-react';
+import { Plus, Dumbbell, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { usePlayerLevel } from '@/hooks/usePlayerLevel';
 import { useFollows } from '@/hooks/useFollows';
 import { useNavigate } from 'react-router-dom';
 import { StoriesBar } from '@/components/social/StoriesBar';
 import { UserSuggestions } from '@/components/social/UserSuggestions';
+import { PostCard } from '@/components/social/PostCard';
+import { CommentsSheet } from '@/components/social/CommentsSheet';
+import { CreatePostModal } from '@/components/social/CreatePostModal';
+import { motion } from 'framer-motion';
 
 interface Post {
   id: string;
@@ -26,38 +26,21 @@ interface Post {
   likes_count: number;
   comments_count: number;
   media_urls: string[] | null;
+  media_type?: string | null;
+  location?: string | null;
   created_at: string;
   profiles?: { display_name: string | null; username: string | null; avatar_url: string | null; email: string | null };
 }
 
-interface Comment {
-  id: string;
-  user_id: string;
-  content: string;
-  created_at: string;
-  profiles?: { display_name: string | null; username: string | null; email: string | null };
-}
-
 export default function SocialFeedPage() {
   const { user } = useAuth();
-  const { addXP } = usePlayerLevel();
-  const { followingIds, toggleFollow, isFollowing } = useFollows();
+  const { followingIds, toggleFollow } = useFollows();
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
-  const [caption, setCaption] = useState('');
-  const [postType, setPostType] = useState('update');
-  const [exerciseName, setExerciseName] = useState('');
-  const [weight, setWeight] = useState('');
-  const [reps, setReps] = useState('');
-  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
-  const [mediaPreviews, setMediaPreviews] = useState<string[]>([]);
-  const [posting, setPosting] = useState(false);
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
-  const [expandedComments, setExpandedComments] = useState<string | null>(null);
-  const [comments, setComments] = useState<Record<string, Comment[]>>({});
-  const [commentText, setCommentText] = useState('');
+  const [commentsPostId, setCommentsPostId] = useState<string | null>(null);
   const [feedMode, setFeedMode] = useState<'following' | 'all'>('following');
 
   useEffect(() => { loadFeed(); loadLikes(); }, [user, followingIds, feedMode]);
@@ -66,21 +49,16 @@ export default function SocialFeedPage() {
     if (!user) return;
     setLoading(true);
     let query = supabase.from('posts').select('*').order('created_at', { ascending: false }).limit(50);
-
     if (feedMode === 'following' && followingIds.size > 0) {
       query = query.in('user_id', [...followingIds, user.id]);
     }
-
     const { data: postsData } = await query;
     if (!postsData) { setLoading(false); return; }
-
     const userIds = [...new Set(postsData.map(p => p.user_id))];
     const { data: profilesData } = await supabase
       .from('profiles').select('user_id, display_name, username, avatar_url, email').in('user_id', userIds);
-
     const profileMap = new Map((profilesData || []).map(p => [p.user_id, p]));
-    const enriched = postsData.map(p => ({ ...p, profiles: profileMap.get(p.user_id) || null }));
-    setPosts(enriched as any);
+    setPosts(postsData.map(p => ({ ...p, profiles: profileMap.get(p.user_id) || null })) as any);
     setLoading(false);
   };
 
@@ -104,91 +82,38 @@ export default function SocialFeedPage() {
     }
   };
 
-  const loadComments = async (postId: string) => {
-    const { data: commentsData } = await supabase.from('comments').select('*').eq('post_id', postId).order('created_at', { ascending: true });
-    if (!commentsData) return;
-    const userIds = [...new Set(commentsData.map(c => c.user_id))];
-    const { data: profilesData } = await supabase.from('profiles').select('user_id, display_name, username, email').in('user_id', userIds);
-    const profileMap = new Map((profilesData || []).map(p => [p.user_id, p]));
-    setComments(prev => ({ ...prev, [postId]: commentsData.map(c => ({ ...c, profiles: profileMap.get(c.user_id) || null })) as any }));
+  const deletePost = async (postId: string) => {
+    if (!user) return;
+    await supabase.from('posts').delete().eq('id', postId).eq('user_id', user.id);
+    setPosts(prev => prev.filter(p => p.id !== postId));
+    toast.success('Post excluído');
   };
 
-  const submitComment = async (postId: string) => {
-    if (!user || !commentText.trim()) return;
-    await supabase.from('comments').insert({ post_id: postId, user_id: user.id, content: commentText.trim() });
-    setCommentText('');
-    loadComments(postId);
+  const handleCommentAdded = (postId: string) => {
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p));
   };
-
-  const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length + mediaFiles.length > 4) { toast.error('Máximo 4 arquivos'); return; }
-    setMediaFiles(prev => [...prev, ...files]);
-    files.forEach(f => {
-      const reader = new FileReader();
-      reader.onload = () => setMediaPreviews(prev => [...prev, reader.result as string]);
-      reader.readAsDataURL(f);
-    });
-  };
-
-  const removeMedia = (idx: number) => {
-    setMediaFiles(prev => prev.filter((_, i) => i !== idx));
-    setMediaPreviews(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  const createPost = async () => {
-    if (!user) return;
-    setPosting(true);
-    try {
-      const mediaUrls: string[] = [];
-      for (const file of mediaFiles) {
-        const ext = file.name.split('.').pop();
-        const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-        const { error } = await supabase.storage.from('posts-media').upload(path, file);
-        if (!error) {
-          const { data: urlData } = supabase.storage.from('posts-media').getPublicUrl(path);
-          mediaUrls.push(urlData.publicUrl);
-        }
-      }
-      const e1rm = weight && reps ? Math.round(parseFloat(weight) * (1 + parseInt(reps) / 30) * 10) / 10 : null;
-      await supabase.from('posts').insert({
-        user_id: user.id, post_type: postType, caption: caption || null,
-        exercise_name: exerciseName || null, weight: weight ? parseFloat(weight) : null,
-        reps: reps ? parseInt(reps) : null, estimated_1rm: e1rm, is_pr: postType === 'pr',
-        media_urls: mediaUrls.length > 0 ? mediaUrls : null,
-      });
-      const postXP = mediaUrls.length > 0 ? 60 : (postType === 'pr' ? 80 : 40);
-      await addXP(postXP, 'social_post');
-      toast.success(`Post publicado! +${postXP} XP`);
-      setShowCreate(false); setCaption(''); setExerciseName(''); setWeight(''); setReps('');
-      setMediaFiles([]); setMediaPreviews([]);
-      loadFeed();
-    } catch { toast.error('Erro ao publicar'); } finally { setPosting(false); }
-  };
-
-  const getProfileName = (post: Post) => post.profiles?.display_name || post.profiles?.username || post.profiles?.email?.split('@')[0] || 'Atleta';
 
   const showSuggestions = followingIds.size === 0 || (feedMode === 'following' && posts.length === 0);
 
   return (
-    <div className="space-y-4 max-w-2xl mx-auto">
+    <div className="max-w-xl mx-auto">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">Feed</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">Atividade da comunidade</p>
-        </div>
-        <button onClick={() => setShowCreate(true)} className="p-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between px-1 mb-4">
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">Feed</h1>
+        <button onClick={() => setShowCreate(true)}
+          className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
           <Plus className="w-5 h-5" />
         </button>
       </motion.div>
 
       {/* Stories */}
-      <StoriesBar followingIds={followingIds} />
+      <div className="mb-4">
+        <StoriesBar followingIds={followingIds} />
+      </div>
 
-      {/* Feed mode toggle */}
-      <div className="flex gap-1 bg-secondary/50 rounded-xl p-1">
+      {/* Feed mode */}
+      <div className="flex gap-1 bg-secondary/50 rounded-xl p-1 mb-4">
         {(['following', 'all'] as const).map(mode => (
           <button key={mode} onClick={() => setFeedMode(mode)}
             className={cn("flex-1 py-2 rounded-lg text-xs font-medium transition-colors",
@@ -202,202 +127,37 @@ export default function SocialFeedPage() {
       {/* Suggestions */}
       {showSuggestions && <UserSuggestions followingIds={followingIds} onToggleFollow={toggleFollow} />}
 
-      {/* Create Post Modal */}
-      <AnimatePresence>
-        {showCreate && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
-            onClick={() => setShowCreate(false)}>
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
-              onClick={e => e.stopPropagation()}
-              className="bg-card border border-border rounded-2xl p-5 sm:p-6 w-full max-w-md card-elevated space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-foreground">Novo Post</h3>
-                <button onClick={() => setShowCreate(false)} className="p-1 text-muted-foreground hover:text-foreground"><X className="w-4 h-4" /></button>
-              </div>
-              <div className="flex gap-2">
-                {[{ value: 'update', label: 'Atualização' }, { value: 'pr', label: '🏆 PR' }, { value: 'workout', label: '💪 Treino' }].map(t => (
-                  <button key={t.value} onClick={() => setPostType(t.value)}
-                    className={cn("text-xs px-3 py-1.5 rounded-lg transition-colors",
-                      postType === t.value ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
-                    )}>{t.label}</button>
-                ))}
-              </div>
-              <textarea value={caption} onChange={e => setCaption(e.target.value)}
-                placeholder="O que você quer compartilhar?" rows={3}
-                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none" />
-              {(postType === 'pr' || postType === 'workout') && (
-                <div className="space-y-3">
-                  <input value={exerciseName} onChange={e => setExerciseName(e.target.value)} placeholder="Exercício (ex: Agachamento)"
-                    className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
-                  <div className="grid grid-cols-2 gap-3">
-                    <input type="number" value={weight} onChange={e => setWeight(e.target.value)} placeholder="Peso (kg)"
-                      className="bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
-                    <input type="number" value={reps} onChange={e => setReps(e.target.value)} placeholder="Reps"
-                      className="bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
-                  </div>
-                </div>
-              )}
-              {mediaPreviews.length > 0 && (
-                <div className="flex gap-2 overflow-x-auto">
-                  {mediaPreviews.map((src, i) => (
-                    <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0">
-                      {mediaFiles[i]?.type.startsWith('video') ? <video src={src} className="w-full h-full object-cover" />
-                        : <img src={src} alt="" className="w-full h-full object-cover" />}
-                      <button onClick={() => removeMedia(i)} className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-background/80 flex items-center justify-center">
-                        <X className="w-3 h-3 text-foreground" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <label className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
-                <Image className="w-4 h-4" /><span>Adicionar foto/vídeo</span>
-                <input type="file" accept="image/*,video/*" multiple onChange={handleMediaSelect} className="hidden" />
-              </label>
-              <button onClick={createPost} disabled={posting || (!caption.trim() && !exerciseName && mediaFiles.length === 0)}
-                className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-medium text-sm hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
-                {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} Publicar
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Feed */}
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
       ) : posts.length === 0 ? (
-        <div className="text-center py-12">
+        <div className="text-center py-16">
           <Dumbbell className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
-          <p className="text-muted-foreground">Nenhum post ainda. {feedMode === 'following' ? 'Siga atletas ou mude para "Todos".' : 'Seja o primeiro!'}</p>
+          <p className="text-muted-foreground text-sm">
+            {feedMode === 'following' ? 'Siga atletas ou mude para "Todos".' : 'Nenhum post ainda. Seja o primeiro!'}
+          </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {posts.map(post => (
-            <motion.div key={post.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-              className="bg-card rounded-xl border border-border card-elevated overflow-hidden">
-              {/* Header */}
-              <div className="flex items-center justify-between p-4">
-                <button onClick={() => navigate(`/athlete/${post.user_id}`)} className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm overflow-hidden">
-                    {post.profiles?.avatar_url ? <img src={post.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
-                      : getProfileName(post).charAt(0).toUpperCase()}
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-semibold text-foreground">{getProfileName(post)}</p>
-                    <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: ptBR })}</p>
-                  </div>
-                </button>
-                {user && post.user_id !== user.id && (
-                  <button onClick={() => toggleFollow(post.user_id)}
-                    className={cn("text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors",
-                      isFollowing(post.user_id) ? "bg-secondary text-muted-foreground" : "bg-primary/10 text-primary"
-                    )}>
-                    {isFollowing(post.user_id) ? <UserMinus className="w-3 h-3" /> : <UserPlus className="w-3 h-3" />}
-                    {isFollowing(post.user_id) ? 'Seguindo' : 'Seguir'}
-                  </button>
-                )}
-              </div>
-
-              {/* PR/Workout data */}
-              {post.is_pr && post.exercise_name && (
-                <div className="mx-4 mb-3 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-warning/10 border border-primary/20">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Trophy className="w-5 h-5 text-warning" />
-                    <span className="text-xs font-bold uppercase tracking-wider text-warning">NOVO PR!</span>
-                  </div>
-                  <p className="text-lg font-bold text-foreground">{post.exercise_name}</p>
-                  <div className="flex gap-4 mt-1">
-                    {post.weight && <span className="text-sm text-foreground font-mono">{post.weight}kg</span>}
-                    {post.reps && <span className="text-sm text-muted-foreground">×{post.reps}</span>}
-                    {post.estimated_1rm && <span className="text-xs text-primary ml-2">E1RM: {post.estimated_1rm}kg</span>}
-                  </div>
-                </div>
-              )}
-              {!post.is_pr && post.exercise_name && (
-                <div className="mx-4 mb-3 p-3 rounded-lg bg-secondary/30">
-                  <div className="flex items-center gap-2">
-                    <Dumbbell className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-medium text-foreground">{post.exercise_name}</span>
-                  </div>
-                  <div className="flex gap-3 mt-1">
-                    {post.weight && <span className="text-xs text-muted-foreground font-mono">{post.weight}kg</span>}
-                    {post.reps && <span className="text-xs text-muted-foreground">×{post.reps}</span>}
-                  </div>
-                </div>
-              )}
-
-              {/* Media */}
-              {post.media_urls && post.media_urls.length > 0 && (
-                <div className={cn("mx-4 mb-3 grid gap-1 rounded-xl overflow-hidden",
-                  post.media_urls.length === 1 ? "grid-cols-1" : "grid-cols-2"
-                )}>
-                  {post.media_urls.map((url, idx) => (
-                    url.match(/\.(mp4|mov|webm)$/i) ? (
-                      <video key={idx} src={url} controls className="w-full max-h-80 object-cover bg-secondary" />
-                    ) : (
-                      <img key={idx} src={url} alt="" className="w-full max-h-80 object-cover bg-secondary" />
-                    )
-                  ))}
-                </div>
-              )}
-
-              {post.caption && <p className="px-4 pb-3 text-sm text-foreground leading-relaxed">{post.caption}</p>}
-
-              {/* Actions */}
-              <div className="flex items-center gap-4 px-4 py-3 border-t border-border">
-                <button onClick={() => toggleLike(post.id)}
-                  className={cn("flex items-center gap-1.5 text-sm transition-colors",
-                    likedPosts.has(post.id) ? "text-destructive" : "text-muted-foreground hover:text-foreground"
-                  )}>
-                  <Heart className={cn("w-4 h-4", likedPosts.has(post.id) && "fill-current")} />
-                  {post.likes_count > 0 && post.likes_count}
-                </button>
-                <button onClick={() => { expandedComments === post.id ? setExpandedComments(null) : (setExpandedComments(post.id), loadComments(post.id)); }}
-                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  <MessageCircle className="w-4 h-4" /> {post.comments_count > 0 && post.comments_count}
-                </button>
-                <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors ml-auto">
-                  <Share2 className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Comments */}
-              <AnimatePresence>
-                {expandedComments === post.id && (
-                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                    className="border-t border-border overflow-hidden">
-                    <div className="p-4 space-y-3">
-                      {(comments[post.id] || []).map(c => (
-                        <div key={c.id} className="flex gap-2">
-                          <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
-                            {(c.profiles?.display_name || c.profiles?.email || 'A').charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="text-xs font-medium text-foreground">{c.profiles?.display_name || c.profiles?.username || c.profiles?.email?.split('@')[0]}</p>
-                            <p className="text-xs text-muted-foreground">{c.content}</p>
-                          </div>
-                        </div>
-                      ))}
-                      <div className="flex gap-2">
-                        <input value={commentText} onChange={e => setCommentText(e.target.value)}
-                          onKeyDown={e => e.key === 'Enter' && submitComment(post.id)}
-                          placeholder="Comentar..."
-                          className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
-                        <button onClick={() => submitComment(post.id)} disabled={!commentText.trim()}
-                          className="p-2 rounded-lg bg-primary text-primary-foreground disabled:opacity-50 hover:bg-primary/90 transition-colors">
-                          <Send className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+            <PostCard key={post.id} post={post} isLiked={likedPosts.has(post.id)}
+              onToggleLike={toggleLike} onOpenComments={setCommentsPostId}
+              onDeletePost={deletePost} isOwn={post.user_id === user?.id} />
           ))}
         </div>
       )}
+
+      {/* FAB */}
+      <button onClick={() => setShowCreate(true)}
+        className="fixed bottom-20 right-4 z-40 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center hover:scale-105 transition-transform sm:hidden">
+        <Plus className="w-6 h-6" />
+      </button>
+
+      {/* Create Post Modal */}
+      <CreatePostModal open={showCreate} onClose={() => setShowCreate(false)} onCreated={loadFeed} />
+
+      {/* Comments Sheet */}
+      <CommentsSheet postId={commentsPostId} onClose={() => setCommentsPostId(null)} onCommentAdded={handleCommentAdded} />
     </div>
   );
 }
