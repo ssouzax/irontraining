@@ -26,6 +26,8 @@ import PredictorPage from "./pages/PredictorPage";
 import AchievementsPage from "./pages/AchievementsPage";
 import ExerciseLibrary from "./pages/ExerciseLibrary";
 import SocialFeedPage from "./pages/SocialFeedPage";
+import DirectMessagesPage from "./pages/DirectMessagesPage";
+import ChatPage from "./pages/ChatPage";
 import DiscoverPage from "./pages/DiscoverPage";
 import AthleteProfilePage from "./pages/AthleteProfilePage";
 import AuthPage from "./pages/AuthPage";
@@ -101,6 +103,8 @@ function ProtectedRoutes() {
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/exercises" element={<ExerciseLibrary />} />
           <Route path="/feed" element={<SocialFeedPage />} />
+          <Route path="/direct" element={<DirectMessagesPage />} />
+          <Route path="/direct/:conversationId" element={<ChatPage />} />
           <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/athlete/:userId" element={<AthleteProfilePage />} />
           <Route path="/profile/:username" element={<AthleteProfilePage />} />

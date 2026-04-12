@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Plus, Dumbbell, Loader2 } from 'lucide-react';
+import { Plus, Dumbbell, Loader2, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useFollows } from '@/hooks/useFollows';
+import { useUnreadDMs } from '@/hooks/useUnreadDMs';
 import { useNavigate } from 'react-router-dom';
 import { StoriesBar } from '@/components/social/StoriesBar';
 import { UserSuggestions } from '@/components/social/UserSuggestions';
@@ -35,6 +36,7 @@ interface Post {
 export default function SocialFeedPage() {
   const { user } = useAuth();
   const { followingIds, toggleFollow } = useFollows();
+  const { unreadCount } = useUnreadDMs();
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,10 +103,20 @@ export default function SocialFeedPage() {
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between px-1 mb-4">
         <h1 className="text-2xl font-bold text-foreground tracking-tight">Feed</h1>
-        <button onClick={() => setShowCreate(true)}
-          className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
-          <Plus className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate('/direct')} className="relative w-10 h-10 rounded-full bg-secondary text-foreground flex items-center justify-center">
+            <MessageCircle className="w-5 h-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+          <button onClick={() => setShowCreate(true)}
+            className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
+            <Plus className="w-5 h-5" />
+          </button>
+        </div>
       </motion.div>
 
       {/* Stories */}
