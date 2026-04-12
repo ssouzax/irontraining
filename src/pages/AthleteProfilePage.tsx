@@ -144,7 +144,27 @@ export default function AthleteProfilePage() {
                   )}>
                   {checkFollowing(userId!) ? <><UserMinus className="w-3.5 h-3.5" /> Seguindo</> : <><UserPlus className="w-3.5 h-3.5" /> Seguir</>}
                 </button>
-                <button onClick={() => navigate(`/feed`)}
+                <button onClick={async () => {
+                    if (!user || !userId) return;
+                    // Check existing conversation
+                    const { data: myParts } = await supabase.from('conversation_participants').select('conversation_id').eq('user_id', user.id);
+                    if (myParts && myParts.length > 0) {
+                      const convIds = myParts.map(p => p.conversation_id);
+                      const { data: otherParts } = await supabase.from('conversation_participants').select('conversation_id').in('conversation_id', convIds).eq('user_id', userId);
+                      if (otherParts && otherParts.length > 0) {
+                        navigate(`/direct/${otherParts[0].conversation_id}`);
+                        return;
+                      }
+                    }
+                    // Create new
+                    const { data: conv } = await supabase.from('conversations').insert({}).select('id').single();
+                    if (!conv) return;
+                    await supabase.from('conversation_participants').insert([
+                      { conversation_id: conv.id, user_id: user.id },
+                      { conversation_id: conv.id, user_id: userId },
+                    ]);
+                    navigate(`/direct/${conv.id}`);
+                  }}
                   className="px-4 py-2 rounded-lg text-sm font-medium border border-border text-foreground hover:bg-secondary/50 transition-colors">
                   Mensagem
                 </button>
