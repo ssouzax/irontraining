@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Plus, Dumbbell, Loader2, MessageCircle } from 'lucide-react';
+import { Plus, Dumbbell, Loader2, MessageCircle, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useFollows } from '@/hooks/useFollows';
 import { useUnreadDMs } from '@/hooks/useUnreadDMs';
+import { useSavedPosts } from '@/hooks/useSavedPosts';
+import { useSocialNotifications, createNotification } from '@/hooks/useSocialNotifications';
 import { useNavigate } from 'react-router-dom';
 import { StoriesBar } from '@/components/social/StoriesBar';
 import { UserSuggestions } from '@/components/social/UserSuggestions';
@@ -36,7 +38,9 @@ interface Post {
 export default function SocialFeedPage() {
   const { user } = useAuth();
   const { followingIds, toggleFollow } = useFollows();
-  const { unreadCount } = useUnreadDMs();
+  const { unreadCount: unreadDMs } = useUnreadDMs();
+  const { unreadCount: unreadNotifs } = useSocialNotifications();
+  const { isSaved, toggleSave } = useSavedPosts();
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,6 +85,20 @@ export default function SocialFeedPage() {
       await supabase.from('likes').insert({ post_id: postId, user_id: user.id });
       setLikedPosts(prev => new Set(prev).add(postId));
       setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes_count: p.likes_count + 1 } : p));
+      // Send notification
+      const post = posts.find(p => p.id === postId);
+      if (post && post.user_id !== user.id) {
+        const myProfile = await supabase.from('profiles').select('display_name, username').eq('user_id', user.id).single();
+        const myName = myProfile.data?.display_name || myProfile.data?.username || 'Alguém';
+        createNotification({
+          user_id: post.user_id,
+          actor_id: user.id,
+          type: 'like',
+          reference_id: postId,
+          reference_type: 'post',
+          message: `curtiu seu post`,
+        });
+      }
     }
   };
 
@@ -104,11 +122,19 @@ export default function SocialFeedPage() {
         className="flex items-center justify-between px-1 mb-4">
         <h1 className="text-2xl font-bold text-foreground tracking-tight">Feed</h1>
         <div className="flex items-center gap-2">
+          <button onClick={() => navigate('/notifications')} className="relative w-10 h-10 rounded-full bg-secondary text-foreground flex items-center justify-center">
+            <Bell className="w-5 h-5" />
+            {unreadNotifs > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                {unreadNotifs > 9 ? '9+' : unreadNotifs}
+              </span>
+            )}
+          </button>
           <button onClick={() => navigate('/direct')} className="relative w-10 h-10 rounded-full bg-secondary text-foreground flex items-center justify-center">
             <MessageCircle className="w-5 h-5" />
-            {unreadCount > 0 && (
+            {unreadDMs > 0 && (
               <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
-                {unreadCount > 9 ? '9+' : unreadCount}
+                {unreadDMs > 9 ? '9+' : unreadDMs}
               </span>
             )}
           </button>
@@ -120,9 +146,7 @@ export default function SocialFeedPage() {
       </motion.div>
 
       {/* Stories */}
-      <div className="mb-4">
-        <StoriesBar followingIds={followingIds} />
-      </div>
+      <div className="mb-4"><StoriesBar followingIds={followingIds} /></div>
 
       {/* Feed mode */}
       <div className="flex gap-1 bg-secondary/50 rounded-xl p-1 mb-4">
@@ -136,10 +160,8 @@ export default function SocialFeedPage() {
         ))}
       </div>
 
-      {/* Suggestions */}
       {showSuggestions && <UserSuggestions followingIds={followingIds} onToggleFollow={toggleFollow} />}
 
-      {/* Feed */}
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
       ) : posts.length === 0 ? (
@@ -152,23 +174,24 @@ export default function SocialFeedPage() {
       ) : (
         <div className="space-y-3 sm:space-y-4">
           {posts.map(post => (
-            <PostCard key={post.id} post={post} isLiked={likedPosts.has(post.id)}
-              onToggleLike={toggleLike} onOpenComments={setCommentsPostId}
-              onDeletePost={deletePost} isOwn={post.user_id === user?.id} />
+            <PostCard key={post.id} post={post}
+              isLiked={likedPosts.has(post.id)}
+              isSaved={isSaved(post.id)}
+              onToggleLike={toggleLike}
+              onOpenComments={setCommentsPostId}
+              onDeletePost={deletePost}
+              onToggleSave={(id) => toggleSave(id)}
+              isOwn={post.user_id === user?.id} />
           ))}
         </div>
       )}
 
-      {/* FAB */}
       <button onClick={() => setShowCreate(true)}
         className="fixed bottom-20 right-4 z-40 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center hover:scale-105 transition-transform sm:hidden">
         <Plus className="w-6 h-6" />
       </button>
 
-      {/* Create Post Modal */}
       <CreatePostModal open={showCreate} onClose={() => setShowCreate(false)} onCreated={loadFeed} />
-
-      {/* Comments Sheet */}
       <CommentsSheet postId={commentsPostId} onClose={() => setCommentsPostId(null)} onCommentAdded={handleCommentAdded} />
     </div>
   );
