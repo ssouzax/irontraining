@@ -26,19 +26,20 @@ interface PostCardProps {
     profiles?: { display_name: string | null; username: string | null; avatar_url: string | null; email: string | null };
   };
   isLiked: boolean;
+  isSaved?: boolean;
   onToggleLike: (postId: string) => void;
   onOpenComments: (postId: string) => void;
   onDeletePost?: (postId: string) => void;
+  onToggleSave?: (postId: string) => void;
   isOwn?: boolean;
 }
 
-export function PostCard({ post, isLiked, onToggleLike, onOpenComments, onDeletePost, isOwn }: PostCardProps) {
+export function PostCard({ post, isLiked, isSaved = false, onToggleLike, onOpenComments, onDeletePost, onToggleSave, isOwn }: PostCardProps) {
   const navigate = useNavigate();
   const [carouselIdx, setCarouselIdx] = useState(0);
   const [showHeartAnim, setShowHeartAnim] = useState(false);
   const [captionExpanded, setCaptionExpanded] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  const [saved, setSaved] = useState(false);
   const lastTapRef = useRef(0);
   const mediaCount = post.media_urls?.length || 0;
 
@@ -129,7 +130,6 @@ export function PostCard({ post, isLiked, onToggleLike, onOpenComments, onDelete
               <img src={post.media_urls[carouselIdx]} alt="" className="w-full h-full object-cover" loading="lazy" />
             )}
           </div>
-          {/* Carousel controls */}
           {mediaCount > 1 && (
             <>
               {carouselIdx > 0 && (
@@ -144,7 +144,6 @@ export function PostCard({ post, isLiked, onToggleLike, onOpenComments, onDelete
                   <ChevronRight className="w-4 h-4" />
                 </button>
               )}
-              {/* Dots */}
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
                 {post.media_urls.map((_, i) => (
                   <div key={i} className={cn("w-1.5 h-1.5 rounded-full transition-all",
@@ -153,7 +152,6 @@ export function PostCard({ post, isLiked, onToggleLike, onOpenComments, onDelete
               </div>
             </>
           )}
-          {/* Double tap heart animation */}
           <AnimatePresence>
             {showHeartAnim && (
               <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
@@ -178,8 +176,9 @@ export function PostCard({ post, isLiked, onToggleLike, onOpenComments, onDelete
           </button>
           <button><Share2 className="w-5 h-5 text-foreground" /></button>
         </div>
-        <button onClick={() => setSaved(!saved)}>
-          <Bookmark className={cn("w-6 h-6 transition-colors", saved ? "text-foreground fill-foreground" : "text-foreground")} />
+        <button onClick={() => onToggleSave?.(post.id)}>
+          <Bookmark className={cn("w-6 h-6 transition-colors",
+            isSaved ? "text-primary fill-primary" : "text-foreground")} />
         </button>
       </div>
 
