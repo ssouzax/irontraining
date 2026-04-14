@@ -109,6 +109,9 @@ function ProtectedRoutes() {
           <Route path="/direct" element={<DirectMessagesPage />} />
           <Route path="/direct/:conversationId" element={<ChatPage />} />
           <Route path="/discover" element={<DiscoverPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/saved" element={<SavedPostsPage />} />
+          <Route path="/hashtag/:tag" element={<HashtagPage />} />
           <Route path="/athlete/:userId" element={<AthleteProfilePage />} />
           <Route path="/profile/:username" element={<AthleteProfilePage />} />
           <Route path="/plates" element={<PlateCalculator />} />
